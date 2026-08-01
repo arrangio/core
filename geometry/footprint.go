@@ -1,8 +1,9 @@
 package geometry
 
 type Footprint struct {
-	Anchor Point64
-	Shape  Shape
+	Anchor  Point64
+	Shape   Shape
+	Facings *Facings
 }
 
 // broad check
@@ -40,4 +41,20 @@ func (f *Footprint) WorldBounds() (min, max Point64) {
 			Y: f.Anchor.Y + int64(localMax.Y),
 			Z: f.Anchor.Z + int64(localMax.Z),
 		}
+}
+
+// check if `Shape` is a `Rotatable` interface and if so, use its methods
+func (f *Footprint) SetRotation(matrixIdx uint8) bool {
+	if rs, ok := f.Shape.(Rotatable); ok {
+		rs.SetRotation(matrixIdx)
+		return true
+	}
+	return false
+}
+
+func (f *Footprint) GetRotation() uint8 {
+	if rs, ok := f.Shape.(Rotatable); ok {
+		return rs.GetRotation()
+	}
+	return 0
 }
