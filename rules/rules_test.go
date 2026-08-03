@@ -16,6 +16,7 @@ type TestEntity struct {
 	ID      uint64
 	Anchor  geometry.Point64
 	Tags    []int // tags that would be assigned to this entity
+	Facings *geometry.Facings
 	W, H, D int16 // 1x1x1 by default
 }
 
@@ -50,8 +51,9 @@ func buildTestEntity(cfg TestEntity) *entity.Entity {
 		ID:   cfg.ID,
 		Tags: mask,
 		Footprint: geometry.Footprint{
-			Anchor: cfg.Anchor,
-			Shape:  geometry.Box{W: w, H: h, D: d},
+			Anchor:  cfg.Anchor,
+			Shape:   geometry.Box{W: w, H: h, D: d},
+			Facings: cfg.Facings,
 		},
 	}
 }
