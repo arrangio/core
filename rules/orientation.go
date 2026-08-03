@@ -12,7 +12,7 @@ type OrientationRule struct {
 	TargetVector geometry.Point64
 }
 
-func (r *OrientationRule) Evaluate(e *entity.Entity) float64 {
+func (r *OrientationRule) Evaluate(e *entity.Entity, ctx *RuleContext) float64 {
 	if !r.Target.Matches(e) {
 		return 1.0
 	}
