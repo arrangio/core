@@ -44,6 +44,13 @@ func (r *OrientationRule) Evaluate(e *entity.Entity) float64 {
 	// angle between vectors `worldFacing` and `TargetSelector`
 	cosTheta := dot / (lenFacing * lenTarget)
 
+	// protection from float64 inaccuracy
+	if cosTheta > 1.0 {
+		cosTheta = 1.0
+	} else if cosTheta < -1.0 {
+		cosTheta = -1.0
+	}
+
 	// cos(0°)   = 1.0  -> Score = 1.0 (perfect)
 	// cos(90°)  = 0.0  -> Score = 0.5 (perpendicularly)
 	// cos(180°) = -1.0 -> Score = 0.0 (looks at the opposite direction)
