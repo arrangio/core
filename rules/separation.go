@@ -34,7 +34,7 @@ func (r *SeparationRule) Evaluate(e *entity.Entity, ctx *RuleContext) float64 {
 	}
 
 	ctx.Buffer = ctx.Buffer[:0]
-	ctx.Grid.QueryBuf(searchMin, searchMax, ctx.Buffer)
+	ctx.Buffer = ctx.Grid.QueryBuf(searchMin, searchMax, ctx.Buffer)
 
 	// iterate through all objects in `searchMin` to `searchMax` range
 	for _, neighbor := range ctx.Buffer {
