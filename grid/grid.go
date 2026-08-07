@@ -13,6 +13,10 @@ type gridNode struct {
 }
 
 type Grid struct {
+	originX int64
+	originY int64
+	originZ int64
+
 	shiftBits uint8 // determines the size of a single grid cell as a power of two
 	sizeX     int64
 	sizeY     int64
@@ -30,10 +34,24 @@ type Grid struct {
 // `maxObjectsPerCell` is a hard limit for total entity-to-cell linkages allowed
 // rule of thumb: `maxObjectsPerCell` = N * 8, where are N is a number of entities
 // assuming the worst of case of all 8 neighbor shapes overlapping at one cell
-func NewGrid(shiftBits uint8, worldW, worldH, worldD int64, maxObjectsPerCell int) *Grid {
+func NewGrid(shiftBits uint8, minX, minY, minZ, maxX, maxY, maxZ int64, maxObjectsPerCell int) *Grid {
+	worldW := maxX - minX
+	worldH := maxY - minY
+	worldD := maxZ - minZ
+
 	cellsX := worldW >> shiftBits
 	cellsY := worldH >> shiftBits
 	cellsZ := worldD >> shiftBits
+
+	if cellsX == 0 {
+		cellsX = 1
+	}
+	if cellsY == 0 {
+		cellsY = 1
+	}
+	if cellsZ == 0 {
+		cellsZ = 1
+	}
 
 	totalCells := cellsX * cellsY * cellsZ
 
@@ -49,6 +67,9 @@ func NewGrid(shiftBits uint8, worldW, worldH, worldD int64, maxObjectsPerCell in
 	}
 
 	return &Grid{
+		originX:   minX,
+		originY:   minY,
+		originZ:   minZ,
 		shiftBits: shiftBits,
 		sizeX:     cellsX,
 		sizeY:     cellsY,
@@ -62,6 +83,14 @@ func NewGrid(shiftBits uint8, worldW, worldH, worldD int64, maxObjectsPerCell in
 	}
 }
 
+func (g *Grid) worldToCell(wx, wy, wz int64) (cx, cy, cz int64) {
+	cx = (wx - g.originX) >> g.shiftBits
+	cy = (wy - g.originY) >> g.shiftBits
+	cz = (wz - g.originZ) >> g.shiftBits
+
+	return cx, cy, cz
+}
+
 func (g *Grid) getIndex(cx, cy, cz int64) int64 {
 	return cx + (cy * g.strideY) + (cz * g.strideZ)
 }
@@ -69,8 +98,8 @@ func (g *Grid) getIndex(cx, cy, cz int64) int64 {
 func (g *Grid) Insert(e *entity.Entity) {
 	minBounds, maxBounds := e.Footprint.WorldBounds()
 
-	minX, minY, minZ := minBounds.X>>g.shiftBits, minBounds.Y>>g.shiftBits, minBounds.Z>>g.shiftBits
-	maxX, maxY, maxZ := maxBounds.X>>g.shiftBits, maxBounds.Y>>g.shiftBits, maxBounds.Z>>g.shiftBits
+	minX, minY, minZ := g.worldToCell(minBounds.X, minBounds.Y, minBounds.Z)
+	maxX, maxY, maxZ := g.worldToCell(maxBounds.X, maxBounds.Y, maxBounds.Z)
 
 	for x := minX; x <= maxX; x++ {
 		for y := minY; y <= maxY; y++ {
@@ -82,7 +111,7 @@ func (g *Grid) Insert(e *entity.Entity) {
 				cellIdx := g.getIndex(x, y, z)
 
 				if len(g.freeNodes) == 0 {
-					panic("Grid: out of memory in nodes pool! Increase maxObjectsPerCell")
+					panic("grid: out of memory in nodes pool! Increase maxObjectsPerCell")
 				}
 
 				// use index from the end of slice
@@ -103,8 +132,8 @@ func (g *Grid) Insert(e *entity.Entity) {
 func (g *Grid) Remove(e *entity.Entity) {
 	minBounds, maxBounds := e.Footprint.WorldBounds()
 
-	minX, minY, minZ := minBounds.X>>g.shiftBits, minBounds.Y>>g.shiftBits, minBounds.Z>>g.shiftBits
-	maxX, maxY, maxZ := maxBounds.X>>g.shiftBits, maxBounds.Y>>g.shiftBits, maxBounds.Z>>g.shiftBits
+	minX, minY, minZ := g.worldToCell(minBounds.X, minBounds.Y, minBounds.Z)
+	maxX, maxY, maxZ := g.worldToCell(maxBounds.X, maxBounds.Y, maxBounds.Z)
 
 	for x := minX; x <= maxX; x++ {
 		for y := minY; y <= maxY; y++ {
@@ -146,8 +175,8 @@ func (g *Grid) QueryBuf(searchMin, searchMax geometry.Point64, buffer []*entity.
 	g.queryID++
 	result := buffer[:0]
 
-	minX, minY, minZ := searchMin.X>>g.shiftBits, searchMin.Y>>g.shiftBits, searchMin.Z>>g.shiftBits
-	maxX, maxY, maxZ := searchMax.X>>g.shiftBits, searchMax.Y>>g.shiftBits, searchMax.Z>>g.shiftBits
+	minX, minY, minZ := g.worldToCell(searchMin.X, searchMin.Y, searchMin.Z)
+	maxX, maxY, maxZ := g.worldToCell(searchMax.X, searchMax.Y, searchMax.Z)
 
 	for x := minX; x <= maxX; x++ {
 		for y := minY; y <= maxY; y++ {
