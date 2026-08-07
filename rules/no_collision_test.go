@@ -3,6 +3,7 @@ package rules_test
 import (
 	"testing"
 
+	"arrangio-core/entity"
 	"arrangio-core/geometry"
 	"arrangio-core/rules"
 	"arrangio-core/tags"
@@ -22,8 +23,8 @@ func TestNoCollisionRule(t *testing.T) {
 			},
 			tc: RuleTestCase{
 				Name:    "No collision (Separated objects)",
-				Subject: TestEntity{ID: 1, Anchor: geometry.Point64{X: 0, Y: 0, Z: 0}},
-				Neighbors: []TestEntity{
+				Subject: entity.TestEntity{ID: 1, Anchor: geometry.Point64{X: 0, Y: 0, Z: 0}},
+				Neighbors: []entity.TestEntity{
 					{ID: 2, Anchor: geometry.Point64{X: 5, Y: 5, Z: 5}},
 				},
 				Expected: 1.0,
@@ -35,8 +36,8 @@ func TestNoCollisionRule(t *testing.T) {
 			},
 			tc: RuleTestCase{
 				Name:    "No collision (objects touching boundaries)",
-				Subject: TestEntity{ID: 1, Anchor: geometry.Point64{X: 0, Y: 0, Z: 0}},
-				Neighbors: []TestEntity{
+				Subject: entity.TestEntity{ID: 1, Anchor: geometry.Point64{X: 0, Y: 0, Z: 0}},
+				Neighbors: []entity.TestEntity{
 					{ID: 2, Anchor: geometry.Point64{X: 1, Y: 0, Z: 0}},
 				},
 				Expected: 1.0,
@@ -48,8 +49,8 @@ func TestNoCollisionRule(t *testing.T) {
 			},
 			tc: RuleTestCase{
 				Name:    "Collision detected (objects overlap)",
-				Subject: TestEntity{ID: 1, Anchor: geometry.Point64{X: 0, Y: 0, Z: 0}},
-				Neighbors: []TestEntity{
+				Subject: entity.TestEntity{ID: 1, Anchor: geometry.Point64{X: 0, Y: 0, Z: 0}},
+				Neighbors: []entity.TestEntity{
 					{ID: 2, Anchor: geometry.Point64{X: 0, Y: 0, Z: 0}},
 				},
 				Expected: 0.0,
@@ -61,8 +62,8 @@ func TestNoCollisionRule(t *testing.T) {
 			},
 			tc: RuleTestCase{
 				Name:    "Collision ignored due to Selector (Tag mismatch)",
-				Subject: TestEntity{ID: 1, Anchor: geometry.Point64{X: 0, Y: 0, Z: 0}},
-				Neighbors: []TestEntity{
+				Subject: entity.TestEntity{ID: 1, Anchor: geometry.Point64{X: 0, Y: 0, Z: 0}},
+				Neighbors: []entity.TestEntity{
 					{ID: 2, Anchor: geometry.Point64{X: 0, Y: 0, Z: 0}, Tags: []int{tagOther}},
 				},
 				Expected: 1.0,
@@ -74,8 +75,8 @@ func TestNoCollisionRule(t *testing.T) {
 			},
 			tc: RuleTestCase{
 				Name:    "Collision with specific TargetID",
-				Subject: TestEntity{ID: 1, Anchor: geometry.Point64{X: 0, Y: 0, Z: 0}},
-				Neighbors: []TestEntity{
+				Subject: entity.TestEntity{ID: 1, Anchor: geometry.Point64{X: 0, Y: 0, Z: 0}},
+				Neighbors: []entity.TestEntity{
 					{ID: 42, Anchor: geometry.Point64{X: 0, Y: 0, Z: 0}},
 				},
 				Expected: 0.0,
@@ -87,8 +88,8 @@ func TestNoCollisionRule(t *testing.T) {
 			},
 			tc: RuleTestCase{
 				Name:    "Ignore self collision",
-				Subject: TestEntity{ID: 1, Anchor: geometry.Point64{X: 0, Y: 0, Z: 0}},
-				Neighbors: []TestEntity{
+				Subject: entity.TestEntity{ID: 1, Anchor: geometry.Point64{X: 0, Y: 0, Z: 0}},
+				Neighbors: []entity.TestEntity{
 					{ID: 1, Anchor: geometry.Point64{X: 0, Y: 0, Z: 0}},
 				},
 				Expected: 1.0,

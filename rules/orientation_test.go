@@ -3,6 +3,7 @@ package rules_test
 import (
 	"testing"
 
+	"arrangio-core/entity"
 	"arrangio-core/geometry"
 	"arrangio-core/rules"
 	"arrangio-core/tags"
@@ -31,7 +32,7 @@ func TestOrientationRule(t *testing.T) {
 			},
 			tc: RuleTestCase{
 				Name: "Selector ignores non-matching entity -> 1.0",
-				Subject: TestEntity{
+				Subject: entity.TestEntity{
 					ID:      1,
 					Tags:    []int{tagOther},
 					Facings: defaultFacings,
@@ -49,7 +50,7 @@ func TestOrientationRule(t *testing.T) {
 			},
 			tc: RuleTestCase{
 				Name: "Missing marker -> 1.0",
-				Subject: TestEntity{
+				Subject: entity.TestEntity{
 					ID:      1,
 					Tags:    []int{tagTarget},
 					Facings: defaultFacings,
@@ -67,7 +68,7 @@ func TestOrientationRule(t *testing.T) {
 			},
 			tc: RuleTestCase{
 				Name: "Perfect match: front looks at +Y (cos 0° -> score 1.0)",
-				Subject: TestEntity{
+				Subject: entity.TestEntity{
 					ID:      1,
 					Tags:    []int{tagTarget},
 					Facings: defaultFacings,
@@ -85,7 +86,7 @@ func TestOrientationRule(t *testing.T) {
 			},
 			tc: RuleTestCase{
 				Name: "Looks perpendicularly: front looks at +X (cos 90° -> score 0.5)",
-				Subject: TestEntity{
+				Subject: entity.TestEntity{
 					ID:      1,
 					Tags:    []int{tagTarget},
 					Facings: defaultFacings,
@@ -103,7 +104,7 @@ func TestOrientationRule(t *testing.T) {
 			},
 			tc: RuleTestCase{
 				Name: "Looks at opposite direction: front looks at -Y (cos 180° -> score 0.0)",
-				Subject: TestEntity{
+				Subject: entity.TestEntity{
 					ID:      1,
 					Tags:    []int{tagTarget},
 					Facings: defaultFacings,

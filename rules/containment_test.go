@@ -3,6 +3,7 @@ package rules_test
 import (
 	"testing"
 
+	"arrangio-core/entity"
 	"arrangio-core/geometry"
 	"arrangio-core/rules"
 	"arrangio-core/tags"
@@ -25,7 +26,7 @@ func TestContainmentRule(t *testing.T) {
 			},
 			tc: RuleTestCase{
 				Name: "Selector ignores non-matching entity",
-				Subject: TestEntity{
+				Subject: entity.TestEntity{
 					ID:     1,
 					Anchor: geometry.Point64{X: 100, Y: 100, Z: 100},
 					W:      2, H: 2, D: 2,
@@ -44,7 +45,7 @@ func TestContainmentRule(t *testing.T) {
 			},
 			tc: RuleTestCase{
 				Name: "Fully inside boundaries",
-				Subject: TestEntity{
+				Subject: entity.TestEntity{
 					ID:     1,
 					Anchor: geometry.Point64{X: 2, Y: 2, Z: 2},
 					W:      5,
@@ -64,7 +65,7 @@ func TestContainmentRule(t *testing.T) {
 			},
 			tc: RuleTestCase{
 				Name: "Touching boundary",
-				Subject: TestEntity{
+				Subject: entity.TestEntity{
 					ID:     1,
 					Anchor: geometry.Point64{X: 8, Y: 0, Z: 0},
 					W:      2,
@@ -84,7 +85,7 @@ func TestContainmentRule(t *testing.T) {
 			},
 			tc: RuleTestCase{
 				Name: "Protruding on X axis by 1 (diff=1 -> score 0.5)",
-				Subject: TestEntity{
+				Subject: entity.TestEntity{
 					ID:     1,
 					Anchor: geometry.Point64{X: 9, Y: 0, Z: 0},
 					W:      2, H: 2, D: 2,
@@ -101,7 +102,7 @@ func TestContainmentRule(t *testing.T) {
 			},
 			tc: RuleTestCase{
 				Name: "Protruding on X (diff=2) and Y below min (diff=1) -> total diff=3 -> score 0.25",
-				Subject: TestEntity{
+				Subject: entity.TestEntity{
 					ID:     1,
 					Anchor: geometry.Point64{X: 10, Y: -1, Z: 0},
 					W:      2,

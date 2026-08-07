@@ -3,6 +3,7 @@ package rules_test
 import (
 	"testing"
 
+	"arrangio-core/entity"
 	"arrangio-core/geometry"
 	"arrangio-core/rules"
 	"arrangio-core/tags"
@@ -23,22 +24,22 @@ func TestProximityRule(t *testing.T) {
 	tests := []RuleTestCase{
 		{
 			Name: "No neighbors in MaxDist radius -> 0.0",
-			Subject: TestEntity{
+			Subject: entity.TestEntity{
 				ID:     1,
 				Anchor: geometry.Point64{X: 50, Y: 50, Z: 50},
 				Tags:   []int{tagTarget},
 			},
-			Neighbors: []TestEntity{},
+			Neighbors: []entity.TestEntity{},
 			Expected:  0.0,
 		},
 		{
 			Name: "Entities have matching Anchors -> 1.0",
-			Subject: TestEntity{
+			Subject: entity.TestEntity{
 				ID:     1,
 				Anchor: geometry.Point64{X: 50, Y: 50, Z: 50},
 				Tags:   []int{tagTarget},
 			},
-			Neighbors: []TestEntity{
+			Neighbors: []entity.TestEntity{
 				{
 					ID:     2,
 					Anchor: geometry.Point64{X: 50, Y: 50, Z: 50},
@@ -49,12 +50,12 @@ func TestProximityRule(t *testing.T) {
 		},
 		{
 			Name: "Neighbor is (3, 4, 0) away -> distSq = 25 -> 1.0 - 25/100 = 0.75",
-			Subject: TestEntity{
+			Subject: entity.TestEntity{
 				ID:     1,
 				Anchor: geometry.Point64{X: 50, Y: 50, Z: 50},
 				Tags:   []int{tagTarget},
 			},
-			Neighbors: []TestEntity{
+			Neighbors: []entity.TestEntity{
 				{
 					ID:     2,
 					Anchor: geometry.Point64{X: 53, Y: 54, Z: 50}, // dx=3, dy=4 -> distSq = 25
@@ -65,12 +66,12 @@ func TestProximityRule(t *testing.T) {
 		},
 		{
 			Name: "Neighbor is out of MaxDist -> return 0.0",
-			Subject: TestEntity{
+			Subject: entity.TestEntity{
 				ID:     1,
 				Anchor: geometry.Point64{X: 50, Y: 50, Z: 50},
 				Tags:   []int{tagTarget},
 			},
-			Neighbors: []TestEntity{
+			Neighbors: []entity.TestEntity{
 				{
 					ID:     2,
 					Anchor: geometry.Point64{X: 61, Y: 50, Z: 50}, // dx = 11 -> distSq = 121 > 100
@@ -81,12 +82,12 @@ func TestProximityRule(t *testing.T) {
 		},
 		{
 			Name: "Many neighbors around (calculate distance to the closest with matching tag) -> return 1.0 - 4/100 = 0.96",
-			Subject: TestEntity{
+			Subject: entity.TestEntity{
 				ID:     1,
 				Anchor: geometry.Point64{X: 50, Y: 50, Z: 50},
 				Tags:   []int{tagTarget},
 			},
-			Neighbors: []TestEntity{
+			Neighbors: []entity.TestEntity{
 				{
 					ID:     2,
 					Anchor: geometry.Point64{X: 53, Y: 54, Z: 50}, // distSq = 25

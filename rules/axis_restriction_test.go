@@ -3,6 +3,7 @@ package rules_test
 import (
 	"testing"
 
+	"arrangio-core/entity"
 	"arrangio-core/geometry"
 	"arrangio-core/rules"
 )
@@ -21,7 +22,7 @@ func TestAxisRestrictionRule(t *testing.T) {
 			},
 			tc: RuleTestCase{
 				Name:     "OpEq: matched (Z == 0)",
-				Subject:  TestEntity{ID: 1, Anchor: geometry.Point64{X: 10, Y: 10, Z: 0}},
+				Subject:  entity.TestEntity{ID: 1, Anchor: geometry.Point64{X: 10, Y: 10, Z: 0}},
 				Expected: 1.0,
 			},
 		},
@@ -33,7 +34,7 @@ func TestAxisRestrictionRule(t *testing.T) {
 			},
 			tc: RuleTestCase{
 				Name:     "OpEq: violation above Ref (Z = 1 -> diff = 1 -> score 0.5)",
-				Subject:  TestEntity{ID: 1, Anchor: geometry.Point64{X: 10, Y: 10, Z: 1}},
+				Subject:  entity.TestEntity{ID: 1, Anchor: geometry.Point64{X: 10, Y: 10, Z: 1}},
 				Expected: 0.5,
 			},
 		},
@@ -45,7 +46,7 @@ func TestAxisRestrictionRule(t *testing.T) {
 			},
 			tc: RuleTestCase{
 				Name:     "OpEq: violation below Ref (Z = -2 -> diff = 2 -> score 1/3)",
-				Subject:  TestEntity{ID: 1, Anchor: geometry.Point64{X: 10, Y: 10, Z: -2}},
+				Subject:  entity.TestEntity{ID: 1, Anchor: geometry.Point64{X: 10, Y: 10, Z: -2}},
 				Expected: 1.0 / 3.0,
 			},
 		},
@@ -58,7 +59,7 @@ func TestAxisRestrictionRule(t *testing.T) {
 			},
 			tc: RuleTestCase{
 				Name:     "OpNot: matched (X != 5)",
-				Subject:  TestEntity{ID: 1, Anchor: geometry.Point64{X: 10, Y: 0, Z: 0}},
+				Subject:  entity.TestEntity{ID: 1, Anchor: geometry.Point64{X: 10, Y: 0, Z: 0}},
 				Expected: 1.0,
 			},
 		},
@@ -70,7 +71,7 @@ func TestAxisRestrictionRule(t *testing.T) {
 			},
 			tc: RuleTestCase{
 				Name:     "OpNot: violation (X == 5 -> score = 0.5)",
-				Subject:  TestEntity{ID: 1, Anchor: geometry.Point64{X: 5, Y: 0, Z: 0}},
+				Subject:  entity.TestEntity{ID: 1, Anchor: geometry.Point64{X: 5, Y: 0, Z: 0}},
 				Expected: 0.5,
 			},
 		},
@@ -83,7 +84,7 @@ func TestAxisRestrictionRule(t *testing.T) {
 			},
 			tc: RuleTestCase{
 				Name:     "OpLt: matched (X = 9 < 10)",
-				Subject:  TestEntity{ID: 1, Anchor: geometry.Point64{X: 9, Y: 0, Z: 0}},
+				Subject:  entity.TestEntity{ID: 1, Anchor: geometry.Point64{X: 9, Y: 0, Z: 0}},
 				Expected: 1.0,
 			},
 		},
@@ -95,7 +96,7 @@ func TestAxisRestrictionRule(t *testing.T) {
 			},
 			tc: RuleTestCase{
 				Name:     "OpLt: violation (X = 10 -> diff = 10 - 9 = 1 -> score 0.5)",
-				Subject:  TestEntity{ID: 1, Anchor: geometry.Point64{X: 10, Y: 0, Z: 0}},
+				Subject:  entity.TestEntity{ID: 1, Anchor: geometry.Point64{X: 10, Y: 0, Z: 0}},
 				Expected: 0.5,
 			},
 		},
@@ -108,7 +109,7 @@ func TestAxisRestrictionRule(t *testing.T) {
 			},
 			tc: RuleTestCase{
 				Name:     "OpLe: matched (Y = 10 <= 10)",
-				Subject:  TestEntity{ID: 1, Anchor: geometry.Point64{X: 0, Y: 10, Z: 0}},
+				Subject:  entity.TestEntity{ID: 1, Anchor: geometry.Point64{X: 0, Y: 10, Z: 0}},
 				Expected: 1.0,
 			},
 		},
@@ -120,7 +121,7 @@ func TestAxisRestrictionRule(t *testing.T) {
 			},
 			tc: RuleTestCase{
 				Name:     "OpLe: violation (Y = 12 -> diff = 12 - 10 = 2 -> score 1/3)",
-				Subject:  TestEntity{ID: 1, Anchor: geometry.Point64{X: 0, Y: 12, Z: 0}},
+				Subject:  entity.TestEntity{ID: 1, Anchor: geometry.Point64{X: 0, Y: 12, Z: 0}},
 				Expected: 1.0 / 3.0,
 			},
 		},
@@ -133,7 +134,7 @@ func TestAxisRestrictionRule(t *testing.T) {
 			},
 			tc: RuleTestCase{
 				Name:     "OpGt: matched (Z = 6 > 5)",
-				Subject:  TestEntity{ID: 1, Anchor: geometry.Point64{X: 0, Y: 0, Z: 6}},
+				Subject:  entity.TestEntity{ID: 1, Anchor: geometry.Point64{X: 0, Y: 0, Z: 6}},
 				Expected: 1.0,
 			},
 		},
@@ -145,7 +146,7 @@ func TestAxisRestrictionRule(t *testing.T) {
 			},
 			tc: RuleTestCase{
 				Name:     "OpGt: violation (Z = 5 -> diff = 6 - 5 = 1 -> score 0.5)",
-				Subject:  TestEntity{ID: 1, Anchor: geometry.Point64{X: 0, Y: 0, Z: 5}},
+				Subject:  entity.TestEntity{ID: 1, Anchor: geometry.Point64{X: 0, Y: 0, Z: 5}},
 				Expected: 0.5,
 			},
 		},
@@ -158,7 +159,7 @@ func TestAxisRestrictionRule(t *testing.T) {
 			},
 			tc: RuleTestCase{
 				Name:     "OpGe: matched (Y = 5 >= 5)",
-				Subject:  TestEntity{ID: 1, Anchor: geometry.Point64{X: 0, Y: 5, Z: 0}},
+				Subject:  entity.TestEntity{ID: 1, Anchor: geometry.Point64{X: 0, Y: 5, Z: 0}},
 				Expected: 1.0,
 			},
 		},
@@ -170,7 +171,7 @@ func TestAxisRestrictionRule(t *testing.T) {
 			},
 			tc: RuleTestCase{
 				Name:     "OpGe: violation (Y = 3 -> diff = 5 - 3 = 2 -> score 1/3)",
-				Subject:  TestEntity{ID: 1, Anchor: geometry.Point64{X: 0, Y: 3, Z: 0}},
+				Subject:  entity.TestEntity{ID: 1, Anchor: geometry.Point64{X: 0, Y: 3, Z: 0}},
 				Expected: 1.0 / 3.0,
 			},
 		},
@@ -182,7 +183,7 @@ func TestAxisRestrictionRule(t *testing.T) {
 			},
 			tc: RuleTestCase{
 				Name:     "Invalid Axis returns 0.0",
-				Subject:  TestEntity{ID: 1, Anchor: geometry.Point64{X: 0, Y: 0, Z: 0}},
+				Subject:  entity.TestEntity{ID: 1, Anchor: geometry.Point64{X: 0, Y: 0, Z: 0}},
 				Expected: 0.0,
 			},
 		},

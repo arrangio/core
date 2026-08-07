@@ -1,6 +1,7 @@
 package rules_test
 
 import (
+	"arrangio-core/entity"
 	"arrangio-core/geometry"
 	"arrangio-core/rules"
 	"arrangio-core/tags"
@@ -28,12 +29,12 @@ func TestSeparationRule(t *testing.T) {
 			rule: baseRule,
 			tc: RuleTestCase{
 				Name: "Ignore object with non-matching Selector",
-				Subject: TestEntity{
+				Subject: entity.TestEntity{
 					ID:     1,
 					Anchor: geometry.Point64{X: 0, Y: 0, Z: 0},
 					Tags:   []int{tagB},
 				},
-				Neighbors: []TestEntity{
+				Neighbors: []entity.TestEntity{
 					{
 						ID:     2,
 						Anchor: geometry.Point64{X: 1, Y: 0, Z: 0},
@@ -48,12 +49,12 @@ func TestSeparationRule(t *testing.T) {
 			rule: baseRule,
 			tc: RuleTestCase{
 				Name: "No obstacles in a grid",
-				Subject: TestEntity{
+				Subject: entity.TestEntity{
 					ID:     1,
 					Anchor: geometry.Point64{X: 0, Y: 0, Z: 0},
 					Tags:   []int{tagA},
 				},
-				Neighbors: []TestEntity{},
+				Neighbors: []entity.TestEntity{},
 				Expected:  1.0,
 			},
 		},
@@ -62,13 +63,13 @@ func TestSeparationRule(t *testing.T) {
 			rule: baseRule,
 			tc: RuleTestCase{
 				Name: "Obstacle is exactly `MinDistance` far away",
-				Subject: TestEntity{
+				Subject: entity.TestEntity{
 					ID:     1,
 					Anchor: geometry.Point64{X: 0, Y: 0, Z: 0},
 					W:      2, H: 2, D: 2,
 					Tags: []int{tagA},
 				},
-				Neighbors: []TestEntity{
+				Neighbors: []entity.TestEntity{
 					{
 						ID:     2,
 						Anchor: geometry.Point64{X: 7, Y: 0, Z: 0},
@@ -84,13 +85,13 @@ func TestSeparationRule(t *testing.T) {
 			rule: baseRule,
 			tc: RuleTestCase{
 				Name: "Obstacle is inside separation zone (dist=2, min-5) -> score 0.4",
-				Subject: TestEntity{
+				Subject: entity.TestEntity{
 					ID:     1,
 					Anchor: geometry.Point64{X: 0, Y: 0, Z: 0},
 					W:      2, H: 2, D: 2,
 					Tags: []int{tagA},
 				},
-				Neighbors: []TestEntity{
+				Neighbors: []entity.TestEntity{
 					{
 						ID:     2,
 						Anchor: geometry.Point64{X: 4, Y: 0, Z: 0},
@@ -106,13 +107,13 @@ func TestSeparationRule(t *testing.T) {
 			rule: baseRule,
 			tc: RuleTestCase{
 				Name: "Obstacle overlaps or touches -> score 0.0",
-				Subject: TestEntity{
+				Subject: entity.TestEntity{
 					ID:     1,
 					Anchor: geometry.Point64{X: 0, Y: 0, Z: 0},
 					W:      2, H: 2, D: 2,
 					Tags: []int{tagA},
 				},
-				Neighbors: []TestEntity{
+				Neighbors: []entity.TestEntity{
 					{
 						ID:     2,
 						Anchor: geometry.Point64{X: 1, Y: 0, Z: 0},
