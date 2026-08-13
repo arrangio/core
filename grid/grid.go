@@ -3,6 +3,7 @@ package grid
 import (
 	"arrangio-core/entity"
 	"arrangio-core/geometry"
+	"sync/atomic"
 )
 
 // gridNode is an element in a flat array `nods`
@@ -172,11 +173,12 @@ func (g *Grid) Remove(e *entity.Entity) {
 
 // return all entities from searchMin point to searchMax point
 func (g *Grid) QueryBuf(searchMin, searchMax geometry.Point64, buffer []*entity.Entity) []*entity.Entity {
-	g.queryID++
 	result := buffer[:0]
 
 	minX, minY, minZ := g.worldToCell(searchMin.X, searchMin.Y, searchMin.Z)
 	maxX, maxY, maxZ := g.worldToCell(searchMax.X, searchMax.Y, searchMax.Z)
+
+	queryID := atomic.AddUint64(&g.queryID, 1)
 
 	for x := minX; x <= maxX; x++ {
 		for y := minY; y <= maxY; y++ {
@@ -192,7 +194,7 @@ func (g *Grid) QueryBuf(searchMin, searchMax geometry.Point64, buffer []*entity.
 					node := g.nodes[nodeIdx]
 					e := node.entity
 
-					if e.LastQueryID != g.queryID {
+					if e.LastQueryID != queryID {
 						e.LastQueryID = g.queryID
 
 						eMin, eMax := e.Footprint.WorldBounds()
