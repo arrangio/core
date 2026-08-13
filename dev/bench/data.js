@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1786639162411,
+  "lastUpdate": 1786639230476,
   "repoUrl": "https://github.com/dvprokofiev/arrangio-core",
   "entries": {
     "Benchmark": [
@@ -5064,6 +5064,122 @@ window.BENCHMARK_DATA = {
             "value": 0,
             "unit": "allocs/op",
             "extra": "1381242 times\n4 procs"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "dvprokofiev",
+            "username": "dvprokofiev"
+          },
+          "committer": {
+            "name": "dvprokofiev",
+            "username": "dvprokofiev"
+          },
+          "id": "fa074f7427934272b10b5d8b9f08e2974bf69660",
+          "message": "🧹 [Refactor proximity rule to avoid redundant calculation]",
+          "timestamp": "2026-08-13T16:37:29Z",
+          "url": "https://github.com/dvprokofiev/arrangio-core/pull/6/commits/fa074f7427934272b10b5d8b9f08e2974bf69660"
+        },
+        "date": 1786639229329,
+        "tool": "go",
+        "benches": [
+          {
+            "name": "BenchmarkGridInsert",
+            "value": 20.46,
+            "unit": "ns/op\t       0 B/op\t       0 allocs/op",
+            "extra": "58613503 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridInsert - ns/op",
+            "value": 20.46,
+            "unit": "ns/op",
+            "extra": "58613503 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridInsert - B/op",
+            "value": 0,
+            "unit": "B/op",
+            "extra": "58613503 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridInsert - allocs/op",
+            "value": 0,
+            "unit": "allocs/op",
+            "extra": "58613503 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridQuery",
+            "value": 2110,
+            "unit": "ns/op\t       0 B/op\t       0 allocs/op",
+            "extra": "571730 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridQuery - ns/op",
+            "value": 2110,
+            "unit": "ns/op",
+            "extra": "571730 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridQuery - B/op",
+            "value": 0,
+            "unit": "B/op",
+            "extra": "571730 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridQuery - allocs/op",
+            "value": 0,
+            "unit": "allocs/op",
+            "extra": "571730 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridInsert_Giant",
+            "value": 647.7,
+            "unit": "ns/op\t       0 B/op\t       0 allocs/op",
+            "extra": "1862191 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridInsert_Giant - ns/op",
+            "value": 647.7,
+            "unit": "ns/op",
+            "extra": "1862191 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridInsert_Giant - B/op",
+            "value": 0,
+            "unit": "B/op",
+            "extra": "1862191 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridInsert_Giant - allocs/op",
+            "value": 0,
+            "unit": "allocs/op",
+            "extra": "1862191 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridQuery_Dense",
+            "value": 629.4,
+            "unit": "ns/op\t       0 B/op\t       0 allocs/op",
+            "extra": "1902230 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridQuery_Dense - ns/op",
+            "value": 629.4,
+            "unit": "ns/op",
+            "extra": "1902230 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridQuery_Dense - B/op",
+            "value": 0,
+            "unit": "B/op",
+            "extra": "1902230 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridQuery_Dense - allocs/op",
+            "value": 0,
+            "unit": "allocs/op",
+            "extra": "1902230 times\n4 procs"
           }
         ]
       }
