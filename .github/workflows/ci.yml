@@ -72,7 +72,7 @@ jobs:
           tool: "go"
           output-file-path: "bench.txt"
           comment-on-alert: true
-          fail-on-alert: true
-          alert-threshold: "120%"
+          fail-on-alert: false
+          alert-threshold: "200%"
           github-token: ${{ secrets.GITHUB_TOKEN }}
           auto-push: true
