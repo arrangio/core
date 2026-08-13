@@ -48,10 +48,6 @@ func transformBounds(min, max Point, m RotationMatrix) (Point, Point) {
 	return resMin, resMax
 }
 
-func GetRotationMatrices() [24]RotationMatrix {
-	return rotationMatrices
-}
-
 // precompute 24 rotations
 func computeRotations() [24]RotationMatrix {
 	var matrices [24]RotationMatrix
