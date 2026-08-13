@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1786646175236,
+  "lastUpdate": 1786651897866,
   "repoUrl": "https://github.com/dvprokofiev/arrangio-core",
   "entries": {
     "Benchmark": [
@@ -5540,6 +5540,122 @@ window.BENCHMARK_DATA = {
             "value": 0,
             "unit": "allocs/op",
             "extra": "1791919 times\n4 procs"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "dvprokofiev",
+            "username": "dvprokofiev"
+          },
+          "committer": {
+            "name": "dvprokofiev",
+            "username": "dvprokofiev"
+          },
+          "id": "9ccca3c99485bb251b05df8c3dcb3464177b2225",
+          "message": "🧹 [Refactor Grid and Rules for Static Entities and Zones]",
+          "timestamp": "2026-08-13T18:35:49Z",
+          "url": "https://github.com/dvprokofiev/arrangio-core/pull/7/commits/9ccca3c99485bb251b05df8c3dcb3464177b2225"
+        },
+        "date": 1786651897373,
+        "tool": "go",
+        "benches": [
+          {
+            "name": "BenchmarkGridInsert",
+            "value": 44.6,
+            "unit": "ns/op\t       0 B/op\t       0 allocs/op",
+            "extra": "27929749 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridInsert - ns/op",
+            "value": 44.6,
+            "unit": "ns/op",
+            "extra": "27929749 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridInsert - B/op",
+            "value": 0,
+            "unit": "B/op",
+            "extra": "27929749 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridInsert - allocs/op",
+            "value": 0,
+            "unit": "allocs/op",
+            "extra": "27929749 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridQuery",
+            "value": 4204,
+            "unit": "ns/op\t       0 B/op\t       0 allocs/op",
+            "extra": "286586 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridQuery - ns/op",
+            "value": 4204,
+            "unit": "ns/op",
+            "extra": "286586 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridQuery - B/op",
+            "value": 0,
+            "unit": "B/op",
+            "extra": "286586 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridQuery - allocs/op",
+            "value": 0,
+            "unit": "allocs/op",
+            "extra": "286586 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridInsert_Giant",
+            "value": 923.8,
+            "unit": "ns/op\t       0 B/op\t       0 allocs/op",
+            "extra": "1299440 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridInsert_Giant - ns/op",
+            "value": 923.8,
+            "unit": "ns/op",
+            "extra": "1299440 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridInsert_Giant - B/op",
+            "value": 0,
+            "unit": "B/op",
+            "extra": "1299440 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridInsert_Giant - allocs/op",
+            "value": 0,
+            "unit": "allocs/op",
+            "extra": "1299440 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridQuery_Dense",
+            "value": 2692,
+            "unit": "ns/op\t       0 B/op\t       0 allocs/op",
+            "extra": "407325 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridQuery_Dense - ns/op",
+            "value": 2692,
+            "unit": "ns/op",
+            "extra": "407325 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridQuery_Dense - B/op",
+            "value": 0,
+            "unit": "B/op",
+            "extra": "407325 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridQuery_Dense - allocs/op",
+            "value": 0,
+            "unit": "allocs/op",
+            "extra": "407325 times\n4 procs"
           }
         ]
       }
