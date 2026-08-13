@@ -16,11 +16,23 @@ func (s *Selector) Matches(e *entity.Entity) bool {
 	if s.MatchAny {
 		return true
 	}
-	if s.TargetID != 0 && e.ID == s.TargetID {
-		return true
+
+	if s.TargetID != 0 {
+		if e.ID != s.TargetID {
+			return false
+		}
 	}
-	if s.Mask.FastBits != 0 || len(s.Mask.DynamicIDs) > 0 {
-		return e.HasTags(s.Mask)
+
+	hasTags := s.Mask.FastBits != 0 || len(s.Mask.DynamicIDs) > 0
+	if hasTags {
+		if !e.HasTags(s.Mask) {
+			return false
+		}
 	}
-	return false
+
+	if s.TargetID == 0 && !hasTags {
+		return false
+	}
+
+	return true
 }
