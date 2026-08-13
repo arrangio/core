@@ -60,14 +60,14 @@ func (r *RotatedShape) Bounds() (min, max Point) {
 }
 
 // iterate over all points of the shape, applying a forward rotation to each
-func (r *RotatedShape) ForEachPoint(fn func(p Point)) {
+func (r *RotatedShape) ForEachPoint(fn func(p Point) bool) {
 	if r.matrixIdx == 0 {
 		r.underlying.ForEachPoint(fn)
 		return
 	}
 
 	matrix := rotationMatrices[r.matrixIdx]
-	r.underlying.ForEachPoint(func(p Point) {
-		fn(applyForwardRotation(p, matrix))
+	r.underlying.ForEachPoint(func(p Point) bool {
+		return fn(applyForwardRotation(p, matrix))
 	})
 }

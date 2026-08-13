@@ -3,7 +3,7 @@ package geometry
 type Shape interface {
 	Contains(lx, ly, lz int16) bool
 	Bounds() (min, max Point)
-	ForEachPoint(fn func(p Point))
+	ForEachPoint(fn func(p Point) bool)
 }
 
 // simple shape - parallelepiped
@@ -19,11 +19,13 @@ func (b Box) Bounds() (min, max Point) {
 	return Point{0, 0, 0}, Point{b.W, b.H, b.D}
 }
 
-func (b Box) ForEachPoint(fn func(p Point)) {
+func (b Box) ForEachPoint(fn func(p Point) bool) {
 	for x := int16(0); x < b.W; x++ {
 		for y := int16(0); y < b.H; y++ {
 			for z := int16(0); z < b.D; z++ {
-				fn(Point{x, y, z})
+				if !fn(Point{x, y, z}) {
+					return
+				}
 			}
 		}
 	}

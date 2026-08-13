@@ -105,8 +105,10 @@ func (v *VoxelShape) Bounds() (min, max Point) {
 	return v.minBounds, v.maxBounds
 }
 
-func (v *VoxelShape) ForEachPoint(fn func(p Point)) {
+func (v *VoxelShape) ForEachPoint(fn func(p Point) bool) {
 	for _, p := range v.points {
-		fn(p)
+		if !fn(p) {
+			return
+		}
 	}
 }
