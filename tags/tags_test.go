@@ -66,3 +66,19 @@ func TestMask_Branching(t *testing.T) {
 		t.Errorf("sMask should contain tag 90, it has dynamic tags: %v", sMask.DynamicIDs)
 	}
 }
+
+func BenchmarkMask_Has(b *testing.B) {
+	m1 := NewMask()
+	m2 := NewMask()
+	for i := 0; i < 1000; i += 2 {
+		m1 = m1.With(100 + i)
+	}
+	for i := 0; i < 500; i += 4 {
+		m2 = m2.With(100 + i)
+	}
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		m1.Has(m2)
+	}
+}
