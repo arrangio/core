@@ -48,17 +48,8 @@ func (r *ClearanceRule) Evaluate(subject *entity.Entity, ctx *RuleContext) float
 
 		// overlap in 3D occurs is if only all three axes overlap
 		if penX > 0 && penY > 0 && penZ > 0 {
-			minPen := penX
-			if penY < minPen {
-				minPen = penY
-			}
-			if penZ < minPen {
-				minPen = penZ
-			}
-
-			if minPen > maxPenetration {
-				maxPenetration = minPen
-			}
+			minPen := min(penX, penY, penZ)
+			maxPenetration = max(maxPenetration, minPen)
 		}
 	}
 
@@ -72,20 +63,10 @@ func (r *ClearanceRule) Evaluate(subject *entity.Entity, ctx *RuleContext) float
 // returns the length of intersection of two segments
 func calculateAxisOverlap(aMin, aMax, bMin, bMax int64) int64 {
 	// find the beginning of the overlap
-	overlapMin := aMin
-	if bMin > overlapMin {
-		overlapMin = bMin
-	}
+	overlapMin := max(aMin, bMin)
 	// find the end of the overlap
-	overlapMax := aMax
-	if bMax < overlapMax {
-		overlapMax = bMax
-	}
-	// calculate the length of the overlap
-	overlap := overlapMax - overlapMin
-	if overlap < 0 {
-		return 0
-	}
+	overlapMax := min(aMax, bMax)
 
-	return overlap
+	// calculate the length of the overlap
+	return max(0, overlapMax-overlapMin)
 }
