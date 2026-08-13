@@ -195,12 +195,12 @@ func (g *Grid) QueryBuf(searchMin, searchMax geometry.Point64, buffer []*entity.
 					e := node.entity
 
 					if e.LastQueryID != queryID {
-						e.LastQueryID = g.queryID
+						e.LastQueryID = queryID
 
 						eMin, eMax := e.Footprint.WorldBounds()
 						if eMax.X >= searchMin.X && eMin.X <= searchMax.X &&
 							eMax.Y >= searchMin.Y && eMin.Y <= searchMax.Y &&
-							eMax.Z >= searchMin.Z && eMax.Z <= searchMax.Z {
+							eMax.Z >= searchMin.Z && eMin.Z <= searchMax.Z {
 							result = append(result, e)
 						}
 					}
