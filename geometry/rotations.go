@@ -19,39 +19,31 @@ func applyForwardRotation(p Point, m RotationMatrix) Point {
 
 // calculates new bounding box for a rotated shape
 func transformBounds(min, max Point, m RotationMatrix) (Point, Point) {
-	// generate all 8 corner vertices of the original bounding box
-	vertices := [8]Point{
-		{min.X, min.Y, min.Z}, {max.X, min.Y, min.Z},
-		{min.X, max.Y, min.Z}, {max.X, max.Y, min.Z},
-		{min.X, min.Y, max.Z}, {max.X, min.Y, max.Z},
-		{min.X, max.Y, max.Z}, {max.X, max.Y, max.Z},
+	if min.X >= max.X || min.Y >= max.Y || min.Z >= max.Z {
+		return min, max
 	}
 
-	resMin := Point{X: 32767, Y: 32767, Z: 32767}
-	resMax := Point{X: -32768, Y: -32768, Z: -32768}
+	incMax := Point{X: max.X - 1, Y: max.Y - 1, Z: max.Z - 1}
 
-	for _, v := range vertices {
-		rv := applyForwardRotation(v, m)
-		if rv.X < resMin.X {
-			resMin.X = rv.X
-		}
-		if rv.Y < resMin.Y {
-			resMin.Y = rv.Y
-		}
-		if rv.Z < resMin.Z {
-			resMin.Z = rv.Z
-		}
+	p1 := applyForwardRotation(min, m)
+	p2 := applyForwardRotation(incMax, m)
 
-		if rv.X > resMax.X {
-			resMax.X = rv.X
-		}
-		if rv.Y > resMax.Y {
-			resMax.Y = rv.Y
-		}
-		if rv.Z > resMax.Z {
-			resMax.Z = rv.Z
-		}
+	resMin := p1
+	resMax := p2
+
+	if p1.X > p2.X {
+		resMin.X, resMax.X = p2.X, p1.X
 	}
+	if p1.Y > p2.Y {
+		resMin.Y, resMax.Y = p2.Y, p1.Y
+	}
+	if p1.Z > p2.Z {
+		resMin.Z, resMax.Z = p2.Z, p1.Z
+	}
+
+	resMax.X++
+	resMax.Y++
+	resMax.Z++
 
 	return resMin, resMax
 }
