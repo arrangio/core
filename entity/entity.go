@@ -11,6 +11,7 @@ type Entity struct {
 	Props       []float64
 	Footprint   geometry.Footprint
 	LastQueryID uint64
+	IsStatic    bool
 }
 
 func NewEntity(id uint64, tagMask tags.Mask, props []float64, footprint geometry.Footprint) *Entity {
@@ -24,4 +25,20 @@ func NewEntity(id uint64, tagMask tags.Mask, props []float64, footprint geometry
 
 func (e *Entity) HasTags(required tags.Mask) bool {
 	return e.Tags.Has(required)
+}
+
+func (e *Entity) GetID() uint64 {
+	return e.ID
+}
+
+func (e *Entity) GetFootprint() geometry.Footprint {
+	return e.Footprint
+}
+
+func (e *Entity) GetLastQueryID() uint64 {
+	return e.LastQueryID
+}
+
+func (e *Entity) SetLastQueryID(id uint64) {
+	e.LastQueryID = id
 }

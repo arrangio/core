@@ -1,19 +1,18 @@
 package grid
 
 import (
-	"arrangio-core/entity"
 	"arrangio-core/geometry"
 	"sync/atomic"
 )
 
 // gridNode is an element in a flat array `nods`
 // it is a node is a singly-linked list, links one entity to the next one in the same cell of the grid
-type gridNode struct {
-	entity *entity.Entity
-	next   int32 // index of the next node in the same cell chain (-1 if end of the list)
+type gridNode[T Spatial] struct {
+	item T
+	next int32 // index of the next node in the same cell chain (-1 if end of the list)
 }
 
-type Grid struct {
+type Grid[T Spatial] struct {
 	originX int64
 	originY int64
 	originZ int64
@@ -27,15 +26,15 @@ type Grid struct {
 
 	queryID uint64 // ID for deduplication in `QueryBuf` -- unique timestamp for current query session
 
-	heads     []int32    // maps each 3D cell to the the starting index of its linked list inside `nodes`
-	nodes     []gridNode // stores all linked list nodes for all cells
-	freeNodes []int32    // tracks which indices in the `nodes` are currently empty
+	heads     []int32       // maps each 3D cell to the the starting index of its linked list inside `nodes`
+	nodes     []gridNode[T] // stores all linked list nodes for all cells
+	freeNodes []int32       // tracks which indices in the `nodes` are currently empty
 }
 
 // `maxObjectsPerCell` is a hard limit for total entity-to-cell linkages allowed
 // rule of thumb: `maxObjectsPerCell` = N * 8, where are N is a number of entities
 // assuming the worst of case of all 8 neighbor shapes overlapping at one cell
-func NewGrid(shiftBits uint8, minX, minY, minZ, maxX, maxY, maxZ int64, maxObjectsPerCell int) *Grid {
+func NewGrid[T Spatial](shiftBits uint8, minX, minY, minZ, maxX, maxY, maxZ int64, maxObjectsPerCell int) *Grid[T] {
 	worldW := maxX - minX
 	worldH := maxY - minY
 	worldD := maxZ - minZ
@@ -61,13 +60,13 @@ func NewGrid(shiftBits uint8, minX, minY, minZ, maxX, maxY, maxZ int64, maxObjec
 		heads[i] = -1
 	}
 
-	nodes := make([]gridNode, maxObjectsPerCell)
+	nodes := make([]gridNode[T], maxObjectsPerCell)
 	freeNodes := make([]int32, maxObjectsPerCell)
 	for i := 0; i < maxObjectsPerCell; i++ {
 		freeNodes[i] = int32(i)
 	}
 
-	return &Grid{
+	return &Grid[T]{
 		originX:   minX,
 		originY:   minY,
 		originZ:   minZ,
@@ -84,7 +83,7 @@ func NewGrid(shiftBits uint8, minX, minY, minZ, maxX, maxY, maxZ int64, maxObjec
 	}
 }
 
-func (g *Grid) worldToCell(wx, wy, wz int64) (cx, cy, cz int64) {
+func (g *Grid[T]) worldToCell(wx, wy, wz int64) (cx, cy, cz int64) {
 	cx = (wx - g.originX) >> g.shiftBits
 	cy = (wy - g.originY) >> g.shiftBits
 	cz = (wz - g.originZ) >> g.shiftBits
@@ -92,12 +91,13 @@ func (g *Grid) worldToCell(wx, wy, wz int64) (cx, cy, cz int64) {
 	return cx, cy, cz
 }
 
-func (g *Grid) getIndex(cx, cy, cz int64) int64 {
+func (g *Grid[T]) getIndex(cx, cy, cz int64) int64 {
 	return cx + (cy * g.strideY) + (cz * g.strideZ)
 }
 
-func (g *Grid) Insert(e *entity.Entity) {
-	minBounds, maxBounds := e.Footprint.WorldBounds()
+func (g *Grid[T]) Insert(item T) {
+	footprint := item.GetFootprint()
+	minBounds, maxBounds := footprint.WorldBounds()
 
 	minX, minY, minZ := g.worldToCell(minBounds.X, minBounds.Y, minBounds.Z)
 	maxX, maxY, maxZ := g.worldToCell(maxBounds.X, maxBounds.Y, maxBounds.Z)
@@ -120,9 +120,9 @@ func (g *Grid) Insert(e *entity.Entity) {
 				// pop element from the end
 				g.freeNodes = g.freeNodes[:len(g.freeNodes)-1]
 
-				g.nodes[nodeIdx] = gridNode{
-					entity: e,
-					next:   g.heads[cellIdx],
+				g.nodes[nodeIdx] = gridNode[T]{
+					item: item,
+					next: g.heads[cellIdx],
 				}
 				g.heads[cellIdx] = nodeIdx
 			}
@@ -130,11 +130,14 @@ func (g *Grid) Insert(e *entity.Entity) {
 	}
 }
 
-func (g *Grid) Remove(e *entity.Entity) {
-	minBounds, maxBounds := e.Footprint.WorldBounds()
+func (g *Grid[T]) Remove(item T) {
+	footprint := item.GetFootprint()
+	minBounds, maxBounds := footprint.WorldBounds()
 
 	minX, minY, minZ := g.worldToCell(minBounds.X, minBounds.Y, minBounds.Z)
 	maxX, maxY, maxZ := g.worldToCell(maxBounds.X, maxBounds.Y, maxBounds.Z)
+
+	itemID := item.GetID()
 
 	for x := minX; x <= maxX; x++ {
 		for y := minY; y <= maxY; y++ {
@@ -152,7 +155,7 @@ func (g *Grid) Remove(e *entity.Entity) {
 				for currentNodeIdx != -1 {
 					node := g.nodes[currentNodeIdx]
 
-					if node.entity.ID == e.ID {
+					if node.item.GetID() == itemID {
 						if prevNodeIdx == -1 {
 							g.heads[cellIdx] = node.next
 						} else {
@@ -160,6 +163,11 @@ func (g *Grid) Remove(e *entity.Entity) {
 						}
 
 						g.freeNodes = append(g.freeNodes, currentNodeIdx)
+
+						// reset to empty item
+						var empty T
+						g.nodes[currentNodeIdx].item = empty
+
 						break
 					}
 
@@ -172,7 +180,7 @@ func (g *Grid) Remove(e *entity.Entity) {
 }
 
 // return all entities from searchMin point to searchMax point
-func (g *Grid) QueryBuf(searchMin, searchMax geometry.Point64, buffer []*entity.Entity) []*entity.Entity {
+func (g *Grid[T]) QueryBuf(searchMin, searchMax geometry.Point64, buffer []T) []T {
 	result := buffer[:0]
 
 	minX, minY, minZ := g.worldToCell(searchMin.X, searchMin.Y, searchMin.Z)
@@ -192,16 +200,17 @@ func (g *Grid) QueryBuf(searchMin, searchMax geometry.Point64, buffer []*entity.
 
 				for nodeIdx != -1 {
 					node := g.nodes[nodeIdx]
-					e := node.entity
+					item := node.item
 
-					if e.LastQueryID != queryID {
-						e.LastQueryID = queryID
+					if item.GetLastQueryID() != queryID {
+						item.SetLastQueryID(queryID)
 
-						eMin, eMax := e.Footprint.WorldBounds()
+						footprint := item.GetFootprint()
+						eMin, eMax := footprint.WorldBounds()
 						if eMax.X >= searchMin.X && eMin.X <= searchMax.X &&
 							eMax.Y >= searchMin.Y && eMin.Y <= searchMax.Y &&
 							eMax.Z >= searchMin.Z && eMin.Z <= searchMax.Z {
-							result = append(result, e)
+							result = append(result, item)
 						}
 					}
 					nodeIdx = node.next

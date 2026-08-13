@@ -9,7 +9,7 @@ import (
 )
 
 func BenchmarkGridInsert(b *testing.B) {
-	g := grid.NewGrid(3, -1000, -1000, -1000, 1000, 1000, 1000, 1000)
+	g := grid.NewGrid[*entity.Entity](3, -1000, -1000, -1000, 1000, 1000, 1000, 1000)
 	e := entity.BuildTestEntity(entity.TestEntity{
 		ID:     1,
 		Anchor: geometry.Point64{X: 10, Y: 10, Z: 10},
@@ -25,7 +25,7 @@ func BenchmarkGridInsert(b *testing.B) {
 }
 
 func BenchmarkGridQuery(b *testing.B) {
-	g := grid.NewGrid(3, -1000, -1000, -1000, 1000, 1000, 1000, 50000)
+	g := grid.NewGrid[*entity.Entity](3, -1000, -1000, -1000, 1000, 1000, 1000, 50000)
 	e := entity.BuildTestEntity(entity.TestEntity{
 		ID:     1,
 		Anchor: geometry.Point64{X: 10, Y: 10, Z: 10},
@@ -41,7 +41,7 @@ func BenchmarkGridQuery(b *testing.B) {
 }
 
 func BenchmarkGridInsert_Giant(b *testing.B) {
-	g := grid.NewGrid(3, -1000, -1000, -1000, 1000, 1000, 1000, 1000)
+	g := grid.NewGrid[*entity.Entity](3, -1000, -1000, -1000, 1000, 1000, 1000, 1000)
 	e := entity.BuildTestEntity(entity.TestEntity{
 		ID:     1,
 		Anchor: geometry.Point64{X: 10, Y: 10, Z: 10},
@@ -61,7 +61,7 @@ func BenchmarkGridInsert_Giant(b *testing.B) {
 }
 
 func BenchmarkGridQuery_Dense(b *testing.B) {
-	g := grid.NewGrid(3, -1000, -1000, -1000, 1000, 1000, 1000, 10000)
+	g := grid.NewGrid[*entity.Entity](3, -1000, -1000, -1000, 1000, 1000, 1000, 10000)
 
 	for id := uint64(1); id <= 100; id++ {
 		e := entity.BuildTestEntity(entity.TestEntity{

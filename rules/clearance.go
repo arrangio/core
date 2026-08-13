@@ -31,7 +31,7 @@ func (r *ClearanceRule) Evaluate(subject *entity.Entity, ctx *RuleContext) float
 		Z: subMax.Z + r.Padding.Z,
 	}
 
-	neighbors := ctx.Grid.QueryBuf(clearanceMin, clearanceMax, ctx.Buffer)
+	neighbors := ctx.Env.Entities.QueryBuf(clearanceMin, clearanceMax, ctx.Buffer)
 
 	var maxPenetration int64
 

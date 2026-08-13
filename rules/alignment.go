@@ -29,7 +29,7 @@ func (r *AlignmentRule) Evaluate(subject *entity.Entity, ctx *RuleContext) float
 		Z: anchor.Z + r.Radius,
 	}
 
-	neighbors := ctx.Grid.QueryBuf(searchMin, searchMax, ctx.Buffer)
+	neighbors := ctx.Env.Entities.QueryBuf(searchMin, searchMax, ctx.Buffer)
 
 	var minDiff int64 = math.MaxInt64
 	var found bool
