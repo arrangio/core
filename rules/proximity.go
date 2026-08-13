@@ -31,7 +31,8 @@ func (r *ProximityRule) Evaluate(subject *entity.Entity, ctx *RuleContext) float
 	// all entities from `searchMin` to `searchMax`
 	neighbors := ctx.Grid.QueryBuf(searchMin, searchMax, ctx.Buffer)
 
-	minDistSq := r.MaxDist * r.MaxDist
+	maxDistSq := r.MaxDist * r.MaxDist
+	minDistSq := maxDistSq
 	found := false
 
 	for _, neighbor := range neighbors {
@@ -58,5 +59,5 @@ func (r *ProximityRule) Evaluate(subject *entity.Entity, ctx *RuleContext) float
 	}
 
 	// return normalized score -- greater means closer
-	return 1.0 - (float64(minDistSq) / float64(r.MaxDist*r.MaxDist))
+	return 1.0 - (float64(minDistSq) / float64(maxDistSq))
 }
