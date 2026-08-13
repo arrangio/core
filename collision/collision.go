@@ -9,6 +9,13 @@ func CheckCollision(a, b *geometry.Footprint) bool {
 	}
 
 	// narrow phase
+	// box optimization -- if two objects are boxes, their
+	// AABB overlap equals their overlap
+	aIsBox := isPureBox(a.Shape)
+	bIsBox := isPureBox(b.Shape)
+	if aIsBox && bIsBox {
+		return true
+	}
 	// iterate through first object's points and
 	// try to find them in second object
 	collision := false
@@ -42,4 +49,17 @@ func boundsOverlap(a, b *geometry.Footprint) bool {
 	return ax1 < bx2 && ax2 > bx1 &&
 		ay1 < by2 && ay2 > by1 &&
 		az1 < bz2 && az2 > bz1
+}
+
+func isPureBox(s geometry.Shape) bool {
+	if s == nil {
+		return false
+	}
+
+	if rs, ok := s.(*geometry.RotatedShape); ok {
+		return isPureBox(rs.Unwrap())
+	}
+
+	_, ok := s.(*geometry.Box)
+	return ok
 }

@@ -20,6 +20,10 @@ func NewRotatedShape(base Shape) *RotatedShape {
 	}
 }
 
+func (r *RotatedShape) Unwrap() Shape {
+	return r.underlying
+}
+
 func (r *RotatedShape) SetRotation(matrixIdx uint8) {
 	if matrixIdx >= 24 {
 		matrixIdx = 0
