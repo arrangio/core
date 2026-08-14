@@ -93,8 +93,9 @@ func Test_ForEachPoint(t *testing.T) {
 	t.Run("Iterate through Box", func(t *testing.T) {
 		box := Box{W: 2, H: 2, D: 2}
 		count := 0
-		box.ForEachPoint(func(p Point) {
+		box.ForEachPoint(func(p Point) bool {
 			count++
+			return true
 		})
 		if count != 8 {
 			t.Errorf("Box expected 8 points, got %d", count)
@@ -106,8 +107,9 @@ func Test_ForEachPoint(t *testing.T) {
 		shape := NewVoxelShape(pts)
 
 		count := 0
-		shape.ForEachPoint(func(p Point) {
+		shape.ForEachPoint(func(p Point) bool {
 			count++
+			return true
 		})
 
 		if count != 3 {

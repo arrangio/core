@@ -37,8 +37,9 @@ func TestRotatedShape_VolumeAndContains(t *testing.T) {
 				rotated.SetRotation(rot)
 
 				expectedPoints := make(map[Point]bool)
-				rotated.ForEachPoint(func(p Point) {
+				rotated.ForEachPoint(func(p Point) bool {
 					expectedPoints[p] = true
+					return true
 				})
 
 				min, max := rotated.Bounds()
@@ -117,8 +118,9 @@ func TestRotatedShape_NegativeContains(t *testing.T) {
 			rotated.SetRotation(rot)
 
 			validPoints := make(map[Point]bool)
-			rotated.ForEachPoint(func(p Point) {
+			rotated.ForEachPoint(func(p Point) bool {
 				validPoints[p] = true
+				return true
 			})
 
 			min, max := rotated.Bounds()
@@ -152,7 +154,7 @@ func TestRotatedShape_BoundsTightness(t *testing.T) {
 
 			var hasMinX, hasMaxX, hasMinY, hasMaxY, hasMinZ, hasMaxZ bool
 
-			rotated.ForEachPoint(func(p Point) {
+			rotated.ForEachPoint(func(p Point) bool {
 				if p.X < min.X || p.X >= max.X ||
 					p.Y < min.Y || p.Y >= max.Y ||
 					p.Z < min.Z || p.Z >= max.Z {
@@ -177,6 +179,8 @@ func TestRotatedShape_BoundsTightness(t *testing.T) {
 				if p.Z == max.Z-1 {
 					hasMaxZ = true
 				}
+
+				return true
 			})
 
 			if !hasMinX || !hasMaxX || !hasMinY || !hasMaxY || !hasMinZ || !hasMaxZ {
@@ -194,7 +198,10 @@ func TestRotatedShape_EmptyShape(t *testing.T) {
 		rotated.SetRotation(rot)
 
 		count := 0
-		rotated.ForEachPoint(func(p Point) { count++ })
+		rotated.ForEachPoint(func(p Point) bool {
+			count++
+			return true
+		})
 		if count != 0 {
 			t.Errorf("Expected 0 points for empty shape, got %d", count)
 		}

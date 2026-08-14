@@ -19,18 +19,17 @@ func CheckCollision(a, b *geometry.Footprint) bool {
 	// iterate through first object's points and
 	// try to find them in second object
 	collision := false
-	a.Shape.ForEachPoint(func(p geometry.Point) {
-		if collision {
-			return
-		}
-
+	a.Shape.ForEachPoint(func(p geometry.Point) bool {
 		wx := int64(a.Anchor.X) + int64(p.X)
 		wy := int64(a.Anchor.Y) + int64(p.Y)
 		wz := int64(a.Anchor.Z) + int64(p.Z)
 
 		if b.ContainsPoint(wx, wy, wz) {
 			collision = true
+			return false // early exit
 		}
+
+		return true // continue iteration
 	})
 
 	return collision
