@@ -27,21 +27,25 @@ func (m Mask) Has(other Mask) bool {
 		return true
 	}
 
-	// use binary search
-	for _, tagID := range other.DynamicIDs {
-		// find the idx of the element in m.DynamicIDs which is
-		// greater or equals some tagID in other.DynamicIDs
-		idx := sort.Search(len(m.DynamicIDs), func(i int) bool {
-			return m.DynamicIDs[i] >= tagID
-		})
-		// if the element not found or there's something else
-		// which is not equal to tagID
-		if idx == len(m.DynamicIDs) || m.DynamicIDs[idx] != tagID {
+	i, j := 0, 0
+	lenM := len(m.DynamicIDs)
+	lenOther := len(other.DynamicIDs)
+
+	for i < lenM && j < lenOther {
+		mVal := m.DynamicIDs[i]
+		otherVal := other.DynamicIDs[j]
+
+		if mVal < otherVal {
+			i++
+		} else if mVal > otherVal {
 			return false
+		} else {
+			i++
+			j++
 		}
 	}
 
-	return true
+	return j == lenOther
 }
 
 // add tag to the Mask
