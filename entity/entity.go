@@ -7,15 +7,17 @@ import (
 
 type Entity struct {
 	ID          uint64
+	IsStatic    bool
 	Tags        tags.Mask
 	Props       []float64
 	Footprint   geometry.Footprint
 	LastQueryID uint64
 }
 
-func NewEntity(id uint64, tagMask tags.Mask, props []float64, footprint geometry.Footprint) *Entity {
+func NewEntity(id uint64, isStatic bool, tagMask tags.Mask, props []float64, footprint geometry.Footprint) *Entity {
 	return &Entity{
 		ID:        id,
+		IsStatic:  isStatic,
 		Tags:      tagMask,
 		Props:     props,
 		Footprint: footprint,

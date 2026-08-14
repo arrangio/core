@@ -7,11 +7,12 @@ import (
 
 // TestEntity is a "blank" for `buildTestEntity` function
 type TestEntity struct {
-	ID      uint64
-	Anchor  geometry.Point64
-	Tags    []int // tags that would be assigned to this entity
-	Facings *geometry.Facings
-	W, H, D int16 // 1x1x1 by default
+	ID       uint64
+	IsStatic bool
+	Anchor   geometry.Point64
+	Tags     []int // tags that would be assigned to this entity
+	Facings  *geometry.Facings
+	W, H, D  int16 // 1x1x1 by default
 }
 
 // BuildTestEntity builds an `Entity` from `TestEntity`
@@ -33,8 +34,9 @@ func BuildTestEntity(cfg TestEntity) *Entity {
 	}
 
 	return &Entity{
-		ID:   cfg.ID,
-		Tags: mask,
+		ID:       cfg.ID,
+		IsStatic: cfg.IsStatic,
+		Tags:     mask,
 		Footprint: geometry.Footprint{
 			Anchor:  cfg.Anchor,
 			Shape:   geometry.Box{W: w, H: h, D: d},
