@@ -13,8 +13,8 @@ const (
 )
 
 type RuleContext struct {
-	Grid *grid.Grid
-	// pre-allocated buffer for `QueryBug` method
+	Grid *grid.Grid[*entity.Entity]
+	// pre-allocated buffer for `QueryBuf` method
 	Buffer []*entity.Entity
 }
 
