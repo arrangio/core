@@ -100,13 +100,17 @@ func (g *Grid[T]) Insert(item T) {
 	minX, minY, minZ := g.worldToCell(minBounds.X, minBounds.Y, minBounds.Z)
 	maxX, maxY, maxZ := g.worldToCell(maxBounds.X, maxBounds.Y, maxBounds.Z)
 
+	// Clamp bounds to eliminate innermost loop bounds checking.
+	minX = max(0, minX)
+	minY = max(0, minY)
+	minZ = max(0, minZ)
+	maxX = min(g.sizeX-1, maxX)
+	maxY = min(g.sizeY-1, maxY)
+	maxZ = min(g.sizeZ-1, maxZ)
+
 	for x := minX; x <= maxX; x++ {
 		for y := minY; y <= maxY; y++ {
 			for z := minZ; z <= maxZ; z++ {
-				if x < 0 || x >= g.sizeX || y < 0 || y >= g.sizeY || z < 0 || z >= g.sizeZ {
-					continue
-				}
-
 				cellIdx := g.getIndex(x, y, z)
 
 				if len(g.freeNodes) == 0 {
@@ -134,13 +138,17 @@ func (g *Grid[T]) Remove(item T) {
 	minX, minY, minZ := g.worldToCell(minBounds.X, minBounds.Y, minBounds.Z)
 	maxX, maxY, maxZ := g.worldToCell(maxBounds.X, maxBounds.Y, maxBounds.Z)
 
+	// Clamp bounds to eliminate innermost loop bounds checking.
+	minX = max(0, minX)
+	minY = max(0, minY)
+	minZ = max(0, minZ)
+	maxX = min(g.sizeX-1, maxX)
+	maxY = min(g.sizeY-1, maxY)
+	maxZ = min(g.sizeZ-1, maxZ)
+
 	for x := minX; x <= maxX; x++ {
 		for y := minY; y <= maxY; y++ {
 			for z := minZ; z <= maxZ; z++ {
-				if x < 0 || x >= g.sizeX || y < 0 || y >= g.sizeY || z < 0 || z >= g.sizeZ {
-					continue
-				}
-
 				cellIdx := g.getIndex(x, y, z)
 
 				currentNodeIdx := g.heads[cellIdx]
@@ -177,13 +185,17 @@ func (g *Grid[T]) QueryBuf(searchMin, searchMax geometry.Point64, buffer []T) []
 	minX, minY, minZ := g.worldToCell(searchMin.X, searchMin.Y, searchMin.Z)
 	maxX, maxY, maxZ := g.worldToCell(searchMax.X, searchMax.Y, searchMax.Z)
 
+	// Clamp bounds to eliminate innermost loop bounds checking.
+	minX = max(0, minX)
+	minY = max(0, minY)
+	minZ = max(0, minZ)
+	maxX = min(g.sizeX-1, maxX)
+	maxY = min(g.sizeY-1, maxY)
+	maxZ = min(g.sizeZ-1, maxZ)
+
 	for x := minX; x <= maxX; x++ {
 		for y := minY; y <= maxY; y++ {
 			for z := minZ; z <= maxZ; z++ {
-				if x < 0 || x >= g.sizeX || y < 0 || y >= g.sizeY || z < 0 || z >= g.sizeZ {
-					continue
-				}
-
 				cellIdx := g.getIndex(x, y, z)
 				nodeIdx := g.heads[cellIdx]
 
