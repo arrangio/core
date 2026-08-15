@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1786782620288,
+  "lastUpdate": 1786832246197,
   "repoUrl": "https://github.com/dvprokofiev/arrangio-core",
   "entries": {
     "Benchmark": [
@@ -6484,6 +6484,122 @@ window.BENCHMARK_DATA = {
             "value": 0,
             "unit": "allocs/op",
             "extra": "1000000 times\n4 procs"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "dvprokofiev",
+            "username": "dvprokofiev"
+          },
+          "committer": {
+            "name": "dvprokofiev",
+            "username": "dvprokofiev"
+          },
+          "id": "502388fd23ff2afd331edcbbfc84ad21bc61c28e",
+          "message": "⚡ Bolt: Optimize 3D grid iteration loop order",
+          "timestamp": "2026-08-15T08:29:54Z",
+          "url": "https://github.com/dvprokofiev/arrangio-core/pull/11/commits/502388fd23ff2afd331edcbbfc84ad21bc61c28e"
+        },
+        "date": 1786832244931,
+        "tool": "go",
+        "benches": [
+          {
+            "name": "BenchmarkGridInsert",
+            "value": 24.68,
+            "unit": "ns/op\t       0 B/op\t       0 allocs/op",
+            "extra": "46174148 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridInsert - ns/op",
+            "value": 24.68,
+            "unit": "ns/op",
+            "extra": "46174148 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridInsert - B/op",
+            "value": 0,
+            "unit": "B/op",
+            "extra": "46174148 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridInsert - allocs/op",
+            "value": 0,
+            "unit": "allocs/op",
+            "extra": "46174148 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridQuery",
+            "value": 2498,
+            "unit": "ns/op\t       0 B/op\t       0 allocs/op",
+            "extra": "479382 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridQuery - ns/op",
+            "value": 2498,
+            "unit": "ns/op",
+            "extra": "479382 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridQuery - B/op",
+            "value": 0,
+            "unit": "B/op",
+            "extra": "479382 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridQuery - allocs/op",
+            "value": 0,
+            "unit": "allocs/op",
+            "extra": "479382 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridInsert_Giant",
+            "value": 361.7,
+            "unit": "ns/op\t       0 B/op\t       0 allocs/op",
+            "extra": "3309814 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridInsert_Giant - ns/op",
+            "value": 361.7,
+            "unit": "ns/op",
+            "extra": "3309814 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridInsert_Giant - B/op",
+            "value": 0,
+            "unit": "B/op",
+            "extra": "3309814 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridInsert_Giant - allocs/op",
+            "value": 0,
+            "unit": "allocs/op",
+            "extra": "3309814 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridQuery_Dense",
+            "value": 774.4,
+            "unit": "ns/op\t       0 B/op\t       0 allocs/op",
+            "extra": "1549046 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridQuery_Dense - ns/op",
+            "value": 774.4,
+            "unit": "ns/op",
+            "extra": "1549046 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridQuery_Dense - B/op",
+            "value": 0,
+            "unit": "B/op",
+            "extra": "1549046 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridQuery_Dense - allocs/op",
+            "value": 0,
+            "unit": "allocs/op",
+            "extra": "1549046 times\n4 procs"
           }
         ]
       }
