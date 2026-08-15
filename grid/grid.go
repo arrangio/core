@@ -25,9 +25,9 @@ type Grid[T Spatial] struct {
 
 	queryID uint64 // ID for deduplication in `QueryBuf` -- unique timestamp for current query session
 
-	heads     []int32          // maps each 3D cell to the the starting index of its linked list inside `nodes`
-	nodes     []gridNode[T]    // stores all linked list nodes for all cells
-	freeNodes []int32          // tracks which indices in the `nodes` are currently empty
+	heads     []int32       // maps each 3D cell to the the starting index of its linked list inside `nodes`
+	nodes     []gridNode[T] // stores all linked list nodes for all cells
+	freeNodes []int32       // tracks which indices in the `nodes` are currently empty
 }
 
 // `maxObjectsPerCell` is a hard limit for total entity-to-cell linkages allowed
@@ -88,10 +88,6 @@ func (g *Grid[T]) worldToCell(wx, wy, wz int64) (cx, cy, cz int64) {
 	cz = (wz - g.originZ) >> g.shiftBits
 
 	return cx, cy, cz
-}
-
-func (g *Grid[T]) getIndex(cx, cy, cz int64) int64 {
-	return cx + (cy * g.strideY) + (cz * g.strideZ)
 }
 
 func (g *Grid[T]) Insert(item T) {
