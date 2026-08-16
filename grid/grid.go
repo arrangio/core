@@ -108,10 +108,13 @@ func (g *Grid[T]) Insert(item T) {
 	maxY = min(g.sizeY-1, maxY)
 	maxZ = min(g.sizeZ-1, maxZ)
 
-	for x := minX; x <= maxX; x++ {
+	// Optimize: order loops z, y, x to maximize cache locality and allow precomputing strides
+	for z := minZ; z <= maxZ; z++ {
+		zStride := z * g.strideZ
 		for y := minY; y <= maxY; y++ {
-			for z := minZ; z <= maxZ; z++ {
-				cellIdx := g.getIndex(x, y, z)
+			yStride := zStride + y*g.strideY
+			for x := minX; x <= maxX; x++ {
+				cellIdx := x + yStride
 
 				if len(g.freeNodes) == 0 {
 					panic("grid: out of memory in nodes pool! Increase maxObjectsPerCell")
@@ -146,10 +149,13 @@ func (g *Grid[T]) Remove(item T) {
 	maxY = min(g.sizeY-1, maxY)
 	maxZ = min(g.sizeZ-1, maxZ)
 
-	for x := minX; x <= maxX; x++ {
+	// Optimize: order loops z, y, x to maximize cache locality and allow precomputing strides
+	for z := minZ; z <= maxZ; z++ {
+		zStride := z * g.strideZ
 		for y := minY; y <= maxY; y++ {
-			for z := minZ; z <= maxZ; z++ {
-				cellIdx := g.getIndex(x, y, z)
+			yStride := zStride + y*g.strideY
+			for x := minX; x <= maxX; x++ {
+				cellIdx := x + yStride
 
 				currentNodeIdx := g.heads[cellIdx]
 				var prevNodeIdx int32 = -1
@@ -193,10 +199,13 @@ func (g *Grid[T]) QueryBuf(searchMin, searchMax geometry.Point64, buffer []T) []
 	maxY = min(g.sizeY-1, maxY)
 	maxZ = min(g.sizeZ-1, maxZ)
 
-	for x := minX; x <= maxX; x++ {
+	// Optimize: order loops z, y, x to maximize cache locality and allow precomputing strides
+	for z := minZ; z <= maxZ; z++ {
+		zStride := z * g.strideZ
 		for y := minY; y <= maxY; y++ {
-			for z := minZ; z <= maxZ; z++ {
-				cellIdx := g.getIndex(x, y, z)
+			yStride := zStride + y*g.strideY
+			for x := minX; x <= maxX; x++ {
+				cellIdx := x + yStride
 				nodeIdx := g.heads[cellIdx]
 
 				for nodeIdx != -1 {
