@@ -90,10 +90,6 @@ func (g *Grid[T]) worldToCell(wx, wy, wz int64) (cx, cy, cz int64) {
 	return cx, cy, cz
 }
 
-func (g *Grid[T]) getIndex(cx, cy, cz int64) int64 {
-	return cx + (cy * g.strideY) + (cz * g.strideZ)
-}
-
 func (g *Grid[T]) Insert(item T) {
 	minBounds, maxBounds := item.WorldBounds()
 
