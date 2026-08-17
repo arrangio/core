@@ -108,9 +108,10 @@ func (g *Grid[T]) Insert(item T) {
 	maxY = min(g.sizeY-1, maxY)
 	maxZ = min(g.sizeZ-1, maxZ)
 
-	for x := minX; x <= maxX; x++ {
+	// Loop order z, y, x maximizes CPU cache spatial locality
+	for z := minZ; z <= maxZ; z++ {
 		for y := minY; y <= maxY; y++ {
-			for z := minZ; z <= maxZ; z++ {
+			for x := minX; x <= maxX; x++ {
 				cellIdx := g.getIndex(x, y, z)
 
 				if len(g.freeNodes) == 0 {
@@ -146,9 +147,10 @@ func (g *Grid[T]) Remove(item T) {
 	maxY = min(g.sizeY-1, maxY)
 	maxZ = min(g.sizeZ-1, maxZ)
 
-	for x := minX; x <= maxX; x++ {
+	// Loop order z, y, x maximizes CPU cache spatial locality
+	for z := minZ; z <= maxZ; z++ {
 		for y := minY; y <= maxY; y++ {
-			for z := minZ; z <= maxZ; z++ {
+			for x := minX; x <= maxX; x++ {
 				cellIdx := g.getIndex(x, y, z)
 
 				currentNodeIdx := g.heads[cellIdx]
@@ -193,9 +195,10 @@ func (g *Grid[T]) QueryBuf(searchMin, searchMax geometry.Point64, buffer []T) []
 	maxY = min(g.sizeY-1, maxY)
 	maxZ = min(g.sizeZ-1, maxZ)
 
-	for x := minX; x <= maxX; x++ {
+	// Loop order z, y, x maximizes CPU cache spatial locality
+	for z := minZ; z <= maxZ; z++ {
 		for y := minY; y <= maxY; y++ {
-			for z := minZ; z <= maxZ; z++ {
+			for x := minX; x <= maxX; x++ {
 				cellIdx := g.getIndex(x, y, z)
 				nodeIdx := g.heads[cellIdx]
 
