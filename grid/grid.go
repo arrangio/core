@@ -25,9 +25,9 @@ type Grid[T Spatial] struct {
 
 	queryID uint64 // ID for deduplication in `QueryBuf` -- unique timestamp for current query session
 
-	heads     []int32          // maps each 3D cell to the the starting index of its linked list inside `nodes`
-	nodes     []gridNode[T]    // stores all linked list nodes for all cells
-	freeNodes []int32          // tracks which indices in the `nodes` are currently empty
+	heads     []int32       // maps each 3D cell to the the starting index of its linked list inside `nodes`
+	nodes     []gridNode[T] // stores all linked list nodes for all cells
+	freeNodes []int32       // tracks which indices in the `nodes` are currently empty
 }
 
 // `maxObjectsPerCell` is a hard limit for total entity-to-cell linkages allowed
@@ -90,10 +90,6 @@ func (g *Grid[T]) worldToCell(wx, wy, wz int64) (cx, cy, cz int64) {
 	return cx, cy, cz
 }
 
-func (g *Grid[T]) getIndex(cx, cy, cz int64) int64 {
-	return cx + (cy * g.strideY) + (cz * g.strideZ)
-}
-
 func (g *Grid[T]) Insert(item T) {
 	minBounds, maxBounds := item.WorldBounds()
 
@@ -108,10 +104,12 @@ func (g *Grid[T]) Insert(item T) {
 	maxY = min(g.sizeY-1, maxY)
 	maxZ = min(g.sizeZ-1, maxZ)
 
-	for x := minX; x <= maxX; x++ {
+	for z := minZ; z <= maxZ; z++ {
+		zOffset := z * g.strideZ
 		for y := minY; y <= maxY; y++ {
-			for z := minZ; z <= maxZ; z++ {
-				cellIdx := g.getIndex(x, y, z)
+			yOffset := zOffset + (y * g.strideY)
+			for x := minX; x <= maxX; x++ {
+				cellIdx := x + yOffset
 
 				if len(g.freeNodes) == 0 {
 					panic("grid: out of memory in nodes pool! Increase maxObjectsPerCell")
@@ -146,10 +144,12 @@ func (g *Grid[T]) Remove(item T) {
 	maxY = min(g.sizeY-1, maxY)
 	maxZ = min(g.sizeZ-1, maxZ)
 
-	for x := minX; x <= maxX; x++ {
+	for z := minZ; z <= maxZ; z++ {
+		zOffset := z * g.strideZ
 		for y := minY; y <= maxY; y++ {
-			for z := minZ; z <= maxZ; z++ {
-				cellIdx := g.getIndex(x, y, z)
+			yOffset := zOffset + (y * g.strideY)
+			for x := minX; x <= maxX; x++ {
+				cellIdx := x + yOffset
 
 				currentNodeIdx := g.heads[cellIdx]
 				var prevNodeIdx int32 = -1
@@ -193,10 +193,12 @@ func (g *Grid[T]) QueryBuf(searchMin, searchMax geometry.Point64, buffer []T) []
 	maxY = min(g.sizeY-1, maxY)
 	maxZ = min(g.sizeZ-1, maxZ)
 
-	for x := minX; x <= maxX; x++ {
+	for z := minZ; z <= maxZ; z++ {
+		zOffset := z * g.strideZ
 		for y := minY; y <= maxY; y++ {
-			for z := minZ; z <= maxZ; z++ {
-				cellIdx := g.getIndex(x, y, z)
+			yOffset := zOffset + (y * g.strideY)
+			for x := minX; x <= maxX; x++ {
+				cellIdx := x + yOffset
 				nodeIdx := g.heads[cellIdx]
 
 				for nodeIdx != -1 {
