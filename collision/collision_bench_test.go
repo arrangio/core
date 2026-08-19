@@ -26,7 +26,7 @@ func BenchmarkCheckCollision_VoxelShapes(b *testing.B) {
 	for x := int16(0); x < 10; x++ {
 		for y := int16(0); y < 10; y++ {
 			for z := int16(0); z < 10; z++ {
-				ptsA = append(ptsA, geometry.Point{x, y, z})
+				ptsA = append(ptsA, geometry.Point{X: x, Y: y, Z: z})
 			}
 		}
 	}
@@ -35,7 +35,7 @@ func BenchmarkCheckCollision_VoxelShapes(b *testing.B) {
 	for x := int16(0); x < 10; x++ {
 		for y := int16(0); y < 10; y++ {
 			for z := int16(0); z < 10; z++ {
-				ptsB = append(ptsB, geometry.Point{x, y, z})
+				ptsB = append(ptsB, geometry.Point{X: x, Y: y, Z: z})
 			}
 		}
 	}
