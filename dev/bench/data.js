@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1787092481480,
+  "lastUpdate": 1787135112778,
   "repoUrl": "https://github.com/dvprokofiev/arrangio-core",
   "entries": {
     "Benchmark": [
@@ -7286,6 +7286,126 @@ window.BENCHMARK_DATA = {
           {
             "name": "BenchmarkGridQuery_Dense - ns/op",
             "value": 1100,
+            "unit": "ns/op",
+            "extra": "1000000 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridQuery_Dense - B/op",
+            "value": 0,
+            "unit": "B/op",
+            "extra": "1000000 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridQuery_Dense - allocs/op",
+            "value": 0,
+            "unit": "allocs/op",
+            "extra": "1000000 times\n4 procs"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "d@dvprokofiev.ru",
+            "name": "Daniil Prokofiev",
+            "username": "dvprokofiev"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "cc785b0032dce98e39dbd3f532a493490a9941e6",
+          "message": "Merge pull request #14 from dvprokofiev/bolt-optimize-collision-18049269665295863973\n\n⚡ Bolt: Optimize CheckCollision inner loop bounds check",
+          "timestamp": "2026-08-19T13:24:44+03:00",
+          "tree_id": "8b754d350d0a83c71d9869491ac45672f8fad081",
+          "url": "https://github.com/dvprokofiev/arrangio-core/commit/cc785b0032dce98e39dbd3f532a493490a9941e6"
+        },
+        "date": 1787135112064,
+        "tool": "go",
+        "benches": [
+          {
+            "name": "BenchmarkGridInsert",
+            "value": 28.25,
+            "unit": "ns/op\t       0 B/op\t       0 allocs/op",
+            "extra": "42502389 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridInsert - ns/op",
+            "value": 28.25,
+            "unit": "ns/op",
+            "extra": "42502389 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridInsert - B/op",
+            "value": 0,
+            "unit": "B/op",
+            "extra": "42502389 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridInsert - allocs/op",
+            "value": 0,
+            "unit": "allocs/op",
+            "extra": "42502389 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridQuery",
+            "value": 3584,
+            "unit": "ns/op\t       0 B/op\t       0 allocs/op",
+            "extra": "334878 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridQuery - ns/op",
+            "value": 3584,
+            "unit": "ns/op",
+            "extra": "334878 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridQuery - B/op",
+            "value": 0,
+            "unit": "B/op",
+            "extra": "334878 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridQuery - allocs/op",
+            "value": 0,
+            "unit": "allocs/op",
+            "extra": "334878 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridInsert_Giant",
+            "value": 435.8,
+            "unit": "ns/op\t       0 B/op\t       0 allocs/op",
+            "extra": "2751810 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridInsert_Giant - ns/op",
+            "value": 435.8,
+            "unit": "ns/op",
+            "extra": "2751810 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridInsert_Giant - B/op",
+            "value": 0,
+            "unit": "B/op",
+            "extra": "2751810 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridInsert_Giant - allocs/op",
+            "value": 0,
+            "unit": "allocs/op",
+            "extra": "2751810 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridQuery_Dense",
+            "value": 1104,
+            "unit": "ns/op\t       0 B/op\t       0 allocs/op",
+            "extra": "1000000 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridQuery_Dense - ns/op",
+            "value": 1104,
             "unit": "ns/op",
             "extra": "1000000 times\n4 procs"
           },
