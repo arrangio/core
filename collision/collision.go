@@ -16,17 +16,43 @@ func CheckCollision(a, b *geometry.Footprint) bool {
 	if aIsBox && bIsBox {
 		return true
 	}
+	bMin, bMax := b.Shape.Bounds()
+	bMinX := b.Anchor.X + int64(bMin.X)
+	bMaxX := b.Anchor.X + int64(bMax.X)
+	bMinY := b.Anchor.Y + int64(bMin.Y)
+	bMaxY := b.Anchor.Y + int64(bMax.Y)
+	bMinZ := b.Anchor.Z + int64(bMin.Z)
+	bMaxZ := b.Anchor.Z + int64(bMax.Z)
+
+	diffX := a.Anchor.X - b.Anchor.X
+	diffY := a.Anchor.Y - b.Anchor.Y
+	diffZ := a.Anchor.Z - b.Anchor.Z
+
+	aAnchorX := a.Anchor.X
+	aAnchorY := a.Anchor.Y
+	aAnchorZ := a.Anchor.Z
+
 	// iterate through first object's points and
 	// try to find them in second object
 	collision := false
 	a.Shape.ForEachPoint(func(p geometry.Point) bool {
-		wx := int64(a.Anchor.X) + int64(p.X)
-		wy := int64(a.Anchor.Y) + int64(p.Y)
-		wz := int64(a.Anchor.Z) + int64(p.Z)
+		wx := aAnchorX + int64(p.X)
+		wy := aAnchorY + int64(p.Y)
+		wz := aAnchorZ + int64(p.Z)
 
-		if b.ContainsPoint(wx, wy, wz) {
-			collision = true
-			return false // early exit
+		// bounds check
+		if wx >= bMinX && wx < bMaxX &&
+			wy >= bMinY && wy < bMaxY &&
+			wz >= bMinZ && wz < bMaxZ {
+
+			lx := int16(diffX + int64(p.X))
+			ly := int16(diffY + int64(p.Y))
+			lz := int16(diffZ + int64(p.Z))
+
+			if b.Shape.Contains(lx, ly, lz) {
+				collision = true
+				return false // early exit
+			}
 		}
 
 		return true // continue iteration
