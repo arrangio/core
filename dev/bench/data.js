@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1787177613102,
+  "lastUpdate": 1787179139083,
   "repoUrl": "https://github.com/dvprokofiev/arrangio-core",
   "entries": {
     "Benchmark": [
@@ -7584,6 +7584,170 @@ window.BENCHMARK_DATA = {
             "value": 0,
             "unit": "allocs/op",
             "extra": "1751984 times\n4 procs"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "dvprokofiev",
+            "username": "dvprokofiev"
+          },
+          "committer": {
+            "name": "dvprokofiev",
+            "username": "dvprokofiev"
+          },
+          "id": "c6f2abe1aee754c167c17f98e4ce82ac144af06c",
+          "message": "⚡ Bolt: Optimize CheckCollision inner loop type asserts",
+          "timestamp": "2026-08-19T10:27:04Z",
+          "url": "https://github.com/dvprokofiev/arrangio-core/pull/15/commits/c6f2abe1aee754c167c17f98e4ce82ac144af06c"
+        },
+        "date": 1787179137692,
+        "tool": "go",
+        "benches": [
+          {
+            "name": "BenchmarkCheckCollision_Boxes (arrangio-core/collision)",
+            "value": 1567,
+            "unit": "ns/op\t     129 B/op\t       2 allocs/op",
+            "extra": "758628 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkCheckCollision_Boxes (arrangio-core/collision) - ns/op",
+            "value": 1567,
+            "unit": "ns/op",
+            "extra": "758628 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkCheckCollision_Boxes (arrangio-core/collision) - B/op",
+            "value": 129,
+            "unit": "B/op",
+            "extra": "758628 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkCheckCollision_Boxes (arrangio-core/collision) - allocs/op",
+            "value": 2,
+            "unit": "allocs/op",
+            "extra": "758628 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkCheckCollision_VoxelShapes (arrangio-core/collision)",
+            "value": 2925,
+            "unit": "ns/op\t     129 B/op\t       2 allocs/op",
+            "extra": "403318 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkCheckCollision_VoxelShapes (arrangio-core/collision) - ns/op",
+            "value": 2925,
+            "unit": "ns/op",
+            "extra": "403318 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkCheckCollision_VoxelShapes (arrangio-core/collision) - B/op",
+            "value": 129,
+            "unit": "B/op",
+            "extra": "403318 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkCheckCollision_VoxelShapes (arrangio-core/collision) - allocs/op",
+            "value": 2,
+            "unit": "allocs/op",
+            "extra": "403318 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridInsert (arrangio-core/grid)",
+            "value": 28.46,
+            "unit": "ns/op\t       0 B/op\t       0 allocs/op",
+            "extra": "42092340 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridInsert (arrangio-core/grid) - ns/op",
+            "value": 28.46,
+            "unit": "ns/op",
+            "extra": "42092340 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridInsert (arrangio-core/grid) - B/op",
+            "value": 0,
+            "unit": "B/op",
+            "extra": "42092340 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridInsert (arrangio-core/grid) - allocs/op",
+            "value": 0,
+            "unit": "allocs/op",
+            "extra": "42092340 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridQuery (arrangio-core/grid)",
+            "value": 3524,
+            "unit": "ns/op\t       0 B/op\t       0 allocs/op",
+            "extra": "346592 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridQuery (arrangio-core/grid) - ns/op",
+            "value": 3524,
+            "unit": "ns/op",
+            "extra": "346592 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridQuery (arrangio-core/grid) - B/op",
+            "value": 0,
+            "unit": "B/op",
+            "extra": "346592 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridQuery (arrangio-core/grid) - allocs/op",
+            "value": 0,
+            "unit": "allocs/op",
+            "extra": "346592 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridInsert_Giant (arrangio-core/grid)",
+            "value": 447.6,
+            "unit": "ns/op\t       0 B/op\t       0 allocs/op",
+            "extra": "2660194 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridInsert_Giant (arrangio-core/grid) - ns/op",
+            "value": 447.6,
+            "unit": "ns/op",
+            "extra": "2660194 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridInsert_Giant (arrangio-core/grid) - B/op",
+            "value": 0,
+            "unit": "B/op",
+            "extra": "2660194 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridInsert_Giant (arrangio-core/grid) - allocs/op",
+            "value": 0,
+            "unit": "allocs/op",
+            "extra": "2660194 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridQuery_Dense (arrangio-core/grid)",
+            "value": 1098,
+            "unit": "ns/op\t       0 B/op\t       0 allocs/op",
+            "extra": "1000000 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridQuery_Dense (arrangio-core/grid) - ns/op",
+            "value": 1098,
+            "unit": "ns/op",
+            "extra": "1000000 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridQuery_Dense (arrangio-core/grid) - B/op",
+            "value": 0,
+            "unit": "B/op",
+            "extra": "1000000 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridQuery_Dense (arrangio-core/grid) - allocs/op",
+            "value": 0,
+            "unit": "allocs/op",
+            "extra": "1000000 times\n4 procs"
           }
         ]
       }
