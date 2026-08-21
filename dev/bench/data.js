@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1787264852487,
+  "lastUpdate": 1787351461908,
   "repoUrl": "https://github.com/dvprokofiev/arrangio-core",
   "entries": {
     "Benchmark": [
@@ -7864,6 +7864,122 @@ window.BENCHMARK_DATA = {
             "value": 0,
             "unit": "allocs/op",
             "extra": "1000000 times\n4 procs"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "dvprokofiev",
+            "username": "dvprokofiev"
+          },
+          "committer": {
+            "name": "dvprokofiev",
+            "username": "dvprokofiev"
+          },
+          "id": "c2f4ec3343bcf66ac8d5942061458a95805eda83",
+          "message": "⚡ Bolt: Devirtualize shape intersection calls in collision checks",
+          "timestamp": "2026-08-19T10:27:04Z",
+          "url": "https://github.com/dvprokofiev/arrangio-core/pull/17/commits/c2f4ec3343bcf66ac8d5942061458a95805eda83"
+        },
+        "date": 1787351461096,
+        "tool": "go",
+        "benches": [
+          {
+            "name": "BenchmarkGridInsert",
+            "value": 27.55,
+            "unit": "ns/op\t       0 B/op\t       0 allocs/op",
+            "extra": "43290774 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridInsert - ns/op",
+            "value": 27.55,
+            "unit": "ns/op",
+            "extra": "43290774 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridInsert - B/op",
+            "value": 0,
+            "unit": "B/op",
+            "extra": "43290774 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridInsert - allocs/op",
+            "value": 0,
+            "unit": "allocs/op",
+            "extra": "43290774 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridQuery",
+            "value": 2729,
+            "unit": "ns/op\t       0 B/op\t       0 allocs/op",
+            "extra": "440715 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridQuery - ns/op",
+            "value": 2729,
+            "unit": "ns/op",
+            "extra": "440715 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridQuery - B/op",
+            "value": 0,
+            "unit": "B/op",
+            "extra": "440715 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridQuery - allocs/op",
+            "value": 0,
+            "unit": "allocs/op",
+            "extra": "440715 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridInsert_Giant",
+            "value": 415.4,
+            "unit": "ns/op\t       0 B/op\t       0 allocs/op",
+            "extra": "2917119 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridInsert_Giant - ns/op",
+            "value": 415.4,
+            "unit": "ns/op",
+            "extra": "2917119 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridInsert_Giant - B/op",
+            "value": 0,
+            "unit": "B/op",
+            "extra": "2917119 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridInsert_Giant - allocs/op",
+            "value": 0,
+            "unit": "allocs/op",
+            "extra": "2917119 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridQuery_Dense",
+            "value": 862.3,
+            "unit": "ns/op\t       0 B/op\t       0 allocs/op",
+            "extra": "1391499 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridQuery_Dense - ns/op",
+            "value": 862.3,
+            "unit": "ns/op",
+            "extra": "1391499 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridQuery_Dense - B/op",
+            "value": 0,
+            "unit": "B/op",
+            "extra": "1391499 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridQuery_Dense - allocs/op",
+            "value": 0,
+            "unit": "allocs/op",
+            "extra": "1391499 times\n4 procs"
           }
         ]
       }
