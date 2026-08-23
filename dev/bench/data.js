@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1787520079191,
+  "lastUpdate": 1787525274077,
   "repoUrl": "https://github.com/dvprokofiev/arrangio-core",
   "entries": {
     "Benchmark": [
@@ -8318,6 +8318,122 @@ window.BENCHMARK_DATA = {
           {
             "name": "BenchmarkGridQuery_Dense - ns/op",
             "value": 1108,
+            "unit": "ns/op",
+            "extra": "1000000 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridQuery_Dense - B/op",
+            "value": 0,
+            "unit": "B/op",
+            "extra": "1000000 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridQuery_Dense - allocs/op",
+            "value": 0,
+            "unit": "allocs/op",
+            "extra": "1000000 times\n4 procs"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "dvprokofiev",
+            "username": "dvprokofiev"
+          },
+          "committer": {
+            "name": "dvprokofiev",
+            "username": "dvprokofiev"
+          },
+          "id": "6b701ec45501ff0a324e646f25e27ddc078c6879",
+          "message": "⚡ Bolt: Fix pure box detection for value types",
+          "timestamp": "2026-08-23T21:20:54Z",
+          "url": "https://github.com/dvprokofiev/arrangio-core/pull/19/commits/6b701ec45501ff0a324e646f25e27ddc078c6879"
+        },
+        "date": 1787525273401,
+        "tool": "go",
+        "benches": [
+          {
+            "name": "BenchmarkGridInsert",
+            "value": 28.24,
+            "unit": "ns/op\t       0 B/op\t       0 allocs/op",
+            "extra": "42469482 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridInsert - ns/op",
+            "value": 28.24,
+            "unit": "ns/op",
+            "extra": "42469482 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridInsert - B/op",
+            "value": 0,
+            "unit": "B/op",
+            "extra": "42469482 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridInsert - allocs/op",
+            "value": 0,
+            "unit": "allocs/op",
+            "extra": "42469482 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridQuery",
+            "value": 3478,
+            "unit": "ns/op\t       0 B/op\t       0 allocs/op",
+            "extra": "345417 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridQuery - ns/op",
+            "value": 3478,
+            "unit": "ns/op",
+            "extra": "345417 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridQuery - B/op",
+            "value": 0,
+            "unit": "B/op",
+            "extra": "345417 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridQuery - allocs/op",
+            "value": 0,
+            "unit": "allocs/op",
+            "extra": "345417 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridInsert_Giant",
+            "value": 454.4,
+            "unit": "ns/op\t       0 B/op\t       0 allocs/op",
+            "extra": "2680819 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridInsert_Giant - ns/op",
+            "value": 454.4,
+            "unit": "ns/op",
+            "extra": "2680819 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridInsert_Giant - B/op",
+            "value": 0,
+            "unit": "B/op",
+            "extra": "2680819 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridInsert_Giant - allocs/op",
+            "value": 0,
+            "unit": "allocs/op",
+            "extra": "2680819 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridQuery_Dense",
+            "value": 1110,
+            "unit": "ns/op\t       0 B/op\t       0 allocs/op",
+            "extra": "1000000 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridQuery_Dense - ns/op",
+            "value": 1110,
             "unit": "ns/op",
             "extra": "1000000 times\n4 procs"
           },
