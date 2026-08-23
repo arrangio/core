@@ -7,3 +7,7 @@
 ## 2024-08-16 - Hoisting Virtual Method Calls in Spatial Loops
 **Learning:** Calling virtual interface methods like `b.Shape.Bounds()` or even wrapping method calls like `b.ContainsPoint(wx, wy, wz)` inside the innermost loop of a spatial intersection test (like `a.Shape.ForEachPoint`) introduces significant overhead and redundant calculations. Pre-calculating world bounds and coordinate differentials outside the loop avoids these redundant operations.
 **Action:** When implementing point-wise iteration operations, hoist bounds calculations, anchor transformations, and method delegations out of the inner loop and instead use precomputed world-space coordinates and inlined checks.
+
+## 2024-08-22 - Interface Method Devirtualization
+**Learning:** Type switches on interfaces in inner loops can eliminate virtual method dispatch overhead. Devirtualizing `Contains()` on interfaces like `geometry.Shape` outside of loop iterators provides significant speedups.
+**Action:** When working with interfaces in tight loops, pull them out and use a type switch to devirtualize method calls for known hot path structs.
