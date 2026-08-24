@@ -1,0 +1,21 @@
+--- grid/grid_test.go
++++ grid/grid_test.go
+@@ -173,6 +173,19 @@
+				},
+			},
+		},
++		{
++			Name: "Dynamic growth on insertion limits",
++			CustomConfig: &GridConfig{
++				MaxObjectsPerCell: 0,
++			},
++			Actions: []GridAction{
++				{
++					Type:   Insert,
++					Entity: &entity.TestEntity{ID: 1, Anchor: geometry.Point64{X: 10, Y: 10, Z: 10}, W: 5, H: 5, D: 5},
++				},
++			},
++		},
+	}
+
+	for _, tc := range tests {
