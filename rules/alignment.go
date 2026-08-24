@@ -15,6 +15,10 @@ type AlignmentRule struct {
 }
 
 func (r *AlignmentRule) Evaluate(subject *entity.Entity, ctx *RuleContext) float64 {
+	if !r.Target.Matches(subject) {
+		return 1.0
+	}
+
 	anchor := subject.Footprint.Anchor
 
 	searchMin := geometry.Point64{
