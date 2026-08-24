@@ -3,6 +3,7 @@ package rules
 import (
 	"arrangio-core/entity"
 	"arrangio-core/tags"
+	"arrangio-core/zones"
 )
 
 // Selector filters entities by ID or tag
@@ -12,22 +13,16 @@ type Selector struct {
 	MatchAny bool
 }
 
-func (s *Selector) Matches(e *entity.Entity) bool {
+func (s *Selector) matches(id uint64, mask tags.Mask) bool {
 	if s.MatchAny {
 		return true
 	}
-
-	if s.TargetID != 0 {
-		if e.ID != s.TargetID {
-			return false
-		}
+	if s.TargetID != 0 && id != s.TargetID {
+		return false
 	}
-
 	hasTags := s.Mask.FastBits != 0 || len(s.Mask.DynamicIDs) > 0
-	if hasTags {
-		if !e.HasTags(s.Mask) {
-			return false
-		}
+	if hasTags && !mask.Has(s.Mask) {
+		return false
 	}
 
 	if s.TargetID == 0 && !hasTags {
@@ -35,4 +30,12 @@ func (s *Selector) Matches(e *entity.Entity) bool {
 	}
 
 	return true
+}
+
+func (s *Selector) Matches(e *entity.Entity) bool {
+	return s.matches(e.ID, e.Tags)
+}
+
+func (s *Selector) MatchesZone(z *zones.Zone) bool {
+	return s.matches(z.ID, z.Tags)
 }
