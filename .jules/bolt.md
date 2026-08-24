@@ -11,3 +11,6 @@
 ## 2024-08-22 - Interface Method Devirtualization
 **Learning:** Type switches on interfaces in inner loops can eliminate virtual method dispatch overhead. Devirtualizing `Contains()` on interfaces like `geometry.Shape` outside of loop iterators provides significant speedups.
 **Action:** When working with interfaces in tight loops, pull them out and use a type switch to devirtualize method calls for known hot path structs.
+## 2024-09-07 - Value vs Pointer Type Matching in Fast Paths
+**Learning:** Type assertions that check for pointer types (e.g., `s.(*geometry.Box)`) will fail for value instances (e.g., `geometry.Box`), completely bypassing fast-path optimizations if the codebase instantiates those types by value. In Go, replacing a single type assertion with a type switch that matches multiple types (like value and pointer) can be necessary for correctness and ensuring fast paths are hit, which provides a massive performance gain for those missed cases, even if the type switch itself isn't intrinsically faster than a single type assertion.
+**Action:** When inspecting interface type assertions used for fast-path optimizations, ensure they match both pointer and value types (e.g., using `switch s.(type) { case *Type, Type: ... }`) if the codebase utilizes value semantics for those structs.
