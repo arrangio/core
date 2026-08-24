@@ -10,11 +10,18 @@ import (
 
 type ProximityRule struct {
 	Target         Selector
+	To             Selector
 	MaxDist        int64 // define rule's search scope and normalization factor
 	RequireClosest bool
 }
 
 func (r *ProximityRule) Evaluate(subject *entity.Entity, ctx *RuleContext) float64 {
+	if r.MaxDist <= 0 {
+		return 0.0
+	}
+	if !r.Target.Matches(subject) {
+		return 1.0
+	}
 	anchor := subject.Footprint.Anchor
 
 	searchMin := geometry.Point64{
@@ -36,7 +43,7 @@ func (r *ProximityRule) Evaluate(subject *entity.Entity, ctx *RuleContext) float
 	found := false
 
 	for _, neighbor := range neighbors {
-		if subject.ID == neighbor.ID || !r.Target.Matches(neighbor) {
+		if subject.ID == neighbor.ID || !r.To.Matches(neighbor) {
 			continue
 		}
 
