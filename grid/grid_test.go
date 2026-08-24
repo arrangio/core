@@ -172,6 +172,18 @@ func TestGrid(t *testing.T) {
 				},
 			},
 		},
+		{
+			Name: "Dynamic growth on insertion limits",
+			GridConfig: &GridConfig{
+				MaxObjectsPerCell: 0,
+			},
+			Actions: []GridAction{
+				{
+					Type:   Insert,
+					Entity: &entity.TestEntity{ID: 1, Anchor: geometry.Point64{X: 10, Y: 10, Z: 10}, W: 5, H: 5, D: 5},
+				},
+			},
+		},
 	}
 
 	for _, tc := range tests {
