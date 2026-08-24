@@ -19,7 +19,8 @@ func TestNoCollisionRule(t *testing.T) {
 	}{
 		{
 			rule: &rules.NoCollisionRule{
-				Target: rules.Selector{MatchAny: true},
+				Target:   rules.Selector{MatchAny: true},
+				Obstacle: rules.Selector{MatchAny: true},
 			},
 			tc: RuleTestCase{
 				Name:    "No collision (Separated objects)",
@@ -32,7 +33,8 @@ func TestNoCollisionRule(t *testing.T) {
 		},
 		{
 			rule: &rules.NoCollisionRule{
-				Target: rules.Selector{MatchAny: true},
+				Target:   rules.Selector{MatchAny: true},
+				Obstacle: rules.Selector{MatchAny: true},
 			},
 			tc: RuleTestCase{
 				Name:    "No collision (objects touching boundaries)",
@@ -45,7 +47,8 @@ func TestNoCollisionRule(t *testing.T) {
 		},
 		{
 			rule: &rules.NoCollisionRule{
-				Target: rules.Selector{MatchAny: true},
+				Target:   rules.Selector{MatchAny: true},
+				Obstacle: rules.Selector{MatchAny: true},
 			},
 			tc: RuleTestCase{
 				Name:    "Collision detected (objects overlap)",
@@ -58,7 +61,8 @@ func TestNoCollisionRule(t *testing.T) {
 		},
 		{
 			rule: &rules.NoCollisionRule{
-				Target: rules.Selector{Mask: tags.NewMask().With(tagObstacle)},
+				Target:   rules.Selector{Mask: tags.NewMask().With(tagObstacle)},
+				Obstacle: rules.Selector{MatchAny: true},
 			},
 			tc: RuleTestCase{
 				Name:    "Collision ignored due to Selector (Tag mismatch)",
@@ -71,7 +75,8 @@ func TestNoCollisionRule(t *testing.T) {
 		},
 		{
 			rule: &rules.NoCollisionRule{
-				Target: rules.Selector{TargetID: 42},
+				Target:   rules.Selector{MatchAny: true},
+				Obstacle: rules.Selector{TargetID: 42},
 			},
 			tc: RuleTestCase{
 				Name:    "Collision with specific TargetID",
@@ -84,13 +89,28 @@ func TestNoCollisionRule(t *testing.T) {
 		},
 		{
 			rule: &rules.NoCollisionRule{
-				Target: rules.Selector{MatchAny: true},
+				Target:   rules.Selector{MatchAny: true},
+				Obstacle: rules.Selector{MatchAny: true},
 			},
 			tc: RuleTestCase{
 				Name:    "Ignore self collision",
 				Subject: entity.TestEntity{ID: 1, Anchor: geometry.Point64{X: 0, Y: 0, Z: 0}},
 				Neighbors: []entity.TestEntity{
 					{ID: 1, Anchor: geometry.Point64{X: 0, Y: 0, Z: 0}},
+				},
+				Expected: 1.0,
+			},
+		},
+		{
+			rule: &rules.NoCollisionRule{
+				Target:   rules.Selector{MatchAny: true},
+				Obstacle: rules.Selector{Mask: tags.NewMask().With(tagObstacle)},
+			},
+			tc: RuleTestCase{
+				Name:    "Collision prevented by Selector (Obstacle)",
+				Subject: entity.TestEntity{ID: 1, Anchor: geometry.Point64{X: 0, Y: 0, Z: 0}},
+				Neighbors: []entity.TestEntity{
+					{ID: 2, Anchor: geometry.Point64{X: 0, Y: 0, Z: 0}, Tags: []int{tagOther}},
 				},
 				Expected: 1.0,
 			},

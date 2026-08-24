@@ -6,11 +6,16 @@ import (
 )
 
 type NoCollisionRule struct {
-	Target Selector
+	Target   Selector
+	Obstacle Selector
 }
 
-// check if object overlaps with any other object nearby
+// check if object overlaps with objects nearby having `Obstacle` Selector
 func (r *NoCollisionRule) Evaluate(subject *entity.Entity, ctx *RuleContext) float64 {
+	if !r.Target.Matches(subject) {
+		return 1.0
+	}
+
 	minBounds, maxBounds := subject.Footprint.WorldBounds()
 
 	neighbors := ctx.EntityGrid.QueryBuf(minBounds, maxBounds, ctx.EntityBuffer)
@@ -20,7 +25,7 @@ func (r *NoCollisionRule) Evaluate(subject *entity.Entity, ctx *RuleContext) flo
 			continue
 		}
 
-		if !r.Target.Matches(neighbor) {
+		if !r.Obstacle.Matches(neighbor) {
 			continue
 		}
 
