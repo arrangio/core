@@ -13,7 +13,7 @@ type NoCollisionRule struct {
 func (r *NoCollisionRule) Evaluate(subject *entity.Entity, ctx *RuleContext) float64 {
 	minBounds, maxBounds := subject.Footprint.WorldBounds()
 
-	neighbors := ctx.Grid.QueryBuf(minBounds, maxBounds, ctx.Buffer)
+	neighbors := ctx.EntityGrid.QueryBuf(minBounds, maxBounds, ctx.EntityBuffer)
 
 	for _, neighbor := range neighbors {
 		if subject.ID == neighbor.ID {

@@ -7,6 +7,7 @@ import (
 	"arrangio-core/entity"
 	"arrangio-core/grid"
 	"arrangio-core/rules"
+	"arrangio-core/zones"
 )
 
 // RuleTestCase describes the test case
@@ -23,6 +24,7 @@ func RunRuleTest(t *testing.T, rule rules.Rule, tc RuleTestCase) {
 	t.Run(tc.Name, func(t *testing.T) {
 		// initialize grid (shiftBits=3 -> cell size is 8)
 		g := grid.NewGrid[*entity.Entity](3, -1000, -1000, -1000, 1000, 1000, 1000, 100)
+		zg := grid.NewGrid[*zones.Zone](3, -1000, -1000, -1000, 1000, 1000, 1000, 100)
 
 		// placing neighbors
 		for _, nCfg := range tc.Neighbors {
@@ -35,8 +37,10 @@ func RunRuleTest(t *testing.T, rule rules.Rule, tc RuleTestCase) {
 		g.Insert(subject)
 
 		ctx := &rules.RuleContext{
-			Grid:   g,
-			Buffer: make([]*entity.Entity, 0, 50),
+			EntityGrid:   g,
+			ZoneGrid:     zg,
+			EntityBuffer: make([]*entity.Entity, 0, 50),
+			ZoneBuffer:   make([]*zones.Zone, 0, 50),
 		}
 
 		got := rule.Evaluate(subject, ctx)

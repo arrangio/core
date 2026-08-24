@@ -3,6 +3,7 @@ package rules
 import (
 	"arrangio-core/entity"
 	"arrangio-core/grid"
+	"arrangio-core/zones"
 )
 
 // axis definitions for some rules
@@ -13,9 +14,11 @@ const (
 )
 
 type RuleContext struct {
-	Grid *grid.Grid[*entity.Entity]
+	EntityGrid *grid.Grid[*entity.Entity]
+	ZoneGrid   *grid.Grid[*zones.Zone]
 	// pre-allocated buffer for `QueryBuf` method
-	Buffer []*entity.Entity
+	EntityBuffer []*entity.Entity
+	ZoneBuffer   []*zones.Zone
 }
 
 type Rule interface {
