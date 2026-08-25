@@ -30,7 +30,22 @@ func (f *Footprint) ContainsPoint(wx, wy, wz int64) bool {
 
 // transform shape's relative local bounds into absolute world's space coordinates
 func (f *Footprint) WorldBounds() (min, max Point64) {
-	localMin, localMax := f.Shape.Bounds()
+	var localMin, localMax Point
+
+	// OPTIMIZATION: Devirtualize Shape.Bounds() for known fast paths.
+	// Reduces overhead of virtual method calls during frequent bounds lookups.
+	switch s := f.Shape.(type) {
+	case Box:
+		localMin, localMax = s.Bounds()
+	case *Box:
+		localMin, localMax = s.Bounds()
+	case *VoxelShape:
+		localMin, localMax = s.Bounds()
+	case *RotatedShape:
+		localMin, localMax = s.Bounds()
+	default:
+		localMin, localMax = f.Shape.Bounds()
+	}
 
 	return Point64{
 			X: f.Anchor.X + int64(localMin.X),
