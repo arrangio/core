@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1787682351894,
+  "lastUpdate": 1787684191894,
   "repoUrl": "https://github.com/dvprokofiev/arrangio-core",
   "entries": {
     "Benchmark": [
@@ -9632,6 +9632,126 @@ window.BENCHMARK_DATA = {
             "value": 0,
             "unit": "allocs/op",
             "extra": "1479919 times\n4 procs"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "d@dvprokofiev.ru",
+            "name": "Daniil Prokofiev",
+            "username": "dvprokofiev"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "4370bd8159e9d3f7f0f39b660a910cb54eaef682",
+          "message": "Merge pull request #21 from dvprokofiev/bolt-devirtualize-shape-bounds-11867120129532588871\n\nDevirtualize Shape.Bounds in Footprint.WorldBounds",
+          "timestamp": "2026-08-25T21:55:58+03:00",
+          "tree_id": "9325140f6d44dd1eefb3af6142f4a3fcf583d09b",
+          "url": "https://github.com/dvprokofiev/arrangio-core/commit/4370bd8159e9d3f7f0f39b660a910cb54eaef682"
+        },
+        "date": 1787684190859,
+        "tool": "go",
+        "benches": [
+          {
+            "name": "BenchmarkGridInsert",
+            "value": 28.62,
+            "unit": "ns/op\t       0 B/op\t       0 allocs/op",
+            "extra": "41911486 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridInsert - ns/op",
+            "value": 28.62,
+            "unit": "ns/op",
+            "extra": "41911486 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridInsert - B/op",
+            "value": 0,
+            "unit": "B/op",
+            "extra": "41911486 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridInsert - allocs/op",
+            "value": 0,
+            "unit": "allocs/op",
+            "extra": "41911486 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridQuery",
+            "value": 3535,
+            "unit": "ns/op\t       0 B/op\t       0 allocs/op",
+            "extra": "339447 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridQuery - ns/op",
+            "value": 3535,
+            "unit": "ns/op",
+            "extra": "339447 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridQuery - B/op",
+            "value": 0,
+            "unit": "B/op",
+            "extra": "339447 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridQuery - allocs/op",
+            "value": 0,
+            "unit": "allocs/op",
+            "extra": "339447 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridInsert_Giant",
+            "value": 433.8,
+            "unit": "ns/op\t       0 B/op\t       0 allocs/op",
+            "extra": "2764681 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridInsert_Giant - ns/op",
+            "value": 433.8,
+            "unit": "ns/op",
+            "extra": "2764681 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridInsert_Giant - B/op",
+            "value": 0,
+            "unit": "B/op",
+            "extra": "2764681 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridInsert_Giant - allocs/op",
+            "value": 0,
+            "unit": "allocs/op",
+            "extra": "2764681 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridQuery_Dense",
+            "value": 1050,
+            "unit": "ns/op\t       0 B/op\t       0 allocs/op",
+            "extra": "1000000 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridQuery_Dense - ns/op",
+            "value": 1050,
+            "unit": "ns/op",
+            "extra": "1000000 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridQuery_Dense - B/op",
+            "value": 0,
+            "unit": "B/op",
+            "extra": "1000000 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridQuery_Dense - allocs/op",
+            "value": 0,
+            "unit": "allocs/op",
+            "extra": "1000000 times\n4 procs"
           }
         ]
       }
