@@ -30,9 +30,10 @@ type Grid[T Spatial] struct {
 	freeNodes []int32       // tracks which indices in the `nodes` are currently empty
 }
 
-// `maxObjectsPerCell` is a hard limit for total entity-to-cell linkages allowed
-// rule of thumb: `maxObjectsPerCell` = N * 8, where are N is a number of entities
-// assuming the worst of case of all 8 neighbor shapes overlapping at one cell
+// `maxObjectsPerCell` acts as the initial capacity for total entity-to-cell linkages allowed.
+// The grid will dynamically grow if this limit is exceeded, but pre-allocating accurately avoids allocations.
+// rule of thumb: `maxObjectsPerCell` = N * 8, where N is the number of entities
+// assuming the worst of case of all 8 neighbor shapes overlapping at one cell.
 func NewGrid[T Spatial](shiftBits uint8, minX, minY, minZ, maxX, maxY, maxZ int64, maxObjectsPerCell int) *Grid[T] {
 	worldW := maxX - minX
 	worldH := maxY - minY
@@ -112,7 +113,19 @@ func (g *Grid[T]) Insert(item T) {
 				cellIdx := x + yOffset
 
 				if len(g.freeNodes) == 0 {
-					panic("grid: out of memory in nodes pool! Increase maxObjectsPerCell")
+					oldSize := len(g.nodes)
+					newSize := oldSize * 2
+					if newSize == 0 {
+						newSize = 16
+					}
+
+					newNodes := make([]gridNode[T], newSize)
+					copy(newNodes, g.nodes)
+					g.nodes = newNodes
+
+					for i := newSize - 1; i >= oldSize; i-- {
+						g.freeNodes = append(g.freeNodes, int32(i))
+					}
 				}
 
 				// use index from the end of slice
