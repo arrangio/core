@@ -111,36 +111,39 @@ func (g *Grid[T]) Insert(item T) {
 			yOffset := zOffset + (y * g.strideY)
 			for x := minX; x <= maxX; x++ {
 				cellIdx := x + yOffset
-
-				if len(g.freeNodes) == 0 {
-					oldSize := len(g.nodes)
-					newSize := oldSize * 2
-					if newSize == 0 {
-						newSize = 16
-					}
-
-					newNodes := make([]gridNode[T], newSize)
-					copy(newNodes, g.nodes)
-					g.nodes = newNodes
-
-					for i := newSize - 1; i >= oldSize; i-- {
-						g.freeNodes = append(g.freeNodes, int32(i))
-					}
-				}
-
-				// use index from the end of slice
-				nodeIdx := g.freeNodes[len(g.freeNodes)-1]
-				// pop element from the end
-				g.freeNodes = g.freeNodes[:len(g.freeNodes)-1]
-
-				g.nodes[nodeIdx] = gridNode[T]{
-					item: item,
-					next: g.heads[cellIdx],
-				}
-				g.heads[cellIdx] = nodeIdx
+				g.addToCell(cellIdx, item)
 			}
 		}
 	}
+}
+
+func (g *Grid[T]) addToCell(cellIdx int64, item T) {
+	if len(g.freeNodes) == 0 {
+		oldSize := len(g.nodes)
+		newSize := oldSize * 2
+		if newSize == 0 {
+			newSize = 16
+		}
+
+		newNodes := make([]gridNode[T], newSize)
+		copy(newNodes, g.nodes)
+		g.nodes = newNodes
+
+		for i := newSize - 1; i >= oldSize; i-- {
+			g.freeNodes = append(g.freeNodes, int32(i))
+		}
+	}
+
+	// use index from the end of slice
+	nodeIdx := g.freeNodes[len(g.freeNodes)-1]
+	// pop element from the end
+	g.freeNodes = g.freeNodes[:len(g.freeNodes)-1]
+
+	g.nodes[nodeIdx] = gridNode[T]{
+		item: item,
+		next: g.heads[cellIdx],
+	}
+	g.heads[cellIdx] = nodeIdx
 }
 
 func (g *Grid[T]) Remove(item T) {
@@ -163,28 +166,87 @@ func (g *Grid[T]) Remove(item T) {
 			yOffset := zOffset + (y * g.strideY)
 			for x := minX; x <= maxX; x++ {
 				cellIdx := x + yOffset
+				g.removeFromCell(cellIdx, item)
+			}
+		}
+	}
+}
 
-				currentNodeIdx := g.heads[cellIdx]
-				var prevNodeIdx int32 = -1
+func (g *Grid[T]) removeFromCell(cellIdx int64, item T) {
+	currentNodeIdx := g.heads[cellIdx]
+	var prevNodeIdx int32 = -1
 
-				// iterate through the list of nodes
-				for currentNodeIdx != -1 {
-					node := g.nodes[currentNodeIdx]
+	// iterate through the list of nodes
+	for currentNodeIdx != -1 {
+		node := g.nodes[currentNodeIdx]
 
-					if node.item.GetID() == item.GetID() {
-						if prevNodeIdx == -1 {
-							g.heads[cellIdx] = node.next
-						} else {
-							g.nodes[prevNodeIdx].next = node.next
-						}
+		if node.item.GetID() == item.GetID() {
+			if prevNodeIdx == -1 {
+				g.heads[cellIdx] = node.next
+			} else {
+				g.nodes[prevNodeIdx].next = node.next
+			}
 
-						g.freeNodes = append(g.freeNodes, currentNodeIdx)
-						break
-					}
+			g.freeNodes = append(g.freeNodes, currentNodeIdx)
+			break
+		}
 
-					prevNodeIdx = currentNodeIdx
-					currentNodeIdx = node.next
+		prevNodeIdx = currentNodeIdx
+		currentNodeIdx = node.next
+	}
+}
+
+// Move performs a differential update to the grid. It only removes the object
+// from cells it no longer occupies and adds it to newly occupied cells.
+// This is significantly faster than Remove() followed by Insert() for small movements
+// (a core operation in Simulated Annealing).
+func (g *Grid[T]) Move(item T, oldMin, oldMax, newMin, newMax geometry.Point64) {
+	oldMinX, oldMinY, oldMinZ := g.worldToCell(oldMin.X, oldMin.Y, oldMin.Z)
+	oldMaxX, oldMaxY, oldMaxZ := g.worldToCell(oldMax.X, oldMax.Y, oldMax.Z)
+	newMinX, newMinY, newMinZ := g.worldToCell(newMin.X, newMin.Y, newMin.Z)
+	newMaxX, newMaxY, newMaxZ := g.worldToCell(newMax.X, newMax.Y, newMax.Z)
+
+	// Calculate the union of the old and new cell ranges.
+	// This defines the bounding box of all cells that could possibly be affected.
+	uMinX := min(oldMinX, newMinX)
+	uMinY := min(oldMinY, newMinY)
+	uMinZ := min(oldMinZ, newMinZ)
+	uMaxX := max(oldMaxX, newMaxX)
+	uMaxY := max(oldMaxY, newMaxY)
+	uMaxZ := max(oldMaxZ, newMaxZ)
+
+	// Clamp the union boundaries to the grid dimensions to avoid out-of-bounds
+	// array access during the loops. We iterate only over valid grid cells.
+	cMinX := max(0, uMinX)
+	cMinY := max(0, uMinY)
+	cMinZ := max(0, uMinZ)
+	cMaxX := min(g.sizeX-1, uMaxX)
+	cMaxY := min(g.sizeY-1, uMaxY)
+	cMaxZ := min(g.sizeZ-1, uMaxZ)
+
+	for z := cMinZ; z <= cMaxZ; z++ {
+		zOffset := z * g.strideZ
+		for y := cMinY; y <= cMaxY; y++ {
+			yOffset := zOffset + (y * g.strideY)
+			for x := cMinX; x <= cMaxX; x++ {
+				// Determine if the current cell belongs to the old and/or new bounding boxes.
+				// We use the UNCLAMPED old/new boundaries here to ensure the logic remains
+				// mathematically correct even if part of the object was outside the grid bounds.
+				inOld := x >= oldMinX && x <= oldMaxX && y >= oldMinY && y <= oldMaxY && z >= oldMinZ && z <= oldMaxZ
+				inNew := x >= newMinX && x <= newMaxX && y >= newMinY && y <= newMaxY && z >= newMinZ && z <= newMaxZ
+
+				if inOld && !inNew {
+					// Object has left this cell: remove it.
+					cellIdx := x + yOffset
+					g.removeFromCell(cellIdx, item)
+				} else if inNew && !inOld {
+					// Object has entered this cell: add it.
+					cellIdx := x + yOffset
+					g.addToCell(cellIdx, item)
 				}
+				// If both are true, the object was here and stays here (no action needed).
+				// If both are false, the cell is in the union bounding box but belongs
+				// to neither the old nor new shape (e.g., corners of the union volume).
 			}
 		}
 	}
