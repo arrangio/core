@@ -87,6 +87,16 @@ func CheckCollision(a, b *geometry.Footprint) bool {
 		// b is a box, so if a point is within the intersection bounds,
 		// it is GUARANTEED to be inside b! We just need to check if it's in a.
 		switch aShape := a.Shape.(type) {
+		case *geometry.Box:
+			for z := localAMinZ; z < localAMaxZ; z++ {
+				for y := localAMinY; y < localAMaxY; y++ {
+					for x := localAMinX; x < localAMaxX; x++ {
+						if aShape.Contains(x, y, z) {
+							return true
+						}
+					}
+				}
+			}
 		case geometry.Box:
 			for z := localAMinZ; z < localAMaxZ; z++ {
 				for y := localAMinY; y < localAMaxY; y++ {
@@ -120,6 +130,18 @@ func CheckCollision(a, b *geometry.Footprint) bool {
 		}
 	case *geometry.VoxelShape:
 		switch aShape := a.Shape.(type) {
+		case *geometry.Box:
+			// a is a box, so any point in the intersection is guaranteed to be in a.
+			// Just check b!
+			for z := localBMinZ; z < localBMaxZ; z++ {
+				for y := localBMinY; y < localBMaxY; y++ {
+					for x := localBMinX; x < localBMaxX; x++ {
+						if bShape.Contains(x, y, z) {
+							return true
+						}
+					}
+				}
+			}
 		case geometry.Box:
 			// a is a box, so any point in the intersection is guaranteed to be in a.
 			// Just check b!
@@ -159,6 +181,17 @@ func CheckCollision(a, b *geometry.Footprint) bool {
 		}
 	case *geometry.RotatedShape:
 		switch aShape := a.Shape.(type) {
+		case *geometry.Box:
+			// a is a box, so any point in the intersection is guaranteed to be in a.
+			for z := localBMinZ; z < localBMaxZ; z++ {
+				for y := localBMinY; y < localBMaxY; y++ {
+					for x := localBMinX; x < localBMaxX; x++ {
+						if bShape.Contains(x, y, z) {
+							return true
+						}
+					}
+				}
+			}
 		case geometry.Box:
 			// a is a box, so any point in the intersection is guaranteed to be in a.
 			for z := localBMinZ; z < localBMaxZ; z++ {
@@ -197,6 +230,17 @@ func CheckCollision(a, b *geometry.Footprint) bool {
 		}
 	default:
 		switch aShape := a.Shape.(type) {
+		case *geometry.Box:
+			// a is a box, so any point in the intersection is guaranteed to be in a.
+			for z := localBMinZ; z < localBMaxZ; z++ {
+				for y := localBMinY; y < localBMaxY; y++ {
+					for x := localBMinX; x < localBMaxX; x++ {
+						if b.Shape.Contains(x, y, z) {
+							return true
+						}
+					}
+				}
+			}
 		case geometry.Box:
 			// a is a box, so any point in the intersection is guaranteed to be in a.
 			for z := localBMinZ; z < localBMaxZ; z++ {
