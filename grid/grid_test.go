@@ -184,6 +184,137 @@ func TestGrid(t *testing.T) {
 				},
 			},
 		},
+		{
+			Name: "Move object partially out of old cells",
+			Actions: []GridAction{
+				{
+					Type:   Insert,
+					Entity: &entity.TestEntity{ID: 7, Anchor: geometry.Point64{X: 6, Y: 6, Z: 6}, W: 4, H: 4, D: 4},
+				},
+				{
+					Type:     Query,
+					QueryMin: geometry.Point64{X: 0, Y: 0, Z: 0},
+					QueryMax: geometry.Point64{X: 7, Y: 7, Z: 7},
+					Expected: []uint64{7},
+				},
+				{
+					Type:     Query,
+					QueryMin: geometry.Point64{X: 8, Y: 8, Z: 8},
+					QueryMax: geometry.Point64{X: 15, Y: 15, Z: 15},
+					Expected: []uint64{7},
+				},
+				{
+					Type:     Move,
+					EntityID: 7,
+					MoveDx:   4, // Move out of cell 0, completely into cell 1
+					MoveDy:   4,
+					MoveDz:   4,
+				},
+				{
+					Type:     Query,
+					QueryMin: geometry.Point64{X: 0, Y: 0, Z: 0},
+					QueryMax: geometry.Point64{X: 7, Y: 7, Z: 7},
+					Expected: []uint64{},
+				},
+				{
+					Type:     Query,
+					QueryMin: geometry.Point64{X: 8, Y: 8, Z: 8},
+					QueryMax: geometry.Point64{X: 15, Y: 15, Z: 15},
+					Expected: []uint64{7},
+				},
+			},
+		},
+		{
+			Name: "Move object completely out of old cells",
+			Actions: []GridAction{
+				{
+					Type:   Insert,
+					Entity: &entity.TestEntity{ID: 15, Anchor: geometry.Point64{X: 10, Y: 10, Z: 10}, W: 1, H: 1, D: 1},
+				},
+				{
+					Type:     Move,
+					EntityID: 15,
+					MoveDx:   100, // Move far away to a completely different set of cells
+					MoveDy:   0,
+					MoveDz:   0,
+				},
+				{
+					Type:     Query,
+					QueryMin: geometry.Point64{X: 8, Y: 8, Z: 8},
+					QueryMax: geometry.Point64{X: 15, Y: 15, Z: 15},
+					Expected: []uint64{},
+				},
+				{
+					Type:     Query,
+					QueryMin: geometry.Point64{X: 104, Y: 8, Z: 8},
+					QueryMax: geometry.Point64{X: 111, Y: 15, Z: 15},
+					Expected: []uint64{15},
+				},
+			},
+		},
+		{
+			Name: "Move object within the exact same cells",
+			Actions: []GridAction{
+				{
+					Type:   Insert,
+					Entity: &entity.TestEntity{ID: 99, Anchor: geometry.Point64{X: 1, Y: 1, Z: 1}, W: 2, H: 2, D: 2},
+				},
+				{
+					Type:     Move,
+					EntityID: 99,
+					MoveDx:   1, // Small sub-cell movement, doesn't cross cell boundaries
+					MoveDy:   1,
+					MoveDz:   1,
+				},
+				{
+					Type:     Query,
+					QueryMin: geometry.Point64{X: 0, Y: 0, Z: 0},
+					QueryMax: geometry.Point64{X: 7, Y: 7, Z: 7},
+					Expected: []uint64{99},
+				},
+			},
+		},
+		{
+			Name: "Move object out of grid boundaries",
+			GridConfig: &GridConfig{
+				ShiftBits:         3,
+				MinX:              0, MinY: 0, MinZ: 0,
+				MaxX:              100, MaxY: 100, MaxZ: 100,
+				MaxObjectsPerCell: 10,
+			},
+			Actions: []GridAction{
+				{
+					Type:   Insert,
+					Entity: &entity.TestEntity{ID: 5, Anchor: geometry.Point64{X: 10, Y: 10, Z: 10}, W: 5, H: 5, D: 5},
+				},
+				{
+					Type:     Move,
+					EntityID: 5,
+					MoveDx:   -50, // Move into negative coordinates (outside the configured 0..100 grid)
+					MoveDy:   -50,
+					MoveDz:   -50,
+				},
+				{
+					Type:     Query,
+					QueryMin: geometry.Point64{X: 0, Y: 0, Z: 0},
+					QueryMax: geometry.Point64{X: 20, Y: 20, Z: 20},
+					Expected: []uint64{},
+				},
+				{
+					Type:     Move,
+					EntityID: 5,
+					MoveDx:   60, // Move back into valid grid bounds
+					MoveDy:   60,
+					MoveDz:   60,
+				},
+				{
+					Type:     Query,
+					QueryMin: geometry.Point64{X: 20, Y: 20, Z: 20},
+					QueryMax: geometry.Point64{X: 30, Y: 30, Z: 30},
+					Expected: []uint64{5},
+				},
+			},
+		},
 	}
 
 	for _, tc := range tests {
