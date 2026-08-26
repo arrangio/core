@@ -35,6 +35,7 @@ const (
 	Insert ActionType = "INSERT"
 	Remove ActionType = "REMOVE"
 	Query  ActionType = "QUERY"
+	Move   ActionType = "MOVE"
 )
 
 type GridAction struct {
@@ -44,6 +45,10 @@ type GridAction struct {
 	QueryMin geometry.Point64
 	QueryMax geometry.Point64
 	Expected []uint64
+
+	MoveDx int64
+	MoveDy int64
+	MoveDz int64
 }
 
 type GridTestCase struct {
@@ -103,6 +108,19 @@ func RunGridTest(t *testing.T, tc GridTestCase) {
 				if !slices.Equal(gotIDs, wantIDs) {
 					t.Errorf("\n[FAIL] %s in '%s'\nQuery result mismatch:\n  Got:	%v\n  Expected:  %v", stepName, tc.Name, gotIDs, wantIDs)
 				}
+			case Move:
+				e, ok := entityCache[act.EntityID]
+				if !ok {
+					t.Fatalf("%s: entity with ID %d not found", stepName, act.EntityID)
+				}
+				oldMin, oldMax := e.WorldBounds()
+				
+				e.Footprint.Anchor.X += act.MoveDx
+				e.Footprint.Anchor.Y += act.MoveDy
+				e.Footprint.Anchor.Z += act.MoveDz
+				newMin, newMax := e.WorldBounds()
+
+				g.Move(e, oldMin, oldMax, newMin, newMax)
 			}
 		}
 	})
