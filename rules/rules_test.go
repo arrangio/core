@@ -15,6 +15,7 @@ type RuleTestCase struct {
 	Name      string
 	Subject   entity.TestEntity
 	Neighbors []entity.TestEntity // slice of entities that would be placed to the grid
+	Zones     []zones.TestZone    // slice of zones that would be placed to the zone grid
 	Expected  float64
 	Tolerance float64
 }
@@ -30,6 +31,12 @@ func RunRuleTest(t *testing.T, rule rules.Rule, tc RuleTestCase) {
 		for _, nCfg := range tc.Neighbors {
 			neighbor := entity.BuildTestEntity(nCfg)
 			g.Insert(neighbor)
+		}
+
+		// placing zones
+		for _, zCfg := range tc.Zones {
+			z := zones.BuildTestZone(zCfg)
+			zg.Insert(z)
 		}
 
 		// building subject from `TestEntity`
