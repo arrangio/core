@@ -224,7 +224,7 @@ func (g *Grid[T]) QueryBuf(searchMin, searchMax geometry.Point64, buffer []T) []
 						eMin, eMax := item.WorldBounds()
 						if eMax.X >= searchMin.X && eMin.X <= searchMax.X &&
 							eMax.Y >= searchMin.Y && eMin.Y <= searchMax.Y &&
-							eMax.Z >= searchMin.Z && eMax.Z <= searchMax.Z {
+							eMax.Z >= searchMin.Z && eMin.Z <= searchMax.Z {
 							result = append(result, item)
 						}
 					}
