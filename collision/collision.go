@@ -16,7 +16,20 @@ func CheckCollision(a, b *geometry.Footprint) bool {
 	if aIsBox && bIsBox {
 		return true
 	}
+
+	// Pre-calculate intersection region to skip checking points of A
+	// that we know definitively aren't inside B's bounding box.
+	// This reduces the number of full intersection loop iterations.
+	aMin, aMax := a.Shape.Bounds()
 	bMin, bMax := b.Shape.Bounds()
+
+	aMinX := a.Anchor.X + int64(aMin.X)
+	aMaxX := a.Anchor.X + int64(aMax.X)
+	aMinY := a.Anchor.Y + int64(aMin.Y)
+	aMaxY := a.Anchor.Y + int64(aMax.Y)
+	aMinZ := a.Anchor.Z + int64(aMin.Z)
+	aMaxZ := a.Anchor.Z + int64(aMax.Z)
+
 	bMinX := b.Anchor.X + int64(bMin.X)
 	bMaxX := b.Anchor.X + int64(bMax.X)
 	bMinY := b.Anchor.Y + int64(bMin.Y)
@@ -24,110 +37,202 @@ func CheckCollision(a, b *geometry.Footprint) bool {
 	bMinZ := b.Anchor.Z + int64(bMin.Z)
 	bMaxZ := b.Anchor.Z + int64(bMax.Z)
 
+	oMinX := max(aMinX, bMinX)
+	oMaxX := min(aMaxX, bMaxX)
+	oMinY := max(aMinY, bMinY)
+	oMaxY := min(aMaxY, bMaxY)
+	oMinZ := max(aMinZ, bMinZ)
+	oMaxZ := min(aMaxZ, bMaxZ)
+
 	diffX := a.Anchor.X - b.Anchor.X
 	diffY := a.Anchor.Y - b.Anchor.Y
 	diffZ := a.Anchor.Z - b.Anchor.Z
 
-	aAnchorX := a.Anchor.X
-	aAnchorY := a.Anchor.Y
-	aAnchorZ := a.Anchor.Z
+	// The problem is that a.Shape.ForEachPoint iterates over ALL points in a's shape.
+	// But we ONLY need to check points that are inside the overlap bounds!
+	// Iterating over the overlapping region and checking if point is in a and b is much faster.
 
-	// iterate through first object's points and
-	// try to find them in second object
 	collision := false
 
-	// OPTIMIZATION: Devirtualize b.Shape.Contains() using a type switch.
-	// This avoids virtual method dispatch overhead on the spatial interface
-	// during point-wise iteration, which significantly speeds up narrow-phase collision checks.
+	// Convert overlap bounds back to A's local space
+	localAMinX := int16(oMinX - a.Anchor.X)
+	localAMaxX := int16(oMaxX - a.Anchor.X)
+	localAMinY := int16(oMinY - a.Anchor.Y)
+	localAMaxY := int16(oMaxY - a.Anchor.Y)
+	localAMinZ := int16(oMinZ - a.Anchor.Z)
+	localAMaxZ := int16(oMaxZ - a.Anchor.Z)
+
+	// Convert overlap bounds back to B's local space
+	localBMinX := int16(oMinX - b.Anchor.X)
+	localBMaxX := int16(oMaxX - b.Anchor.X)
+	localBMinY := int16(oMinY - b.Anchor.Y)
+	localBMaxY := int16(oMaxY - b.Anchor.Y)
+	localBMinZ := int16(oMinZ - b.Anchor.Z)
+	localBMaxZ := int16(oMaxZ - b.Anchor.Z)
+
+	// Pre-cast difference
+	dx := int16(diffX)
+	dy := int16(diffY)
+	dz := int16(diffZ)
+
+	// Iterate ONLY through the intersection bounds
+	// This avoids iterating through the entire shape a!
+
+	// We check if a point in the intersection region is part of a.
+	// If it is, we check if it is part of b.
+	// If both, we have a collision.
+
 	switch bShape := b.Shape.(type) {
-	case geometry.Box:
-		a.Shape.ForEachPoint(func(p geometry.Point) bool {
-			wx := aAnchorX + int64(p.X)
-			wy := aAnchorY + int64(p.Y)
-			wz := aAnchorZ + int64(p.Z)
-
-			// bounds check
-			if wx >= bMinX && wx < bMaxX &&
-				wy >= bMinY && wy < bMaxY &&
-				wz >= bMinZ && wz < bMaxZ {
-
-				lx := int16(diffX + int64(p.X))
-				ly := int16(diffY + int64(p.Y))
-				lz := int16(diffZ + int64(p.Z))
-
-				if bShape.Contains(lx, ly, lz) {
-					collision = true
-					return false // early exit
+	case geometry.Box, *geometry.Box:
+		// b is a box, so if a point is within the intersection bounds,
+		// it is GUARANTEED to be inside b! We just need to check if it's in a.
+		switch aShape := a.Shape.(type) {
+		case geometry.Box:
+			for z := localAMinZ; z < localAMaxZ; z++ {
+				for y := localAMinY; y < localAMaxY; y++ {
+					for x := localAMinX; x < localAMaxX; x++ {
+						if aShape.Contains(x, y, z) {
+							return true
+						}
+					}
 				}
 			}
-			return true // continue iteration
-		})
+		case *geometry.VoxelShape:
+			for z := localAMinZ; z < localAMaxZ; z++ {
+				for y := localAMinY; y < localAMaxY; y++ {
+					for x := localAMinX; x < localAMaxX; x++ {
+						if aShape.Contains(x, y, z) {
+							return true
+						}
+					}
+				}
+			}
+		default:
+			for z := localAMinZ; z < localAMaxZ; z++ {
+				for y := localAMinY; y < localAMaxY; y++ {
+					for x := localAMinX; x < localAMaxX; x++ {
+						if a.Shape.Contains(x, y, z) {
+							return true
+						}
+					}
+				}
+			}
+		}
 	case *geometry.VoxelShape:
-		a.Shape.ForEachPoint(func(p geometry.Point) bool {
-			wx := aAnchorX + int64(p.X)
-			wy := aAnchorY + int64(p.Y)
-			wz := aAnchorZ + int64(p.Z)
-
-			// bounds check
-			if wx >= bMinX && wx < bMaxX &&
-				wy >= bMinY && wy < bMaxY &&
-				wz >= bMinZ && wz < bMaxZ {
-
-				lx := int16(diffX + int64(p.X))
-				ly := int16(diffY + int64(p.Y))
-				lz := int16(diffZ + int64(p.Z))
-
-				if bShape.Contains(lx, ly, lz) {
-					collision = true
-					return false // early exit
+		switch aShape := a.Shape.(type) {
+		case geometry.Box:
+			// a is a box, so any point in the intersection is guaranteed to be in a.
+			// Just check b!
+			for z := localBMinZ; z < localBMaxZ; z++ {
+				for y := localBMinY; y < localBMaxY; y++ {
+					for x := localBMinX; x < localBMaxX; x++ {
+						if bShape.Contains(x, y, z) {
+							return true
+						}
+					}
 				}
 			}
-			return true // continue iteration
-		})
+		case *geometry.VoxelShape:
+			for z := localAMinZ; z < localAMaxZ; z++ {
+				for y := localAMinY; y < localAMaxY; y++ {
+					for x := localAMinX; x < localAMaxX; x++ {
+						if aShape.Contains(x, y, z) {
+							if bShape.Contains(x+dx, y+dy, z+dz) {
+								return true
+							}
+						}
+					}
+				}
+			}
+		default:
+			for z := localAMinZ; z < localAMaxZ; z++ {
+				for y := localAMinY; y < localAMaxY; y++ {
+					for x := localAMinX; x < localAMaxX; x++ {
+						if a.Shape.Contains(x, y, z) {
+							if bShape.Contains(x+dx, y+dy, z+dz) {
+								return true
+							}
+						}
+					}
+				}
+			}
+		}
 	case *geometry.RotatedShape:
-		a.Shape.ForEachPoint(func(p geometry.Point) bool {
-			wx := aAnchorX + int64(p.X)
-			wy := aAnchorY + int64(p.Y)
-			wz := aAnchorZ + int64(p.Z)
-
-			// bounds check
-			if wx >= bMinX && wx < bMaxX &&
-				wy >= bMinY && wy < bMaxY &&
-				wz >= bMinZ && wz < bMaxZ {
-
-				lx := int16(diffX + int64(p.X))
-				ly := int16(diffY + int64(p.Y))
-				lz := int16(diffZ + int64(p.Z))
-
-				if bShape.Contains(lx, ly, lz) {
-					collision = true
-					return false // early exit
+		switch aShape := a.Shape.(type) {
+		case geometry.Box:
+			// a is a box, so any point in the intersection is guaranteed to be in a.
+			for z := localBMinZ; z < localBMaxZ; z++ {
+				for y := localBMinY; y < localBMaxY; y++ {
+					for x := localBMinX; x < localBMaxX; x++ {
+						if bShape.Contains(x, y, z) {
+							return true
+						}
+					}
 				}
 			}
-			return true // continue iteration
-		})
+		case *geometry.VoxelShape:
+			for z := localAMinZ; z < localAMaxZ; z++ {
+				for y := localAMinY; y < localAMaxY; y++ {
+					for x := localAMinX; x < localAMaxX; x++ {
+						if aShape.Contains(x, y, z) {
+							if bShape.Contains(x+dx, y+dy, z+dz) {
+								return true
+							}
+						}
+					}
+				}
+			}
+		default:
+			for z := localAMinZ; z < localAMaxZ; z++ {
+				for y := localAMinY; y < localAMaxY; y++ {
+					for x := localAMinX; x < localAMaxX; x++ {
+						if a.Shape.Contains(x, y, z) {
+							if bShape.Contains(x+dx, y+dy, z+dz) {
+								return true
+							}
+						}
+					}
+				}
+			}
+		}
 	default:
-		a.Shape.ForEachPoint(func(p geometry.Point) bool {
-			wx := aAnchorX + int64(p.X)
-			wy := aAnchorY + int64(p.Y)
-			wz := aAnchorZ + int64(p.Z)
-
-			// bounds check
-			if wx >= bMinX && wx < bMaxX &&
-				wy >= bMinY && wy < bMaxY &&
-				wz >= bMinZ && wz < bMaxZ {
-
-				lx := int16(diffX + int64(p.X))
-				ly := int16(diffY + int64(p.Y))
-				lz := int16(diffZ + int64(p.Z))
-
-				if b.Shape.Contains(lx, ly, lz) {
-					collision = true
-					return false // early exit
+		switch aShape := a.Shape.(type) {
+		case geometry.Box:
+			// a is a box, so any point in the intersection is guaranteed to be in a.
+			for z := localBMinZ; z < localBMaxZ; z++ {
+				for y := localBMinY; y < localBMaxY; y++ {
+					for x := localBMinX; x < localBMaxX; x++ {
+						if b.Shape.Contains(x, y, z) {
+							return true
+						}
+					}
 				}
 			}
-			return true // continue iteration
-		})
+		case *geometry.VoxelShape:
+			for z := localAMinZ; z < localAMaxZ; z++ {
+				for y := localAMinY; y < localAMaxY; y++ {
+					for x := localAMinX; x < localAMaxX; x++ {
+						if aShape.Contains(x, y, z) {
+							if b.Shape.Contains(x+dx, y+dy, z+dz) {
+								return true
+							}
+						}
+					}
+				}
+			}
+		default:
+			for z := localAMinZ; z < localAMaxZ; z++ {
+				for y := localAMinY; y < localAMaxY; y++ {
+					for x := localAMinX; x < localAMaxX; x++ {
+						if a.Shape.Contains(x, y, z) {
+							if b.Shape.Contains(x+dx, y+dy, z+dz) {
+								return true
+							}
+						}
+					}
+				}
+			}
+		}
 	}
 
 	return collision

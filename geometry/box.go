@@ -20,9 +20,9 @@ func (b Box) Bounds() (min, max Point) {
 }
 
 func (b Box) ForEachPoint(fn func(p Point) bool) {
-	for x := int16(0); x < b.W; x++ {
+	for z := int16(0); z < b.D; z++ {
 		for y := int16(0); y < b.H; y++ {
-			for z := int16(0); z < b.D; z++ {
+			for x := int16(0); x < b.W; x++ {
 				if !fn(Point{x, y, z}) {
 					return
 				}
