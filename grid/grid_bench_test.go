@@ -82,3 +82,24 @@ func BenchmarkGridQuery_Dense(b *testing.B) {
 		buf = g.QueryBuf(minQ, maxQ, buf[:0])
 	}
 }
+
+
+func BenchmarkGridMove(b *testing.B) {
+	g := grid.NewGrid[*entity.Entity](3, -1000, -1000, -1000, 1000, 1000, 1000, 10000)
+	e := entity.BuildTestEntity(entity.TestEntity{
+		ID:     1,
+		Anchor: geometry.Point64{X: 10, Y: 10, Z: 10},
+		W:      50, H: 50, D: 50,
+	})
+	g.Insert(e)
+
+	b.ReportAllocs()
+	b.ResetTimer()
+
+	for b.Loop() {
+		oldMin, oldMax := e.WorldBounds()
+		e.Footprint.Anchor.X++
+		newMin, newMax := e.WorldBounds()
+		g.Move(e, oldMin, oldMax, newMin, newMax)
+	}
+}
