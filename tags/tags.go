@@ -50,8 +50,12 @@ func (m Mask) Has(other Mask) bool {
 
 // add tag to the Mask
 func (m Mask) With(tagID int) Mask {
+	if tagID < 0 || tagID > 65535 {
+		return m
+	}
+
 	if tagID < 64 {
-		// #nosec G115 -- safe because tagID is known to be small
+		// #nosec G115 -- safe because tagID is known to be small and positive
 		m.FastBits |= (1 << uint64(tagID))
 		return m
 	}

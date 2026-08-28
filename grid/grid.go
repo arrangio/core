@@ -2,6 +2,7 @@ package grid
 
 import (
 	"arrangio-core/geometry"
+	"fmt"
 )
 
 // gridNode is an element in a flat array `nods`
@@ -34,7 +35,7 @@ type Grid[T Spatial] struct {
 // The grid will dynamically grow if this limit is exceeded, but pre-allocating accurately avoids allocations.
 // rule of thumb: `maxObjectsPerCell` = N * 8, where N is the number of entities
 // assuming the worst of case of all 8 neighbor shapes overlapping at one cell.
-func NewGrid[T Spatial](shiftBits uint8, minX, minY, minZ, maxX, maxY, maxZ int64, maxObjectsPerCell int) *Grid[T] {
+func NewGrid[T Spatial](shiftBits uint8, minX, minY, minZ, maxX, maxY, maxZ int64, maxObjectsPerCell int) (*Grid[T], error) {
 	worldW := maxX - minX
 	worldH := maxY - minY
 	worldD := maxZ - minZ
@@ -54,6 +55,15 @@ func NewGrid[T Spatial](shiftBits uint8, minX, minY, minZ, maxX, maxY, maxZ int6
 	}
 
 	totalCells := cellsX * cellsY * cellsZ
+
+	// rough estimate for bounds checking to prevent OOM
+	// 50M cells limit is approximately ~200MB memory for the heads array
+	if totalCells <= 0 {
+		return nil, fmt.Errorf("grid: invalid dimensions (totalCells = %d)", totalCells)
+	}
+	if totalCells > 50_000_000 {
+		return nil, fmt.Errorf("grid: boundaries too large, exceeds 50M cells limit (got %d)", totalCells)
+	}
 
 	heads := make([]int32, totalCells)
 	for i := range heads {
@@ -77,10 +87,11 @@ func NewGrid[T Spatial](shiftBits uint8, minX, minY, minZ, maxX, maxY, maxZ int6
 		strideY:   cellsX,
 		strideZ:   cellsX * cellsY,
 		queryID:   0,
+
 		heads:     heads,
 		nodes:     nodes,
 		freeNodes: freeNodes,
-	}
+	}, nil
 }
 
 func (g *Grid[T]) worldToCell(wx, wy, wz int64) (cx, cy, cz int64) {

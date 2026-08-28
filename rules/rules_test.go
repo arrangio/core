@@ -24,8 +24,14 @@ func RunRuleTest(t *testing.T, rule rules.Rule, tc RuleTestCase) {
 	t.Helper()
 	t.Run(tc.Name, func(t *testing.T) {
 		// initialize grid (shiftBits=3 -> cell size is 8)
-		g := grid.NewGrid[*entity.Entity](3, -1000, -1000, -1000, 1000, 1000, 1000, 100)
-		zg := grid.NewGrid[*zones.Zone](3, -1000, -1000, -1000, 1000, 1000, 1000, 100)
+		g, err := grid.NewGrid[*entity.Entity](3, -1000, -1000, -1000, 1000, 1000, 1000, 100)
+		if err != nil {
+			t.Fatal(err)
+		}
+		zg, err := grid.NewGrid[*zones.Zone](3, -1000, -1000, -1000, 1000, 1000, 1000, 100)
+		if err != nil {
+			t.Fatal(err)
+		}
 
 		// placing neighbors
 		for _, nCfg := range tc.Neighbors {

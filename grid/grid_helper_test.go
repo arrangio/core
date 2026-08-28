@@ -65,12 +65,15 @@ func RunGridTest(t *testing.T, tc GridTestCase) {
 			cfg = *tc.GridConfig
 		}
 
-		g := grid.NewGrid[*entity.Entity](
+		g, err := grid.NewGrid[*entity.Entity](
 			cfg.ShiftBits,
 			cfg.MinX, cfg.MinY, cfg.MinZ,
 			cfg.MaxX, cfg.MaxY, cfg.MaxZ,
 			cfg.MaxObjectsPerCell,
 		)
+		if err != nil {
+			t.Fatal(err)
+		}
 
 		entityCache := make(map[uint64]*entity.Entity)
 
