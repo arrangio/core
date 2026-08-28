@@ -17,7 +17,7 @@ func (r *ContainmentRule) Evaluate(subject *entity.Entity, ctx *RuleContext) flo
 		return 1.0
 	}
 
-	subMin, subMax := subject.Footprint.WorldBounds()
+	subMin, subMax := subject.WorldBounds()
 
 	// `diff` stores a value that shows how far from the cube's bounds min and max points of the subject are
 	var diff int64

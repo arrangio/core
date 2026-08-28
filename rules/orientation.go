@@ -17,7 +17,7 @@ func (r *OrientationRule) Evaluate(e *entity.Entity, ctx *RuleContext) float64 {
 		return 1.0
 	}
 
-	worldFacing, ok := e.Footprint.WorldFacing(r.Marker)
+	worldFacing, ok := e.WorldFacing(r.Marker)
 
 	// object has no facing with such Marker
 	if !ok {

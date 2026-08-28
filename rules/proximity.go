@@ -22,7 +22,7 @@ func (r *ProximityRule) Evaluate(subject *entity.Entity, ctx *RuleContext) float
 	if !r.Target.Matches(subject) {
 		return 1.0
 	}
-	anchor := subject.Footprint.Anchor
+	anchor := subject.State.Anchor
 
 	searchMin := geometry.Point64{
 		X: anchor.X - r.MaxDist,
@@ -43,12 +43,12 @@ func (r *ProximityRule) Evaluate(subject *entity.Entity, ctx *RuleContext) float
 	found := false
 
 	for _, neighbor := range ctx.EntityBuffer {
-		if subject.ID == neighbor.ID || !r.To.Matches(neighbor) {
+		if subject.Def.ID == neighbor.Def.ID || !r.To.Matches(neighbor) {
 			continue
 		}
 
 		// calculate distance between `subject` and found object
-		nAnchor := neighbor.Footprint.Anchor
+		nAnchor := neighbor.State.Anchor
 		dx := anchor.X - nAnchor.X
 		dy := anchor.Y - nAnchor.Y
 		dz := anchor.Z - nAnchor.Z

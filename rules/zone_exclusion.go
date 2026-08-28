@@ -21,7 +21,7 @@ func (r *ZoneExclusionRule) Evaluate(subject *entity.Entity, ctx *RuleContext) f
 		return 1.0
 	}
 
-	sMin, sMax := subject.Footprint.WorldBounds()
+	sMin, sMax := subject.WorldBounds()
 
 	ctx.ZoneBuffer = ctx.ZoneGrid.QueryBuf(sMin, sMax, ctx.ZoneBuffer)
 
@@ -29,7 +29,8 @@ func (r *ZoneExclusionRule) Evaluate(subject *entity.Entity, ctx *RuleContext) f
 		if !r.Zone.MatchesZone(z) {
 			continue
 		}
-		if collision.CheckCollision(&subject.Footprint, &z.Footprint) {
+		subFp := subject.AsFootprint()
+		if collision.CheckCollision(&subFp, &z.Footprint) {
 			return 0.0
 		}
 	}

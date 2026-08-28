@@ -20,7 +20,7 @@ func (r *SeparationRule) Evaluate(e *entity.Entity, ctx *RuleContext) float64 {
 
 	minScore := 1.0
 
-	sMin, sMax := e.Footprint.WorldBounds()
+	sMin, sMax := e.WorldBounds()
 
 	searchMin := geometry.Point64{
 		X: sMin.X - r.MinDistance,
@@ -37,11 +37,11 @@ func (r *SeparationRule) Evaluate(e *entity.Entity, ctx *RuleContext) float64 {
 
 	// iterate through all objects in `searchMin` to `searchMax` range
 	for _, neighbor := range ctx.EntityBuffer {
-		if neighbor.ID == e.ID || !r.Obstacle.Matches(neighbor) {
+		if neighbor.Def.ID == e.Def.ID || !r.Obstacle.Matches(neighbor) {
 			continue
 		}
 
-		nMin, nMax := neighbor.Footprint.WorldBounds()
+		nMin, nMax := neighbor.WorldBounds()
 
 		distX := dist(sMin.X, sMax.X, nMin.X, nMax.X)
 		distY := dist(sMin.Y, sMax.Y, nMin.Y, nMax.Y)

@@ -34,13 +34,15 @@ func BuildTestEntity(cfg TestEntity) *Entity {
 	}
 
 	return &Entity{
-		ID:       cfg.ID,
-		IsStatic: cfg.IsStatic,
-		Tags:     mask,
-		Footprint: geometry.Footprint{
-			Anchor:  cfg.Anchor,
-			Shape:   geometry.Box{W: w, H: h, D: d},
-			Facings: cfg.Facings,
+		Def: &EntityDef{
+			ID:       cfg.ID,
+			IsStatic: cfg.IsStatic,
+			Tags:     mask,
+			Shape:    geometry.Box{W: w, H: h, D: d},
+			Facings:  cfg.Facings,
+		},
+		State: &EntityState{
+			Anchor: cfg.Anchor,
 		},
 	}
 }

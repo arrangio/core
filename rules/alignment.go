@@ -19,7 +19,7 @@ func (r *AlignmentRule) Evaluate(subject *entity.Entity, ctx *RuleContext) float
 		return 1.0
 	}
 
-	anchor := subject.Footprint.Anchor
+	anchor := subject.State.Anchor
 
 	searchMin := geometry.Point64{
 		X: anchor.X - r.Radius,
@@ -52,18 +52,18 @@ func (r *AlignmentRule) Evaluate(subject *entity.Entity, ctx *RuleContext) float
 
 	for _, neighbor := range ctx.EntityBuffer {
 		// align only with objects within the `Radius` range and matching Selector
-		if subject.ID == neighbor.ID || !r.Target.Matches(neighbor) {
+		if subject.Def.ID == neighbor.Def.ID || !r.Target.Matches(neighbor) {
 			continue
 		}
 
 		var nVal int64
 		switch r.Axis {
 		case AxisX:
-			nVal = neighbor.Footprint.Anchor.X
+			nVal = neighbor.State.Anchor.X
 		case AxisY:
-			nVal = neighbor.Footprint.Anchor.Y
+			nVal = neighbor.State.Anchor.Y
 		case AxisZ:
-			nVal = neighbor.Footprint.Anchor.Z
+			nVal = neighbor.State.Anchor.Z
 		}
 
 		diff := sVal - nVal

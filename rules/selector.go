@@ -33,7 +33,7 @@ func (s *Selector) matches(id uint64, mask tags.Mask) bool {
 }
 
 func (s *Selector) Matches(e *entity.Entity) bool {
-	return s.matches(e.ID, e.Tags)
+	return s.matches(e.Def.ID, e.Def.Tags)
 }
 
 func (s *Selector) MatchesZone(z *zones.Zone) bool {

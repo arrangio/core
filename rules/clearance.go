@@ -17,7 +17,7 @@ func (r *ClearanceRule) Evaluate(subject *entity.Entity, ctx *RuleContext) float
 		return 1.0
 	}
 
-	subMin, subMax := subject.Footprint.WorldBounds()
+	subMin, subMax := subject.WorldBounds()
 
 	clearanceMin := geometry.Point64{
 		X: subMin.X - r.Padding.X,
@@ -36,11 +36,11 @@ func (r *ClearanceRule) Evaluate(subject *entity.Entity, ctx *RuleContext) float
 	var maxPenetration int64
 
 	for _, neighbor := range ctx.EntityBuffer {
-		if neighbor.ID == subject.ID || !r.Obstacle.Matches(neighbor) {
+		if neighbor.Def.ID == subject.Def.ID || !r.Obstacle.Matches(neighbor) {
 			continue
 		}
 
-		nMin, nMax := neighbor.Footprint.WorldBounds()
+		nMin, nMax := neighbor.WorldBounds()
 
 		penX := calculateAxisOverlap(clearanceMin.X, clearanceMax.X, nMin.X, nMax.X)
 		penY := calculateAxisOverlap(clearanceMin.Y, clearanceMax.Y, nMin.Y, nMax.Y)

@@ -16,12 +16,12 @@ func (r *NoCollisionRule) Evaluate(subject *entity.Entity, ctx *RuleContext) flo
 		return 1.0
 	}
 
-	minBounds, maxBounds := subject.Footprint.WorldBounds()
+	minBounds, maxBounds := subject.WorldBounds()
 
 	ctx.EntityBuffer = ctx.EntityGrid.QueryBuf(minBounds, maxBounds, ctx.EntityBuffer)
 
 	for _, neighbor := range ctx.EntityBuffer {
-		if subject.ID == neighbor.ID {
+		if subject.Def.ID == neighbor.Def.ID {
 			continue
 		}
 
@@ -29,7 +29,9 @@ func (r *NoCollisionRule) Evaluate(subject *entity.Entity, ctx *RuleContext) flo
 			continue
 		}
 
-		if collision.CheckCollision(&subject.Footprint, &neighbor.Footprint) {
+		subFp := subject.AsFootprint()
+		nFp := neighbor.AsFootprint()
+		if collision.CheckCollision(&subFp, &nFp) {
 			return 0.0
 		}
 	}

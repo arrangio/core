@@ -24,11 +24,11 @@ func (r *AxisRestrictionRule) Evaluate(subject *entity.Entity, ctx *RuleContext)
 	var val int64
 	switch r.Axis {
 	case AxisX:
-		val = subject.Footprint.Anchor.X
+		val = subject.State.Anchor.X
 	case AxisY:
-		val = subject.Footprint.Anchor.Y
+		val = subject.State.Anchor.Y
 	case AxisZ:
-		val = subject.Footprint.Anchor.Z
+		val = subject.State.Anchor.Z
 	default:
 		return 0.0
 	}

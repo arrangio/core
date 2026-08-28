@@ -83,7 +83,7 @@ func RunGridTest(t *testing.T, tc GridTestCase) {
 					t.Fatalf("%s: nil Entity for Insert operation", stepName)
 				}
 				e := entity.BuildTestEntity(*act.Entity)
-				entityCache[e.ID] = e
+				entityCache[e.Def.ID] = e
 				g.Insert(e)
 			case Remove:
 				e, ok := entityCache[act.EntityID]
@@ -98,7 +98,7 @@ func RunGridTest(t *testing.T, tc GridTestCase) {
 
 				gotIDs := make([]uint64, len(res))
 				for i, e := range res {
-					gotIDs[i] = e.ID
+					gotIDs[i] = e.Def.ID
 				}
 				slices.Sort(gotIDs)
 
@@ -115,9 +115,9 @@ func RunGridTest(t *testing.T, tc GridTestCase) {
 				}
 				oldMin, oldMax := e.WorldBounds()
 				
-				e.Footprint.Anchor.X += act.MoveDx
-				e.Footprint.Anchor.Y += act.MoveDy
-				e.Footprint.Anchor.Z += act.MoveDz
+				e.State.Anchor.X += act.MoveDx
+				e.State.Anchor.Y += act.MoveDy
+				e.State.Anchor.Z += act.MoveDz
 				newMin, newMax := e.WorldBounds()
 
 				g.Move(e, oldMin, oldMax, newMin, newMax)

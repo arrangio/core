@@ -98,7 +98,7 @@ func BenchmarkGridMove(b *testing.B) {
 
 	for b.Loop() {
 		oldMin, oldMax := e.WorldBounds()
-		e.Footprint.Anchor.X++
+		e.State.Anchor.X++
 		newMin, newMax := e.WorldBounds()
 		g.Move(e, oldMin, oldMax, newMin, newMax)
 	}
