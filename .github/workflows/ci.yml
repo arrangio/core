@@ -23,6 +23,7 @@ jobs:
         uses: golangci/golangci-lint-action@v9
 
   build:
+    needs: [lint, static]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Source
@@ -59,6 +60,7 @@ jobs:
 
   test:
     name: Run Tests
+    needs: build
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -77,6 +79,7 @@ jobs:
         run: go test -v -race ./...
 
   security:
+    needs: build
     runs-on: ubuntu-latest
     env:
       GO111MODULE: on
@@ -90,6 +93,7 @@ jobs:
 
   benchmark:
     name: Run Benchmarks
+    needs: [test, security]
     runs-on: ubuntu-latest
     permissions:
       contents: write
