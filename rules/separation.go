@@ -33,7 +33,6 @@ func (r *SeparationRule) Evaluate(e *entity.Entity, ctx *RuleContext) float64 {
 		Z: sMax.Z + r.MinDistance,
 	}
 
-	ctx.EntityBuffer = ctx.EntityBuffer[:0]
 	ctx.EntityBuffer = ctx.EntityGrid.QueryBuf(searchMin, searchMax, ctx.EntityBuffer)
 
 	// iterate through all objects in `searchMin` to `searchMax` range

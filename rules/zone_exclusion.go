@@ -23,9 +23,9 @@ func (r *ZoneExclusionRule) Evaluate(subject *entity.Entity, ctx *RuleContext) f
 
 	sMin, sMax := subject.Footprint.WorldBounds()
 
-	zones := ctx.ZoneGrid.QueryBuf(sMin, sMax, ctx.ZoneBuffer)
+	ctx.ZoneBuffer = ctx.ZoneGrid.QueryBuf(sMin, sMax, ctx.ZoneBuffer)
 
-	for _, z := range zones {
+	for _, z := range ctx.ZoneBuffer {
 		if !r.Zone.MatchesZone(z) {
 			continue
 		}

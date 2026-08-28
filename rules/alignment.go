@@ -33,7 +33,7 @@ func (r *AlignmentRule) Evaluate(subject *entity.Entity, ctx *RuleContext) float
 		Z: anchor.Z + r.Radius,
 	}
 
-	neighbors := ctx.EntityGrid.QueryBuf(searchMin, searchMax, ctx.EntityBuffer)
+	ctx.EntityBuffer = ctx.EntityGrid.QueryBuf(searchMin, searchMax, ctx.EntityBuffer)
 
 	var minDiff int64 = math.MaxInt64
 	var found bool
@@ -50,7 +50,7 @@ func (r *AlignmentRule) Evaluate(subject *entity.Entity, ctx *RuleContext) float
 		return 0.0
 	}
 
-	for _, neighbor := range neighbors {
+	for _, neighbor := range ctx.EntityBuffer {
 		// align only with objects within the `Radius` range and matching Selector
 		if subject.ID == neighbor.ID || !r.Target.Matches(neighbor) {
 			continue
