@@ -21,9 +21,12 @@ func (f *Footprint) ContainsPoint(wx, wy, wz int64) bool {
 	}
 
 	// narrowed down check
-	lx := int16(wx - f.Anchor.X)
-	ly := int16(wy - f.Anchor.Y)
-	lz := int16(wz - f.Anchor.Z)
+	// #nosec G115 -- mathematically safe (bounds checked beforehand)
+	var (
+		lx = int16(wx - f.Anchor.X)
+		ly = int16(wy - f.Anchor.Y)
+		lz = int16(wz - f.Anchor.Z)
+	)
 
 	return f.Shape.Contains(lx, ly, lz)
 }

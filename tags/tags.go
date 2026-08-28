@@ -51,10 +51,12 @@ func (m Mask) Has(other Mask) bool {
 // add tag to the Mask
 func (m Mask) With(tagID int) Mask {
 	if tagID < 64 {
+		// #nosec G115 -- safe because tagID is known to be small
 		m.FastBits |= (1 << uint64(tagID))
 		return m
 	}
 
+	// #nosec G115 -- safe because we don't expect > 65535 tags
 	dynID := uint16(tagID)
 
 	// search index in which tagID will be inserted

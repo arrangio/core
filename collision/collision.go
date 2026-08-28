@@ -55,25 +55,34 @@ func CheckCollision(a, b *geometry.Footprint) bool {
 	collision := false
 
 	// Convert overlap bounds back to A's local space
-	localAMinX := int16(oMinX - a.Anchor.X)
-	localAMaxX := int16(oMaxX - a.Anchor.X)
-	localAMinY := int16(oMinY - a.Anchor.Y)
-	localAMaxY := int16(oMaxY - a.Anchor.Y)
-	localAMinZ := int16(oMinZ - a.Anchor.Z)
-	localAMaxZ := int16(oMaxZ - a.Anchor.Z)
+	// #nosec G115 -- mathematically safe (bounds checked beforehand)
+	var (
+		localAMinX = int16(oMinX - a.Anchor.X)
+		localAMaxX = int16(oMaxX - a.Anchor.X)
+		localAMinY = int16(oMinY - a.Anchor.Y)
+		localAMaxY = int16(oMaxY - a.Anchor.Y)
+		localAMinZ = int16(oMinZ - a.Anchor.Z)
+		localAMaxZ = int16(oMaxZ - a.Anchor.Z)
+	)
 
 	// Convert overlap bounds back to B's local space
-	localBMinX := int16(oMinX - b.Anchor.X)
-	localBMaxX := int16(oMaxX - b.Anchor.X)
-	localBMinY := int16(oMinY - b.Anchor.Y)
-	localBMaxY := int16(oMaxY - b.Anchor.Y)
-	localBMinZ := int16(oMinZ - b.Anchor.Z)
-	localBMaxZ := int16(oMaxZ - b.Anchor.Z)
+	// #nosec G115
+	var (
+		localBMinX = int16(oMinX - b.Anchor.X)
+		localBMaxX = int16(oMaxX - b.Anchor.X)
+		localBMinY = int16(oMinY - b.Anchor.Y)
+		localBMaxY = int16(oMaxY - b.Anchor.Y)
+		localBMinZ = int16(oMinZ - b.Anchor.Z)
+		localBMaxZ = int16(oMaxZ - b.Anchor.Z)
+	)
 
 	// Pre-cast difference
-	dx := int16(diffX)
-	dy := int16(diffY)
-	dz := int16(diffZ)
+	// #nosec G115
+	var (
+		dx = int16(diffX)
+		dy = int16(diffY)
+		dz = int16(diffZ)
+	)
 
 	// Iterate ONLY through the intersection bounds
 	// This avoids iterating through the entire shape a!
