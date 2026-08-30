@@ -271,7 +271,8 @@ func (g *Grid[T]) Move(item T, oldMin, oldMax, newMin, newMax geometry.Point64) 
 
 // return all entities from searchMin point to searchMax point
 func (g *Grid[T]) QueryBuf(searchMin, searchMax geometry.Point64, buffer []T) []T {
-	g.queryID++
+	currentQueryID := g.queryID + 1
+	g.queryID = currentQueryID
 	result := buffer[:0]
 
 	minX, minY, minZ := g.worldToCell(searchMin.X, searchMin.Y, searchMin.Z)
@@ -297,8 +298,8 @@ func (g *Grid[T]) QueryBuf(searchMin, searchMax geometry.Point64, buffer []T) []
 					node := g.nodes[nodeIdx]
 					item := node.item
 
-					if item.GetQueryID() != g.queryID {
-						item.SetQueryID(g.queryID)
+					if item.GetQueryID() != currentQueryID {
+						item.SetQueryID(currentQueryID)
 
 						eMin, eMax := item.WorldBounds()
 						if eMax.X >= searchMin.X && eMin.X <= searchMax.X &&
