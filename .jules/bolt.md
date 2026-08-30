@@ -20,3 +20,6 @@
 ## 2025-01-08 - Interface Devirtualization with Multi-type Switch Cases
 **Learning:** In Go, when using a type switch for devirtualization of interface method calls inside tight loops (like `aShape := a.Shape.(type)`), grouping types into a single case block like `case geometry.Box, *geometry.Box:` causes `aShape` to retain its interface type (e.g., `geometry.Shape`), which entirely bypasses the devirtualization optimization.
 **Action:** When devirtualizing both a value type and its pointer type, you must duplicate the logic into separate `case Type:` and `case *Type:` blocks to ensure the variable assumes the concrete static type.
+## 2024-09-09 - Hoisting Virtual Calls Out Of Singly-Linked List Loops
+**Learning:** Interface method calls in Go have higher overhead than direct struct field accesses or local variable reads due to virtual dispatch. Calling an interface method like `GetID()` inside a hot loop (like a `removeFromCell` search over linked-list nodes) multiplies this overhead unnecessarily for each item traversed.
+**Action:** Always pre-calculate and hoist the results of interface method calls outside of iterative structures or list traversals when the returned value (such as an ID) remains constant for the entire loop block, specifically within hot path grid operations.
