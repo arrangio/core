@@ -187,11 +187,17 @@ func (g *Grid[T]) removeFromCell(cellIdx int64, item T) {
 	currentNodeIdx := g.heads[cellIdx]
 	var prevNodeIdx int32 = -1
 
+	// Fast path: nothing in the cell
+	if currentNodeIdx == -1 {
+		return
+	}
+
+	itemID := item.GetID()
 	// iterate through the list of nodes
 	for currentNodeIdx != -1 {
 		node := g.nodes[currentNodeIdx]
 
-		if node.item.GetID() == item.GetID() {
+		if node.item.GetID() == itemID {
 			if prevNodeIdx == -1 {
 				g.heads[cellIdx] = node.next
 			} else {
@@ -265,7 +271,8 @@ func (g *Grid[T]) Move(item T, oldMin, oldMax, newMin, newMax geometry.Point64) 
 
 // return all entities from searchMin point to searchMax point
 func (g *Grid[T]) QueryBuf(searchMin, searchMax geometry.Point64, buffer []T) []T {
-	g.queryID++
+	currentQueryID := g.queryID + 1
+	g.queryID = currentQueryID
 	result := buffer[:0]
 
 	minX, minY, minZ := g.worldToCell(searchMin.X, searchMin.Y, searchMin.Z)
@@ -291,8 +298,8 @@ func (g *Grid[T]) QueryBuf(searchMin, searchMax geometry.Point64, buffer []T) []
 					node := g.nodes[nodeIdx]
 					item := node.item
 
-					if item.GetQueryID() != g.queryID {
-						item.SetQueryID(g.queryID)
+					if item.GetQueryID() != currentQueryID {
+						item.SetQueryID(currentQueryID)
 
 						eMin, eMax := item.WorldBounds()
 						if eMax.X >= searchMin.X && eMin.X <= searchMax.X &&
