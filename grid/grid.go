@@ -9,6 +9,7 @@ import (
 // it is a node is a singly-linked list, links one entity to the next one in the same cell of the grid
 type gridNode[T Spatial] struct {
 	item T
+	itemID uint64
 	next int32 // index of the next node in the same cell chain (-1 if end of the list)
 }
 
@@ -152,6 +153,7 @@ func (g *Grid[T]) addToCell(cellIdx int64, item T) {
 
 	g.nodes[nodeIdx] = gridNode[T]{
 		item: item,
+		itemID: item.GetID(),
 		next: g.heads[cellIdx],
 	}
 	g.heads[cellIdx] = nodeIdx
@@ -197,7 +199,7 @@ func (g *Grid[T]) removeFromCell(cellIdx int64, item T) {
 	for currentNodeIdx != -1 {
 		node := g.nodes[currentNodeIdx]
 
-		if node.item.GetID() == itemID {
+		if node.itemID == itemID {
 			if prevNodeIdx == -1 {
 				g.heads[cellIdx] = node.next
 			} else {
