@@ -8,9 +8,9 @@ import (
 // gridNode is an element in a flat array `nods`
 // it is a node is a singly-linked list, links one entity to the next one in the same cell of the grid
 type gridNode[T Spatial] struct {
-	item T
+	item   T
 	itemID uint64
-	next int32 // index of the next node in the same cell chain (-1 if end of the list)
+	next   int32 // index of the next node in the same cell chain (-1 if end of the list)
 }
 
 type Grid[T Spatial] struct {
@@ -152,9 +152,9 @@ func (g *Grid[T]) addToCell(cellIdx int64, item T) {
 	g.freeNodes = g.freeNodes[:len(g.freeNodes)-1]
 
 	g.nodes[nodeIdx] = gridNode[T]{
-		item: item,
+		item:   item,
 		itemID: item.GetID(),
-		next: g.heads[cellIdx],
+		next:   g.heads[cellIdx],
 	}
 	g.heads[cellIdx] = nodeIdx
 }
@@ -207,6 +207,9 @@ func (g *Grid[T]) removeFromCell(cellIdx int64, item T) {
 			}
 
 			g.freeNodes = append(g.freeNodes, currentNodeIdx)
+			// zero out node to prevent memory leaks
+			var zero T
+			g.nodes[currentNodeIdx].item = zero
 			break
 		}
 
