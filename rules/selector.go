@@ -20,12 +20,12 @@ func (s *Selector) matches(id uint64, mask tags.Mask) bool {
 	if s.TargetID != 0 && id != s.TargetID {
 		return false
 	}
-	hasTags := s.Mask.FastBits != 0 || len(s.Mask.DynamicIDs) > 0
-	if hasTags && !mask.Has(s.Mask) {
+
+	if s.Mask.HasTags() && !mask.Has(s.Mask) {
 		return false
 	}
 
-	if s.TargetID == 0 && !hasTags {
+	if s.TargetID == 0 && !s.Mask.HasTags() {
 		return false
 	}
 

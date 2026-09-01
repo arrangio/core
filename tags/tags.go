@@ -4,36 +4,40 @@ import "sort"
 
 type Mask struct {
 	// tags which are used more often, that others
-	FastBits uint64
+	fastBits uint64
 
 	// use this if there are more than 64 tags
-	DynamicIDs []uint16
+	dynamicIDs []uint16
 }
 
 func NewMask() Mask {
 	return Mask{
-		FastBits:   0,
-		DynamicIDs: make([]uint16, 0, 4),
+		fastBits:   0,
+		dynamicIDs: make([]uint16, 0, 4),
 	}
+}
+
+func (m Mask) HasTags() bool {
+	return m.fastBits != 0 || len(m.dynamicIDs) > 0
 }
 
 // check if mask contains tags or group of tags
 func (m Mask) Has(other Mask) bool {
-	if (m.FastBits & other.FastBits) != other.FastBits {
+	if (m.fastBits & other.fastBits) != other.fastBits {
 		return false
 	}
 
-	if len(other.DynamicIDs) == 0 {
+	if len(other.dynamicIDs) == 0 {
 		return true
 	}
 
 	i, j := 0, 0
-	lenM := len(m.DynamicIDs)
-	lenOther := len(other.DynamicIDs)
+	lenM := len(m.dynamicIDs)
+	lenOther := len(other.dynamicIDs)
 
 	for i < lenM && j < lenOther {
-		mVal := m.DynamicIDs[i]
-		otherVal := other.DynamicIDs[j]
+		mVal := m.dynamicIDs[i]
+		otherVal := other.dynamicIDs[j]
 
 		if mVal < otherVal {
 			i++
@@ -56,7 +60,7 @@ func (m Mask) With(tagID int) Mask {
 
 	if tagID < 64 {
 		// #nosec G115 -- safe because tagID is known to be small and positive
-		m.FastBits |= (1 << uint64(tagID))
+		m.fastBits |= (1 << uint64(tagID))
 		return m
 	}
 
@@ -64,20 +68,20 @@ func (m Mask) With(tagID int) Mask {
 	dynID := uint16(tagID)
 
 	// search index in which tagID will be inserted
-	idx := sort.Search(len(m.DynamicIDs), func(i int) bool {
-		return m.DynamicIDs[i] >= dynID
+	idx := sort.Search(len(m.dynamicIDs), func(i int) bool {
+		return m.dynamicIDs[i] >= dynID
 	})
 
 	// if all elements in m.DynamicIDs are smaller than tagID
 	// or tagID must be inserted in between existent elements
-	if idx == len(m.DynamicIDs) || m.DynamicIDs[idx] != dynID {
+	if idx == len(m.dynamicIDs) || m.dynamicIDs[idx] != dynID {
 		// create independent slice to ensure branching works
-		oldDyn := m.DynamicIDs
-		m.DynamicIDs = make([]uint16, len(oldDyn)+1)
+		oldDyn := m.dynamicIDs
+		m.dynamicIDs = make([]uint16, len(oldDyn)+1)
 
-		copy(m.DynamicIDs[:idx], oldDyn[:idx])
-		copy(m.DynamicIDs[idx+1:], oldDyn[idx:])
-		m.DynamicIDs[idx] = dynID
+		copy(m.dynamicIDs[:idx], oldDyn[:idx])
+		copy(m.dynamicIDs[idx+1:], oldDyn[idx:])
+		m.dynamicIDs[idx] = dynID
 	}
 
 	return m

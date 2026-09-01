@@ -8,8 +8,8 @@ func TestMask_FastBits(t *testing.T) {
 	mask := NewMask()
 	mask = mask.With(5)
 
-	if mask.FastBits != (1 << 5) {
-		t.Errorf("FastBits mismatched: expected %d, got %d", 1<<5, mask.FastBits)
+	if mask.fastBits != (1 << 5) {
+		t.Errorf("FastBits mismatched: expected %d, got %d", 1<<5, mask.fastBits)
 	}
 }
 
@@ -25,8 +25,8 @@ func TestMask_Has_FastBits(t *testing.T) {
 func TestMask_DynamicTags_Insert(t *testing.T) {
 	mask := NewMask().With(100).With(150)
 
-	if len(mask.DynamicIDs) != 2 {
-		t.Errorf("Expected 2 inserted dynamic tags, got %d", len(mask.DynamicIDs))
+	if len(mask.dynamicIDs) != 2 {
+		t.Errorf("Expected 2 inserted dynamic tags, got %d", len(mask.dynamicIDs))
 	}
 }
 
@@ -34,7 +34,7 @@ func TestMask_DynamicTags_Sorting(t *testing.T) {
 	mask := NewMask().With(150).With(100).With(125)
 	expected := []uint16{100, 125, 150}
 
-	for i, v := range mask.DynamicIDs {
+	for i, v := range mask.dynamicIDs {
 		if v != expected[i] {
 			t.Errorf("Sorting error at index %d: expected %d, got %d", i, expected[i], v)
 		}
@@ -59,10 +59,10 @@ func TestMask_Branching(t *testing.T) {
 	sMask := baseMask.With(90)
 
 	if !fMask.Has(NewMask().With(80)) {
-		t.Errorf("fMask has lost its tag 80, it has dynamic tags: %v", fMask.DynamicIDs)
+		t.Errorf("fMask has lost its tag 80, it has dynamic tags: %v", fMask.dynamicIDs)
 	}
 
 	if !sMask.Has(NewMask().With(90)) {
-		t.Errorf("sMask should contain tag 90, it has dynamic tags: %v", sMask.DynamicIDs)
+		t.Errorf("sMask should contain tag 90, it has dynamic tags: %v", sMask.dynamicIDs)
 	}
 }
