@@ -48,12 +48,6 @@ func CheckCollision(a, b *geometry.Footprint) bool {
 	diffY := a.Anchor.Y - b.Anchor.Y
 	diffZ := a.Anchor.Z - b.Anchor.Z
 
-	// The problem is that a.Shape.ForEachPoint iterates over ALL points in a's shape.
-	// But we ONLY need to check points that are inside the overlap bounds!
-	// Iterating over the overlapping region and checking if point is in a and b is much faster.
-
-	collision := false
-
 	// Convert overlap bounds back to A's local space
 	// #nosec G115 -- mathematically safe (bounds checked beforehand)
 	var (
@@ -288,7 +282,7 @@ func CheckCollision(a, b *geometry.Footprint) bool {
 		}
 	}
 
-	return collision
+	return false
 }
 
 func boundsOverlap(a, b *geometry.Footprint) bool {
