@@ -20,6 +20,8 @@ func (r *NoCollisionRule) Evaluate(subject *entity.Entity, ctx *RuleContext) flo
 
 	ctx.EntityBuffer = ctx.EntityGrid.QueryBuf(minBounds, maxBounds, ctx.EntityBuffer)
 
+	subFp := subject.AsFootprint()
+
 	for _, neighbor := range ctx.EntityBuffer {
 		if subject.Def.ID == neighbor.Def.ID {
 			continue
@@ -29,7 +31,6 @@ func (r *NoCollisionRule) Evaluate(subject *entity.Entity, ctx *RuleContext) flo
 			continue
 		}
 
-		subFp := subject.AsFootprint()
 		nFp := neighbor.AsFootprint()
 		if collision.CheckCollision(&subFp, &nFp) {
 			return 0.0
