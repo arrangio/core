@@ -85,27 +85,17 @@ func CheckCollision(a, b *geometry.Footprint) bool {
 		// b is a box, so if a point is within the intersection bounds,
 		// it is GUARANTEED to be inside b! We just need to check if it's in a.
 		switch aShape := a.Shape.(type) {
-		case *geometry.Box:
-			for z := localAMinZ; z < localAMaxZ; z++ {
-				for y := localAMinY; y < localAMaxY; y++ {
-					for x := localAMinX; x < localAMaxX; x++ {
-						if aShape.Contains(x, y, z) {
-							return true
-						}
-					}
-				}
-			}
-		case geometry.Box:
-			for z := localAMinZ; z < localAMaxZ; z++ {
-				for y := localAMinY; y < localAMaxY; y++ {
-					for x := localAMinX; x < localAMaxX; x++ {
-						if aShape.Contains(x, y, z) {
-							return true
-						}
-					}
-				}
-			}
 		case *geometry.VoxelShape:
+			for z := localAMinZ; z < localAMaxZ; z++ {
+				for y := localAMinY; y < localAMaxY; y++ {
+					for x := localAMinX; x < localAMaxX; x++ {
+						if aShape.Contains(x, y, z) {
+							return true
+						}
+					}
+				}
+			}
+		case *geometry.RotatedShape:
 			for z := localAMinZ; z < localAMaxZ; z++ {
 				for y := localAMinY; y < localAMaxY; y++ {
 					for x := localAMinX; x < localAMaxX; x++ {
@@ -153,6 +143,18 @@ func CheckCollision(a, b *geometry.Footprint) bool {
 				}
 			}
 		case *geometry.VoxelShape:
+			for z := localAMinZ; z < localAMaxZ; z++ {
+				for y := localAMinY; y < localAMaxY; y++ {
+					for x := localAMinX; x < localAMaxX; x++ {
+						if aShape.Contains(x, y, z) {
+							if bShape.Contains(int16(int64(x)+diffX), int16(int64(y)+diffY), int16(int64(z)+diffZ)) {
+								return true
+							}
+						}
+					}
+				}
+			}
+		case *geometry.RotatedShape:
 			for z := localAMinZ; z < localAMaxZ; z++ {
 				for y := localAMinY; y < localAMaxY; y++ {
 					for x := localAMinX; x < localAMaxX; x++ {
@@ -213,6 +215,18 @@ func CheckCollision(a, b *geometry.Footprint) bool {
 					}
 				}
 			}
+		case *geometry.RotatedShape:
+			for z := localAMinZ; z < localAMaxZ; z++ {
+				for y := localAMinY; y < localAMaxY; y++ {
+					for x := localAMinX; x < localAMaxX; x++ {
+						if aShape.Contains(x, y, z) {
+							if bShape.Contains(int16(int64(x)+diffX), int16(int64(y)+diffY), int16(int64(z)+diffZ)) {
+								return true
+							}
+						}
+					}
+				}
+			}
 		default:
 			for z := localAMinZ; z < localAMaxZ; z++ {
 				for y := localAMinY; y < localAMaxY; y++ {
@@ -251,6 +265,18 @@ func CheckCollision(a, b *geometry.Footprint) bool {
 				}
 			}
 		case *geometry.VoxelShape:
+			for z := localAMinZ; z < localAMaxZ; z++ {
+				for y := localAMinY; y < localAMaxY; y++ {
+					for x := localAMinX; x < localAMaxX; x++ {
+						if aShape.Contains(x, y, z) {
+							if b.Shape.Contains(int16(int64(x)+diffX), int16(int64(y)+diffY), int16(int64(z)+diffZ)) {
+								return true
+							}
+						}
+					}
+				}
+			}
+		case *geometry.RotatedShape:
 			for z := localAMinZ; z < localAMaxZ; z++ {
 				for y := localAMinY; y < localAMaxY; y++ {
 					for x := localAMinX; x < localAMaxX; x++ {
