@@ -73,14 +73,6 @@ func CheckCollision(a, b *geometry.Footprint) bool {
 		localBMaxZ = int16(oMaxZ - b.Anchor.Z)
 	)
 
-	// Pre-cast difference
-	// #nosec G115
-	var (
-		dx = int16(diffX)
-		dy = int16(diffY)
-		dz = int16(diffZ)
-	)
-
 	// Iterate ONLY through the intersection bounds
 	// This avoids iterating through the entire shape a!
 
@@ -165,7 +157,7 @@ func CheckCollision(a, b *geometry.Footprint) bool {
 				for y := localAMinY; y < localAMaxY; y++ {
 					for x := localAMinX; x < localAMaxX; x++ {
 						if aShape.Contains(x, y, z) {
-							if bShape.Contains(x+dx, y+dy, z+dz) {
+							if bShape.Contains(int16(int64(x)+diffX), int16(int64(y)+diffY), int16(int64(z)+diffZ)) {
 								return true
 							}
 						}
@@ -177,7 +169,7 @@ func CheckCollision(a, b *geometry.Footprint) bool {
 				for y := localAMinY; y < localAMaxY; y++ {
 					for x := localAMinX; x < localAMaxX; x++ {
 						if a.Shape.Contains(x, y, z) {
-							if bShape.Contains(x+dx, y+dy, z+dz) {
+							if bShape.Contains(int16(int64(x)+diffX), int16(int64(y)+diffY), int16(int64(z)+diffZ)) {
 								return true
 							}
 						}
@@ -214,7 +206,7 @@ func CheckCollision(a, b *geometry.Footprint) bool {
 				for y := localAMinY; y < localAMaxY; y++ {
 					for x := localAMinX; x < localAMaxX; x++ {
 						if aShape.Contains(x, y, z) {
-							if bShape.Contains(x+dx, y+dy, z+dz) {
+							if bShape.Contains(int16(int64(x)+diffX), int16(int64(y)+diffY), int16(int64(z)+diffZ)) {
 								return true
 							}
 						}
@@ -226,7 +218,7 @@ func CheckCollision(a, b *geometry.Footprint) bool {
 				for y := localAMinY; y < localAMaxY; y++ {
 					for x := localAMinX; x < localAMaxX; x++ {
 						if a.Shape.Contains(x, y, z) {
-							if bShape.Contains(x+dx, y+dy, z+dz) {
+							if bShape.Contains(int16(int64(x)+diffX), int16(int64(y)+diffY), int16(int64(z)+diffZ)) {
 								return true
 							}
 						}
@@ -263,7 +255,7 @@ func CheckCollision(a, b *geometry.Footprint) bool {
 				for y := localAMinY; y < localAMaxY; y++ {
 					for x := localAMinX; x < localAMaxX; x++ {
 						if aShape.Contains(x, y, z) {
-							if b.Shape.Contains(x+dx, y+dy, z+dz) {
+							if b.Shape.Contains(int16(int64(x)+diffX), int16(int64(y)+diffY), int16(int64(z)+diffZ)) {
 								return true
 							}
 						}
@@ -275,7 +267,7 @@ func CheckCollision(a, b *geometry.Footprint) bool {
 				for y := localAMinY; y < localAMaxY; y++ {
 					for x := localAMinX; x < localAMaxX; x++ {
 						if a.Shape.Contains(x, y, z) {
-							if b.Shape.Contains(x+dx, y+dy, z+dz) {
+							if b.Shape.Contains(int16(int64(x)+diffX), int16(int64(y)+diffY), int16(int64(z)+diffZ)) {
 								return true
 							}
 						}
@@ -287,7 +279,6 @@ func CheckCollision(a, b *geometry.Footprint) bool {
 
 	return false
 }
-
 
 func isPureBox(s geometry.Shape) bool {
 	if s == nil {
