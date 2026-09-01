@@ -22,9 +22,9 @@ func TestZoneExclusionRule(t *testing.T) {
 
 		tests := []RuleTestCase{
 			{
-				Name:    "No zones in grid -> 1.0",
-				Subject: entity.TestEntity{ID: 1, Anchor: geometry.Point64{X: 0, Y: 0, Z: 0}},
-				Zones:   []zones.TestZone{},
+				Name:     "No zones in grid -> 1.0",
+				Subject:  entity.TestEntity{ID: 1, Anchor: geometry.Point64{X: 0, Y: 0, Z: 0}},
+				Zones:    []zones.TestZone{},
 				Expected: 1.0,
 			},
 			{
@@ -56,7 +56,7 @@ func TestZoneExclusionRule(t *testing.T) {
 				Subject: entity.TestEntity{ID: 1, Anchor: geometry.Point64{X: 0, Y: 0, Z: 0}},
 				Zones: []zones.TestZone{
 					{ID: 10, Anchor: geometry.Point64{X: 50, Y: 50, Z: 50}, W: 3, H: 3, D: 3}, // far away
-					{ID: 11, Anchor: geometry.Point64{X: 0, Y: 0, Z: 0}, W: 3, H: 3, D: 3},   // overlaps
+					{ID: 11, Anchor: geometry.Point64{X: 0, Y: 0, Z: 0}, W: 3, H: 3, D: 3},    // overlaps
 				},
 				Expected: 0.0,
 			},

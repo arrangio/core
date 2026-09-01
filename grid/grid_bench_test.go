@@ -83,7 +83,6 @@ func BenchmarkGridQuery_Dense(b *testing.B) {
 	}
 }
 
-
 func BenchmarkGridMove(b *testing.B) {
 	g, _ := grid.NewGrid[*entity.Entity](3, -1000, -1000, -1000, 1000, 1000, 1000, 10000)
 	e := entity.BuildTestEntity(entity.TestEntity{

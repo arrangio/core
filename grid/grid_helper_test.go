@@ -117,7 +117,7 @@ func RunGridTest(t *testing.T, tc GridTestCase) {
 					t.Fatalf("%s: entity with ID %d not found", stepName, act.EntityID)
 				}
 				oldMin, oldMax := e.WorldBounds()
-				
+
 				e.State.Anchor.X += act.MoveDx
 				e.State.Anchor.Y += act.MoveDy
 				e.State.Anchor.Z += act.MoveDz

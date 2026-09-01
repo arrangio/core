@@ -7,10 +7,10 @@ import (
 
 // TestZone is a blank for the BuildTestZone function
 type TestZone struct {
-	ID     uint64
-	Name   string
-	Anchor geometry.Point64
-	Tags   []int // tags that would be assigned to this zone
+	ID      uint64
+	Name    string
+	Anchor  geometry.Point64
+	Tags    []int // tags that would be assigned to this zone
 	W, H, D int16 // 1x1x1 by default
 }
 

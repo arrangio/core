@@ -277,9 +277,9 @@ func TestGrid(t *testing.T) {
 		{
 			Name: "Move object out of grid boundaries",
 			GridConfig: &GridConfig{
-				ShiftBits:         3,
-				MinX:              0, MinY: 0, MinZ: 0,
-				MaxX:              100, MaxY: 100, MaxZ: 100,
+				ShiftBits: 3,
+				MinX:      0, MinY: 0, MinZ: 0,
+				MaxX: 100, MaxY: 100, MaxZ: 100,
 				MaxObjectsPerCell: 10,
 			},
 			Actions: []GridAction{

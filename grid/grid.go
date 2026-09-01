@@ -8,9 +8,9 @@ import (
 // gridNode is an element in a flat array `nods`
 // it is a node is a singly-linked list, links one entity to the next one in the same cell of the grid
 type gridNode[T Spatial] struct {
-	item T
+	item   T
 	itemID uint64
-	next int32 // index of the next node in the same cell chain (-1 if end of the list)
+	next   int32 // index of the next node in the same cell chain (-1 if end of the list)
 }
 
 type Grid[T Spatial] struct {
@@ -152,9 +152,9 @@ func (g *Grid[T]) addToCell(cellIdx int64, item T) {
 	g.freeNodes = g.freeNodes[:len(g.freeNodes)-1]
 
 	g.nodes[nodeIdx] = gridNode[T]{
-		item: item,
+		item:   item,
 		itemID: item.GetID(),
-		next: g.heads[cellIdx],
+		next:   g.heads[cellIdx],
 	}
 	g.heads[cellIdx] = nodeIdx
 }
@@ -173,19 +173,21 @@ func (g *Grid[T]) Remove(item T) {
 	maxY = min(g.sizeY-1, maxY)
 	maxZ = min(g.sizeZ-1, maxZ)
 
+	itemID := item.GetID()
+
 	for z := minZ; z <= maxZ; z++ {
 		zOffset := z * g.strideZ
 		for y := minY; y <= maxY; y++ {
 			yOffset := zOffset + (y * g.strideY)
 			for x := minX; x <= maxX; x++ {
 				cellIdx := x + yOffset
-				g.removeFromCell(cellIdx, item)
+				g.removeFromCell(cellIdx, itemID)
 			}
 		}
 	}
 }
 
-func (g *Grid[T]) removeFromCell(cellIdx int64, item T) {
+func (g *Grid[T]) removeFromCell(cellIdx int64, itemID uint64) {
 	currentNodeIdx := g.heads[cellIdx]
 	var prevNodeIdx int32 = -1
 
@@ -194,7 +196,6 @@ func (g *Grid[T]) removeFromCell(cellIdx int64, item T) {
 		return
 	}
 
-	itemID := item.GetID()
 	// iterate through the list of nodes
 	for currentNodeIdx != -1 {
 		node := g.nodes[currentNodeIdx]
@@ -257,7 +258,7 @@ func (g *Grid[T]) Move(item T, oldMin, oldMax, newMin, newMax geometry.Point64) 
 				if inOld && !inNew {
 					// Object has left this cell: remove it.
 					cellIdx := x + yOffset
-					g.removeFromCell(cellIdx, item)
+					g.removeFromCell(cellIdx, item.GetID())
 				} else if inNew && !inOld {
 					// Object has entered this cell: add it.
 					cellIdx := x + yOffset

@@ -92,7 +92,52 @@ func CheckCollision(a, b *geometry.Footprint) bool {
 	// If both, we have a collision.
 
 	switch bShape := b.Shape.(type) {
-	case geometry.Box, *geometry.Box:
+	case *geometry.Box:
+		// b is a box, so if a point is within the intersection bounds,
+		// it is GUARANTEED to be inside b! We just need to check if it's in a.
+		switch aShape := a.Shape.(type) {
+		case *geometry.Box:
+			for z := localAMinZ; z < localAMaxZ; z++ {
+				for y := localAMinY; y < localAMaxY; y++ {
+					for x := localAMinX; x < localAMaxX; x++ {
+						if aShape.Contains(x, y, z) {
+							return true
+						}
+					}
+				}
+			}
+		case geometry.Box:
+			for z := localAMinZ; z < localAMaxZ; z++ {
+				for y := localAMinY; y < localAMaxY; y++ {
+					for x := localAMinX; x < localAMaxX; x++ {
+						if aShape.Contains(x, y, z) {
+							return true
+						}
+					}
+				}
+			}
+		case *geometry.VoxelShape:
+			for z := localAMinZ; z < localAMaxZ; z++ {
+				for y := localAMinY; y < localAMaxY; y++ {
+					for x := localAMinX; x < localAMaxX; x++ {
+						if aShape.Contains(x, y, z) {
+							return true
+						}
+					}
+				}
+			}
+		default:
+			for z := localAMinZ; z < localAMaxZ; z++ {
+				for y := localAMinY; y < localAMaxY; y++ {
+					for x := localAMinX; x < localAMaxX; x++ {
+						if a.Shape.Contains(x, y, z) {
+							return true
+						}
+					}
+				}
+			}
+		}
+	case geometry.Box:
 		// b is a box, so if a point is within the intersection bounds,
 		// it is GUARANTEED to be inside b! We just need to check if it's in a.
 		switch aShape := a.Shape.(type) {
@@ -319,7 +364,9 @@ func isPureBox(s geometry.Shape) bool {
 	// Allows the narrow phase optimization to short-circuit AABB overlap correctly
 	// for value-type geometry.Box, significantly reducing collision check time for value-types (e.g. ~260ns to ~21ns).
 	switch s.(type) {
-	case *geometry.Box, geometry.Box:
+	case *geometry.Box:
+		return true
+	case geometry.Box:
 		return true
 	default:
 		return false
