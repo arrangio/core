@@ -47,10 +47,6 @@ func CheckCollision(a, b *geometry.Footprint) bool {
 	oMinZ := max(aMinZ, bMinZ)
 	oMaxZ := min(aMaxZ, bMaxZ)
 
-	diffX := a.Anchor.X - b.Anchor.X
-	diffY := a.Anchor.Y - b.Anchor.Y
-	diffZ := a.Anchor.Z - b.Anchor.Z
-
 	// Convert overlap bounds back to A's local space
 	// #nosec G115 -- mathematically safe (bounds checked beforehand)
 	var (
@@ -143,40 +139,58 @@ func CheckCollision(a, b *geometry.Footprint) bool {
 				}
 			}
 		case *geometry.VoxelShape:
+			bz := localBMinZ
 			for z := localAMinZ; z < localAMaxZ; z++ {
+				by := localBMinY
 				for y := localAMinY; y < localAMaxY; y++ {
+					bx := localBMinX
 					for x := localAMinX; x < localAMaxX; x++ {
 						if aShape.Contains(x, y, z) {
-							if bShape.Contains(int16(int64(x)+diffX), int16(int64(y)+diffY), int16(int64(z)+diffZ)) {
+							if bShape.Contains(bx, by, bz) {
 								return true
 							}
 						}
+						bx++
 					}
+					by++
 				}
+				bz++
 			}
 		case *geometry.RotatedShape:
+			bz := localBMinZ
 			for z := localAMinZ; z < localAMaxZ; z++ {
+				by := localBMinY
 				for y := localAMinY; y < localAMaxY; y++ {
+					bx := localBMinX
 					for x := localAMinX; x < localAMaxX; x++ {
 						if aShape.Contains(x, y, z) {
-							if bShape.Contains(int16(int64(x)+diffX), int16(int64(y)+diffY), int16(int64(z)+diffZ)) {
+							if bShape.Contains(bx, by, bz) {
 								return true
 							}
 						}
+						bx++
 					}
+					by++
 				}
+				bz++
 			}
 		default:
+			bz := localBMinZ
 			for z := localAMinZ; z < localAMaxZ; z++ {
+				by := localBMinY
 				for y := localAMinY; y < localAMaxY; y++ {
+					bx := localBMinX
 					for x := localAMinX; x < localAMaxX; x++ {
 						if a.Shape.Contains(x, y, z) {
-							if bShape.Contains(int16(int64(x)+diffX), int16(int64(y)+diffY), int16(int64(z)+diffZ)) {
+							if bShape.Contains(bx, by, bz) {
 								return true
 							}
 						}
+						bx++
 					}
+					by++
 				}
+				bz++
 			}
 		}
 	case *geometry.RotatedShape:
@@ -204,40 +218,58 @@ func CheckCollision(a, b *geometry.Footprint) bool {
 				}
 			}
 		case *geometry.VoxelShape:
+			bz := localBMinZ
 			for z := localAMinZ; z < localAMaxZ; z++ {
+				by := localBMinY
 				for y := localAMinY; y < localAMaxY; y++ {
+					bx := localBMinX
 					for x := localAMinX; x < localAMaxX; x++ {
 						if aShape.Contains(x, y, z) {
-							if bShape.Contains(int16(int64(x)+diffX), int16(int64(y)+diffY), int16(int64(z)+diffZ)) {
+							if bShape.Contains(bx, by, bz) {
 								return true
 							}
 						}
+						bx++
 					}
+					by++
 				}
+				bz++
 			}
 		case *geometry.RotatedShape:
+			bz := localBMinZ
 			for z := localAMinZ; z < localAMaxZ; z++ {
+				by := localBMinY
 				for y := localAMinY; y < localAMaxY; y++ {
+					bx := localBMinX
 					for x := localAMinX; x < localAMaxX; x++ {
 						if aShape.Contains(x, y, z) {
-							if bShape.Contains(int16(int64(x)+diffX), int16(int64(y)+diffY), int16(int64(z)+diffZ)) {
+							if bShape.Contains(bx, by, bz) {
 								return true
 							}
 						}
+						bx++
 					}
+					by++
 				}
+				bz++
 			}
 		default:
+			bz := localBMinZ
 			for z := localAMinZ; z < localAMaxZ; z++ {
+				by := localBMinY
 				for y := localAMinY; y < localAMaxY; y++ {
+					bx := localBMinX
 					for x := localAMinX; x < localAMaxX; x++ {
 						if a.Shape.Contains(x, y, z) {
-							if bShape.Contains(int16(int64(x)+diffX), int16(int64(y)+diffY), int16(int64(z)+diffZ)) {
+							if bShape.Contains(bx, by, bz) {
 								return true
 							}
 						}
+						bx++
 					}
+					by++
 				}
+				bz++
 			}
 		}
 	default:
@@ -265,40 +297,58 @@ func CheckCollision(a, b *geometry.Footprint) bool {
 				}
 			}
 		case *geometry.VoxelShape:
+			bz := localBMinZ
 			for z := localAMinZ; z < localAMaxZ; z++ {
+				by := localBMinY
 				for y := localAMinY; y < localAMaxY; y++ {
+					bx := localBMinX
 					for x := localAMinX; x < localAMaxX; x++ {
 						if aShape.Contains(x, y, z) {
-							if b.Shape.Contains(int16(int64(x)+diffX), int16(int64(y)+diffY), int16(int64(z)+diffZ)) {
+							if b.Shape.Contains(bx, by, bz) {
 								return true
 							}
 						}
+						bx++
 					}
+					by++
 				}
+				bz++
 			}
 		case *geometry.RotatedShape:
+			bz := localBMinZ
 			for z := localAMinZ; z < localAMaxZ; z++ {
+				by := localBMinY
 				for y := localAMinY; y < localAMaxY; y++ {
+					bx := localBMinX
 					for x := localAMinX; x < localAMaxX; x++ {
 						if aShape.Contains(x, y, z) {
-							if b.Shape.Contains(int16(int64(x)+diffX), int16(int64(y)+diffY), int16(int64(z)+diffZ)) {
+							if b.Shape.Contains(bx, by, bz) {
 								return true
 							}
 						}
+						bx++
 					}
+					by++
 				}
+				bz++
 			}
 		default:
+			bz := localBMinZ
 			for z := localAMinZ; z < localAMaxZ; z++ {
+				by := localBMinY
 				for y := localAMinY; y < localAMaxY; y++ {
+					bx := localBMinX
 					for x := localAMinX; x < localAMaxX; x++ {
 						if a.Shape.Contains(x, y, z) {
-							if b.Shape.Contains(int16(int64(x)+diffX), int16(int64(y)+diffY), int16(int64(z)+diffZ)) {
+							if b.Shape.Contains(bx, by, bz) {
 								return true
 							}
 						}
+						bx++
 					}
+					by++
 				}
+				bz++
 			}
 		}
 	}
