@@ -1,8 +1,8 @@
 package entity
 
 import (
-	"arrangio-core/geometry"
-	"arrangio-core/tags"
+	"github.com/arrangio/core/geometry"
+	"github.com/arrangio/core/tags"
 )
 
 // EntityDef holds the immutable definition of an entity

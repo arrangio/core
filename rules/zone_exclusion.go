@@ -1,8 +1,8 @@
 package rules
 
 import (
-	"arrangio-core/collision"
-	"arrangio-core/entity"
+	"github.com/arrangio/core/collision"
+	"github.com/arrangio/core/entity"
 )
 
 // ZoneExclusionRule prevents objects matching `Target` from entering zones matching `Zone`.

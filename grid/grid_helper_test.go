@@ -1,9 +1,9 @@
 package grid_test
 
 import (
-	"arrangio-core/entity"
-	"arrangio-core/geometry"
-	"arrangio-core/grid"
+	"github.com/arrangio/core/entity"
+	"github.com/arrangio/core/geometry"
+	"github.com/arrangio/core/grid"
 	"fmt"
 	"slices"
 	"testing"

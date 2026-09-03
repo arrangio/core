@@ -1,8 +1,8 @@
 package rules
 
 import (
-	"arrangio-core/entity"
-	"arrangio-core/geometry"
+	"github.com/arrangio/core/entity"
+	"github.com/arrangio/core/geometry"
 )
 
 // keep objects with `Target` Selector at least further

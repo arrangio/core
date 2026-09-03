@@ -1,10 +1,10 @@
 package rules_test
 
 import (
-	"arrangio-core/entity"
-	"arrangio-core/geometry"
-	"arrangio-core/rules"
-	"arrangio-core/tags"
+	"github.com/arrangio/core/entity"
+	"github.com/arrangio/core/geometry"
+	"github.com/arrangio/core/rules"
+	"github.com/arrangio/core/tags"
 	"testing"
 )
 

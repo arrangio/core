@@ -1,8 +1,8 @@
 package rules
 
 import (
-	"arrangio-core/entity"
-	"arrangio-core/geometry"
+	"github.com/arrangio/core/entity"
+	"github.com/arrangio/core/geometry"
 )
 
 // check for padding from objects with matching `Obstacle` Selector

@@ -3,8 +3,8 @@ package grid_test
 import (
 	"testing"
 
-	"arrangio-core/entity"
-	"arrangio-core/geometry"
+	"github.com/arrangio/core/entity"
+	"github.com/arrangio/core/geometry"
 )
 
 func TestGrid(t *testing.T) {

@@ -1,6 +1,6 @@
 package grid
 
-import "arrangio-core/geometry"
+import "github.com/arrangio/core/geometry"
 
 // Spatial is a type constraint for objects stored in Grid.
 // Any type that has an ID, a bounding box, and a query

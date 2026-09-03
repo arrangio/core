@@ -3,9 +3,9 @@ package grid_test
 import (
 	"testing"
 
-	"arrangio-core/entity"
-	"arrangio-core/geometry"
-	"arrangio-core/grid"
+	"github.com/arrangio/core/entity"
+	"github.com/arrangio/core/geometry"
+	"github.com/arrangio/core/grid"
 )
 
 func BenchmarkGridInsert(b *testing.B) {

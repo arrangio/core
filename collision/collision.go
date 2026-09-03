@@ -1,6 +1,6 @@
 package collision
 
-import "arrangio-core/geometry"
+import "github.com/arrangio/core/geometry"
 
 func CheckCollision(a, b *geometry.Footprint) bool {
 	aMin, aMax := a.Shape.Bounds()

@@ -1,9 +1,9 @@
 package rules
 
 import (
-	"arrangio-core/entity"
-	"arrangio-core/grid"
-	"arrangio-core/zones"
+	"github.com/arrangio/core/entity"
+	"github.com/arrangio/core/grid"
+	"github.com/arrangio/core/zones"
 )
 
 // axis definitions for some rules

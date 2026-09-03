@@ -1,7 +1,7 @@
 package grid
 
 import (
-	"arrangio-core/geometry"
+	"github.com/arrangio/core/geometry"
 	"fmt"
 )
 

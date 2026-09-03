@@ -1,6 +1,6 @@
 package rules
 
-import "arrangio-core/entity"
+import "github.com/arrangio/core/entity"
 
 // define the type of comparison
 type Operator uint8

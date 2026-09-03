@@ -1,7 +1,7 @@
 package collision
 
 import (
-	"arrangio-core/geometry"
+	"github.com/arrangio/core/geometry"
 	"testing"
 )
 

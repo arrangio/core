@@ -1,3 +1,3 @@
-module arrangio-core
+module github.com/arrangio/core
 
 go 1.26.3

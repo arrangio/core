@@ -1,9 +1,9 @@
 package rules
 
 import (
-	"arrangio-core/entity"
-	"arrangio-core/tags"
-	"arrangio-core/zones"
+	"github.com/arrangio/core/entity"
+	"github.com/arrangio/core/tags"
+	"github.com/arrangio/core/zones"
 )
 
 // Selector filters entities by ID or tag

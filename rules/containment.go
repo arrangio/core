@@ -1,8 +1,8 @@
 package rules
 
 import (
-	"arrangio-core/entity"
-	"arrangio-core/geometry"
+	"github.com/arrangio/core/entity"
+	"github.com/arrangio/core/geometry"
 )
 
 // keep objects with matching `Selector` in cube from `Min` to `Max`

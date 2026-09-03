@@ -1,8 +1,8 @@
 package zones
 
 import (
-	"arrangio-core/geometry"
-	"arrangio-core/tags"
+	"github.com/arrangio/core/geometry"
+	"github.com/arrangio/core/tags"
 )
 
 // TestZone is a blank for the BuildTestZone function

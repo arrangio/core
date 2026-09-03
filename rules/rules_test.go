@@ -4,10 +4,10 @@ import (
 	"math"
 	"testing"
 
-	"arrangio-core/entity"
-	"arrangio-core/grid"
-	"arrangio-core/rules"
-	"arrangio-core/zones"
+	"github.com/arrangio/core/entity"
+	"github.com/arrangio/core/grid"
+	"github.com/arrangio/core/rules"
+	"github.com/arrangio/core/zones"
 )
 
 // RuleTestCase describes the test case
