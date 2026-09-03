@@ -105,6 +105,7 @@ func (g *Grid[T]) worldToCell(wx, wy, wz int64) (cx, cy, cz int64) {
 
 func (g *Grid[T]) Insert(item T) {
 	minBounds, maxBounds := item.WorldBounds()
+	itemID := item.GetID() // Hoist GetID() out of grid traversal loops
 
 	minX, minY, minZ := g.worldToCell(minBounds.X, minBounds.Y, minBounds.Z)
 	maxX, maxY, maxZ := g.worldToCell(maxBounds.X, maxBounds.Y, maxBounds.Z)
@@ -123,13 +124,13 @@ func (g *Grid[T]) Insert(item T) {
 			yOffset := zOffset + (y * g.strideY)
 			for x := minX; x <= maxX; x++ {
 				cellIdx := x + yOffset
-				g.addToCell(cellIdx, item)
+				g.addToCell(cellIdx, item, itemID)
 			}
 		}
 	}
 }
 
-func (g *Grid[T]) addToCell(cellIdx int64, item T) {
+func (g *Grid[T]) addToCell(cellIdx int64, item T, itemID uint64) {
 	if len(g.freeNodes) == 0 {
 		oldSize := len(g.nodes)
 		newSize := oldSize * 2
@@ -153,7 +154,7 @@ func (g *Grid[T]) addToCell(cellIdx int64, item T) {
 
 	g.nodes[nodeIdx] = gridNode[T]{
 		item:   item,
-		itemID: item.GetID(),
+		itemID: itemID,
 		next:   g.heads[cellIdx],
 	}
 	g.heads[cellIdx] = nodeIdx
@@ -161,6 +162,7 @@ func (g *Grid[T]) addToCell(cellIdx int64, item T) {
 
 func (g *Grid[T]) Remove(item T) {
 	minBounds, maxBounds := item.WorldBounds()
+	itemID := item.GetID() // Hoist GetID() out of grid traversal loops
 
 	minX, minY, minZ := g.worldToCell(minBounds.X, minBounds.Y, minBounds.Z)
 	maxX, maxY, maxZ := g.worldToCell(maxBounds.X, maxBounds.Y, maxBounds.Z)
@@ -179,13 +181,13 @@ func (g *Grid[T]) Remove(item T) {
 			yOffset := zOffset + (y * g.strideY)
 			for x := minX; x <= maxX; x++ {
 				cellIdx := x + yOffset
-				g.removeFromCell(cellIdx, item)
+				g.removeFromCell(cellIdx, item, itemID)
 			}
 		}
 	}
 }
 
-func (g *Grid[T]) removeFromCell(cellIdx int64, item T) {
+func (g *Grid[T]) removeFromCell(cellIdx int64, item T, itemID uint64) {
 	currentNodeIdx := g.heads[cellIdx]
 	var prevNodeIdx int32 = -1
 
@@ -194,7 +196,6 @@ func (g *Grid[T]) removeFromCell(cellIdx int64, item T) {
 		return
 	}
 
-	itemID := item.GetID()
 	// iterate through the list of nodes
 	for currentNodeIdx != -1 {
 		node := g.nodes[currentNodeIdx]
@@ -223,6 +224,7 @@ func (g *Grid[T]) removeFromCell(cellIdx int64, item T) {
 // This is significantly faster than Remove() followed by Insert() for small movements
 // (a core operation in Simulated Annealing).
 func (g *Grid[T]) Move(item T, oldMin, oldMax, newMin, newMax geometry.Point64) {
+	itemID := item.GetID() // Hoist GetID() out of grid traversal loops
 	oldMinX, oldMinY, oldMinZ := g.worldToCell(oldMin.X, oldMin.Y, oldMin.Z)
 	oldMaxX, oldMaxY, oldMaxZ := g.worldToCell(oldMax.X, oldMax.Y, oldMax.Z)
 	newMinX, newMinY, newMinZ := g.worldToCell(newMin.X, newMin.Y, newMin.Z)
@@ -260,11 +262,11 @@ func (g *Grid[T]) Move(item T, oldMin, oldMax, newMin, newMax geometry.Point64) 
 				if inOld && !inNew {
 					// Object has left this cell: remove it.
 					cellIdx := x + yOffset
-					g.removeFromCell(cellIdx, item)
+					g.removeFromCell(cellIdx, item, itemID)
 				} else if inNew && !inOld {
 					// Object has entered this cell: add it.
 					cellIdx := x + yOffset
-					g.addToCell(cellIdx, item)
+					g.addToCell(cellIdx, item, itemID)
 				}
 				// If both are true, the object was here and stays here (no action needed).
 				// If both are false, the cell is in the union bounding box but belongs
