@@ -1,8 +1,9 @@
 package grid
 
 import (
-	"github.com/arrangio/core/geometry"
 	"fmt"
+
+	"github.com/arrangio/core/geometry"
 )
 
 // gridNode is an element in a flat array `nods`
@@ -321,4 +322,8 @@ func (g *Grid[T]) QueryBuf(searchMin, searchMax geometry.Point64, buffer []T) []
 		}
 	}
 	return result
+}
+
+func (g *Grid[T]) WorldBounds() (geometry.Point64, geometry.Point64) {
+	return geometry.Point64{X: g.originX, Y: g.originY, Z: g.originZ}, geometry.Point64{X: g.originX + g.sizeX<<g.shiftBits, Y: g.originY + g.sizeY<<g.shiftBits, Z: g.originZ + g.sizeZ<<g.shiftBits}
 }
