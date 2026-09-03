@@ -78,7 +78,7 @@ func (s *State) Mutate(rng *rand.Rand) {
 	// as a temporary solution
 	if s.canRotate[idx] && rng.Intn(2) == 0 {
 		rot := e.Def.Shape.(geometry.Rotatable)
-		rot.SetRotation(uint8(rng.Intn(24)))
+		rot.SetRotation(uint8(rng.Intn(24))) // #nosec G115
 	} else {
 		bMin, bMax := s.EntityGrid.WorldBounds()
 		eMin, eMax := e.Def.Shape.Bounds()
