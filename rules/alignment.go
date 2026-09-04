@@ -14,6 +14,10 @@ type AlignmentRule struct {
 	Radius int64 // define search radius for this rule
 }
 
+func (r *AlignmentRule) MaxInfluenceRadius() int64 {
+	return r.Radius
+}
+
 func (r *AlignmentRule) Evaluate(subject *entity.Entity, ctx *RuleContext) float64 {
 	if !r.Target.Matches(subject) {
 		return 1.0

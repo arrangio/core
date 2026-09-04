@@ -13,6 +13,10 @@ type SeparationRule struct {
 	MinDistance int64
 }
 
+func (r *SeparationRule) MaxInfluenceRadius() int64 {
+	return r.MinDistance
+}
+
 func (r *SeparationRule) Evaluate(e *entity.Entity, ctx *RuleContext) float64 {
 	if !r.Target.Matches(e) {
 		return 1.0

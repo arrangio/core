@@ -15,6 +15,10 @@ type ProximityRule struct {
 	RequireClosest bool
 }
 
+func (r *ProximityRule) MaxInfluenceRadius() int64 {
+	return r.MaxDist
+}
+
 func (r *ProximityRule) Evaluate(subject *entity.Entity, ctx *RuleContext) float64 {
 	if r.MaxDist <= 0 {
 		return 0.0

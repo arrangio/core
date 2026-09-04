@@ -16,6 +16,7 @@ type State struct {
 	Entities   []*entity.Entity
 	Rules      []rules.Rule
 	RuleCtx    *rules.RuleContext
+	MaxRadius  int64
 
 	canRotate []bool
 
@@ -45,6 +46,16 @@ func NewState(
 		canRotate = append(canRotate, ok)
 	}
 
+	maxRadius := int64(0)
+	for _, r := range ruleSet {
+		if rr, ok := r.(rules.RadiusRule); ok {
+			rad := rr.MaxInfluenceRadius()
+			if rad > maxRadius {
+				maxRadius = rad
+			}
+		}
+	}
+
 	return &State{
 		EntityGrid: eGrid,
 		ZoneGrid:   zGrid,
@@ -56,6 +67,7 @@ func NewState(
 			EntityBuffer: make([]*entity.Entity, 0, 64),
 			ZoneBuffer:   make([]*zones.Zone, 0, 16),
 		},
+		MaxRadius: maxRadius,
 		canRotate: canRotate,
 	}
 }

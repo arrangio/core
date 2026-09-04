@@ -12,6 +12,17 @@ type ClearanceRule struct {
 	Padding  geometry.Point64
 }
 
+func (r *ClearanceRule) MaxInfluenceRadius() int64 {
+	maxPadding := r.Padding.X
+	if r.Padding.Y > maxPadding {
+		maxPadding = r.Padding.Y
+	}
+	if r.Padding.Z > maxPadding {
+		maxPadding = r.Padding.Z
+	}
+	return maxPadding
+}
+
 func (r *ClearanceRule) Evaluate(subject *entity.Entity, ctx *RuleContext) float64 {
 	if !r.Target.Matches(subject) {
 		return 1.0
