@@ -68,7 +68,7 @@ func (e *Entity) GetID() uint64 {
 	return e.Def.ID
 }
 
-func (e *Entity) WorldBounds() (geometry.Point64, geometry.Point64) {
+func (e *Entity) BoundsAt(anchor geometry.Point64) (geometry.Point64, geometry.Point64) {
 	var localMin, localMax geometry.Point
 
 	// OPTIMIZATION: Devirtualize Shape.Bounds() for known fast paths.
@@ -86,14 +86,18 @@ func (e *Entity) WorldBounds() (geometry.Point64, geometry.Point64) {
 	}
 
 	return geometry.Point64{
-			X: e.State.Anchor.X + int64(localMin.X),
-			Y: e.State.Anchor.Y + int64(localMin.Y),
-			Z: e.State.Anchor.Z + int64(localMin.Z),
+			X: anchor.X + int64(localMin.X),
+			Y: anchor.Y + int64(localMin.Y),
+			Z: anchor.Z + int64(localMin.Z),
 		}, geometry.Point64{
-			X: e.State.Anchor.X + int64(localMax.X),
-			Y: e.State.Anchor.Y + int64(localMax.Y),
-			Z: e.State.Anchor.Z + int64(localMax.Z),
+			X: anchor.X + int64(localMax.X),
+			Y: anchor.Y + int64(localMax.Y),
+			Z: anchor.Z + int64(localMax.Z),
 		}
+}
+
+func (e *Entity) WorldBounds() (geometry.Point64, geometry.Point64) {
+	return e.BoundsAt(e.State.Anchor)
 }
 
 func (e *Entity) GetQueryID() uint64 {
