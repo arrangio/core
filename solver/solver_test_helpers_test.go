@@ -17,6 +17,16 @@ type TestRig struct {
 	Zones    []*zones.Zone
 }
 
+// Access entity by ID
+func (r *TestRig) GetEntity(id uint64) *entity.Entity {
+	for _, e := range r.Entities {
+		if e.Def.ID == id {
+			return e
+		}
+	}
+	return nil
+}
+
 type SolverTestCase struct {
 	Name     string
 	Entities []entity.TestEntity
