@@ -73,7 +73,7 @@ func TestScoreDirector(t *testing.T) {
 
 				oldMin, oldMax := e2.WorldBounds()
 				newAnchor := geometry.Point64{X: 10, Y: 0, Z: 0}
-				newMin, newMax := e2.BoundsAt(newAnchor)
+				newMin, newMax := e2.BoundsAt(newAnchor, 0)
 
 				delta := rig.Director.CalculateDelta(e2, oldMin, oldMax, newMin, newMax, func() {
 					e2.State.Anchor = newAnchor
@@ -110,7 +110,7 @@ func TestScoreDirector(t *testing.T) {
 
 				oldMin, oldMax := e2.WorldBounds()
 				newAnchor := geometry.Point64{X: 0, Y: 0, Z: 0} // move inside e1
-				newMin, newMax := e2.BoundsAt(newAnchor)
+				newMin, newMax := e2.BoundsAt(newAnchor, 0)
 
 				delta := rig.Director.CalculateDelta(e2, oldMin, oldMax, newMin, newMax, func() {
 					e2.State.Anchor = newAnchor
@@ -148,7 +148,7 @@ func TestScoreDirector(t *testing.T) {
 
 				oldMin, oldMax := e2.WorldBounds()
 				newAnchor := geometry.Point64{X: 150, Y: 150, Z: 150}
-				newMin, newMax := e2.BoundsAt(newAnchor)
+				newMin, newMax := e2.BoundsAt(newAnchor, 0)
 
 				delta := rig.Director.CalculateDelta(e2, oldMin, oldMax, newMin, newMax, func() {
 					e2.State.Anchor = newAnchor

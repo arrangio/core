@@ -35,6 +35,34 @@ func (r *RotatedShape) GetRotation() uint8 {
 	return r.matrixIdx
 }
 
+func GetRotatedBounds(base Shape, rotationIdx uint8) (Point, Point) {
+	minBase, maxBase := base.Bounds()
+
+	// OPTIMIZATION: Devirtualize Shape.Bounds() for known fast paths.
+	switch s := base.(type) {
+	case Box:
+		minBase, maxBase = s.Bounds()
+	case *Box:
+		minBase, maxBase = s.Bounds()
+	case *VoxelShape:
+		minBase, maxBase = s.Bounds()
+	case *RotatedShape:
+		minBase, maxBase = s.Bounds()
+	default:
+		minBase, maxBase = base.Bounds()
+	}
+
+	if rotationIdx == 0 {
+		return minBase, maxBase
+	}
+
+	if rotationIdx >= 24 {
+		rotationIdx = 0
+	}
+
+	return transformBounds(minBase, maxBase, rotationMatrices[rotationIdx])
+}
+
 // *trick*: instead of rotating shape, we rotate the incoming point backward
 // using the inverse matrix and query unrotated base shape
 func (r *RotatedShape) Contains(lx, ly, lz int16) bool {

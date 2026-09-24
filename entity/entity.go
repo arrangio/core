@@ -18,6 +18,7 @@ type EntityDef struct {
 // EntityState holds the mutable state of an entity
 type EntityState struct {
 	Anchor      geometry.Point64
+	Rotation    uint8
 	LastQueryID uint64
 }
 
@@ -68,22 +69,19 @@ func (e *Entity) GetID() uint64 {
 	return e.Def.ID
 }
 
-func (e *Entity) BoundsAt(anchor geometry.Point64) (geometry.Point64, geometry.Point64) {
-	var localMin, localMax geometry.Point
-
-	// OPTIMIZATION: Devirtualize Shape.Bounds() for known fast paths.
-	switch s := e.Def.Shape.(type) {
-	case geometry.Box:
-		localMin, localMax = s.Bounds()
-	case *geometry.Box:
-		localMin, localMax = s.Bounds()
-	case *geometry.VoxelShape:
-		localMin, localMax = s.Bounds()
-	case *geometry.RotatedShape:
-		localMin, localMax = s.Bounds()
-	default:
-		localMin, localMax = e.Def.Shape.Bounds()
+func (e *Entity) SetRotation(rotation uint8) {
+	if rotation >= 24 {
+		rotation = 0
 	}
+	e.State.Rotation = rotation
+}
+
+func (e *Entity) GetRotation() uint8 {
+	return e.State.Rotation
+}
+
+func (e *Entity) BoundsAt(anchor geometry.Point64, rotation uint8) (geometry.Point64, geometry.Point64) {
+	localMin, localMax := geometry.GetRotatedBounds(e.Def.Shape, rotation)
 
 	return geometry.Point64{
 			X: anchor.X + int64(localMin.X),
@@ -97,7 +95,7 @@ func (e *Entity) BoundsAt(anchor geometry.Point64) (geometry.Point64, geometry.P
 }
 
 func (e *Entity) WorldBounds() (geometry.Point64, geometry.Point64) {
-	return e.BoundsAt(e.State.Anchor)
+	return e.BoundsAt(e.State.Anchor, e.State.Rotation)
 }
 
 func (e *Entity) GetQueryID() uint64 {
