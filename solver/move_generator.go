@@ -42,6 +42,7 @@ func NewMoveGenerator(seed int64, min, max geometry.Point64, weights MoveWeights
 		seed = time.Now().UnixNano()
 	}
 	return &MoveGenerator{
+		// #nosec G104 -- here faster is better, no need for crypto rand
 		rnd:         rand.New(rand.NewSource(seed)),
 		weights:     weights,
 		totalWeight: weights.ShiftWeight + weights.TeleportWeight + weights.RotateWeight,
@@ -105,6 +106,7 @@ func (g *MoveGenerator) NextRandom(state *State) Move {
 		return g.GenerateTeleport(target, pt)
 	}
 
+	// #nosec G115 -- rotation angle is in [0, 23], not overflowing uint8
 	newRot := uint8(g.rnd.Intn(24))
 	return g.GenerateRotation(target, newRot)
 }
