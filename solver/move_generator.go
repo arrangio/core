@@ -42,7 +42,7 @@ func NewMoveGenerator(seed int64, min, max geometry.Point64, weights MoveWeights
 		seed = time.Now().UnixNano()
 	}
 	return &MoveGenerator{
-		rnd:         rand.New(rand.NewSource(seed)), // #nosec G104 -- here faster is better, no need for crypto rand
+		rnd:         rand.New(rand.NewSource(seed)), // #nosec G404 -- here faster is better, no need for crypto rand
 		weights:     weights,
 		totalWeight: weights.ShiftWeight + weights.TeleportWeight + weights.RotateWeight,
 		minX:        min.X, maxX: max.X,
