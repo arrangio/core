@@ -36,7 +36,7 @@ func (r *RotatedShape) GetRotation() uint8 {
 }
 
 func GetRotatedBounds(base Shape, rotationIdx uint8) (Point, Point) {
-	minBase, maxBase := base.Bounds()
+	var minBase, maxBase Point
 
 	// OPTIMIZATION: Devirtualize Shape.Bounds() for known fast paths.
 	switch s := base.(type) {
