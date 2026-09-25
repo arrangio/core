@@ -13,6 +13,7 @@ type TestEntity struct {
 	Tags     []int // tags that would be assigned to this entity
 	Facings  *geometry.Facings
 	W, H, D  int16 // 1x1x1 by default
+	Rotation uint8
 }
 
 // BuildTestEntity builds an `Entity` from `TestEntity`
@@ -42,7 +43,8 @@ func BuildTestEntity(cfg TestEntity) *Entity {
 			Facings:  cfg.Facings,
 		},
 		State: &EntityState{
-			Anchor: cfg.Anchor,
+			Anchor:   cfg.Anchor,
+			Rotation: cfg.Rotation,
 		},
 	}
 }
