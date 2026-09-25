@@ -11,72 +11,72 @@ type Move interface {
 }
 
 type ShiftMove struct {
-	target    *entity.Entity
-	oldAnchor geometry.Point64
-	newAnchor geometry.Point64
+	Target    *entity.Entity
+	OldAnchor geometry.Point64
+	NewAnchor geometry.Point64
 }
 
 type TeleportMove struct {
-	target    *entity.Entity
-	oldAnchor geometry.Point64
-	newAnchor geometry.Point64
+	Target    *entity.Entity
+	OldAnchor geometry.Point64
+	NewAnchor geometry.Point64
 }
 
 type RotationMove struct {
-	target *entity.Entity
-	oldRot uint8
-	newRot uint8
+	Target *entity.Entity
+	OldRot uint8
+	NewRot uint8
 }
 
 func (m *ShiftMove) Apply(sd *ScoreDirector) float64 {
-	oldMin, oldMax := m.target.BoundsAt(m.oldAnchor, m.target.GetRotation())
-	newMin, newMax := m.target.BoundsAt(m.newAnchor, m.target.GetRotation())
+	oldMin, oldMax := m.Target.BoundsAt(m.OldAnchor, m.Target.GetRotation())
+	newMin, newMax := m.Target.BoundsAt(m.NewAnchor, m.Target.GetRotation())
 
-	return sd.CalculateDelta(m.target, oldMin, oldMax, newMin, newMax, func() {
-		m.target.State.Anchor = m.newAnchor
-		sd.State.EntityGrid.Move(m.target, oldMin, oldMax, newMin, newMax)
+	return sd.CalculateDelta(m.Target, oldMin, oldMax, newMin, newMax, func() {
+		m.Target.State.Anchor = m.NewAnchor
+		sd.State.EntityGrid.Move(m.Target, oldMin, oldMax, newMin, newMax)
 	})
 }
 
 func (m *ShiftMove) Revert(sd *ScoreDirector) {
-	oldMin, oldMax := m.target.BoundsAt(m.newAnchor, m.target.GetRotation())
-	newMin, newMax := m.target.BoundsAt(m.oldAnchor, m.target.GetRotation())
+	oldMin, oldMax := m.Target.BoundsAt(m.NewAnchor, m.Target.GetRotation())
+	newMin, newMax := m.Target.BoundsAt(m.OldAnchor, m.Target.GetRotation())
 
-	m.target.State.Anchor = m.oldAnchor
-	sd.State.EntityGrid.Move(m.target, oldMin, oldMax, newMin, newMax)
+	m.Target.State.Anchor = m.OldAnchor
+	sd.State.EntityGrid.Move(m.Target, oldMin, oldMax, newMin, newMax)
 }
 
 func (m *TeleportMove) Apply(sd *ScoreDirector) float64 {
-	oldMin, oldMax := m.target.BoundsAt(m.oldAnchor, m.target.GetRotation())
-	newMin, newMax := m.target.BoundsAt(m.newAnchor, m.target.GetRotation())
+	oldMin, oldMax := m.Target.BoundsAt(m.OldAnchor, m.Target.GetRotation())
+	newMin, newMax := m.Target.BoundsAt(m.NewAnchor, m.Target.GetRotation())
 
-	return sd.CalculateDelta(m.target, oldMin, oldMax, newMin, newMax, func() {
-		sd.State.EntityGrid.Remove(m.target)
-		m.target.State.Anchor = m.newAnchor
-		sd.State.EntityGrid.Insert(m.target)
+	return sd.CalculateDelta(m.Target, oldMin, oldMax, newMin, newMax, func() {
+		sd.State.EntityGrid.Remove(m.Target)
+		m.Target.State.Anchor = m.NewAnchor
+		sd.State.EntityGrid.Insert(m.Target)
 	})
 }
 
 func (m *TeleportMove) Revert(sd *ScoreDirector) {
-	sd.State.EntityGrid.Remove(m.target)
-	m.target.State.Anchor = m.oldAnchor
-	sd.State.EntityGrid.Insert(m.target)
+	sd.State.EntityGrid.Remove(m.Target)
+	m.Target.State.Anchor = m.OldAnchor
+	sd.State.EntityGrid.Insert(m.Target)
 }
 
 func (m *RotationMove) Apply(sd *ScoreDirector) float64 {
-	oldMin, oldMax := m.target.BoundsAt(m.target.State.Anchor, m.oldRot)
-	newMin, newMax := m.target.BoundsAt(m.target.State.Anchor, m.newRot)
+	oldMin, oldMax := m.Target.BoundsAt(m.Target.State.Anchor, m.OldRot)
+	newMin, newMax := m.Target.BoundsAt(m.Target.State.Anchor, m.NewRot)
 
-	return sd.CalculateDelta(m.target, oldMin, oldMax, newMin, newMax, func() {
-		m.target.SetRotation(m.newRot)
-		sd.State.EntityGrid.Move(m.target, oldMin, oldMax, newMin, newMax)
+	return sd.CalculateDelta(m.Target, oldMin, oldMax, newMin, newMax, func() {
+		m.Target.SetRotation(m.NewRot)
+		sd.State.EntityGrid.Move(m.Target, oldMin, oldMax, newMin, newMax)
 	})
 }
 
 func (m *RotationMove) Revert(sd *ScoreDirector) {
-	oldMin, oldMax := m.target.BoundsAt(m.target.State.Anchor, m.newRot)
-	newMin, newMax := m.target.BoundsAt(m.target.State.Anchor, m.oldRot)
+	oldMin, oldMax := m.Target.BoundsAt(m.Target.State.Anchor, m.NewRot)
+	newMin, newMax := m.Target.BoundsAt(m.Target.State.Anchor, m.OldRot)
 
-	m.target.SetRotation(m.oldRot)
-	sd.State.EntityGrid.Move(m.target, oldMin, oldMax, newMin, newMax)
+	m.Target.SetRotation(m.OldRot)
+	sd.State.EntityGrid.Move(m.Target, oldMin, oldMax, newMin, newMax)
 }
