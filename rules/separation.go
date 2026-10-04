@@ -82,3 +82,29 @@ func dist(minA, maxA, minB, maxB int64) int64 {
 	// segments overlap
 	return 0
 }
+
+func (r *SeparationRule) ComputeForce(subject *entity.Entity, forceCtx *ForceContext) ForceAccum {
+	var accum ForceAccum
+	if !r.Target.Matches(subject) {
+		return accum
+	}
+	subMin, subMax := subject.WorldBounds()
+	subMin.X -= r.MinDistance
+	subMin.Y -= r.MinDistance
+	subMin.Z -= r.MinDistance
+	subMax.X += r.MinDistance
+	subMax.Y += r.MinDistance
+	subMax.Z += r.MinDistance
+
+	for _, neighbor := range forceCtx.Neighbors {
+		if subject.Def.ID == neighbor.Def.ID || !r.Obstacle.Matches(neighbor) {
+			continue
+		}
+		nMin, nMax := neighbor.WorldBounds()
+		dx, dy, dz := calculateRepulsion(subMin, subMax, nMin, nMax)
+		accum.DX += dx
+		accum.DY += dy
+		accum.DZ += dz
+	}
+	return accum
+}

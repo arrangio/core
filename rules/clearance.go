@@ -71,13 +71,29 @@ func (r *ClearanceRule) Evaluate(subject *entity.Entity, ctx *RuleContext) float
 	return 1.0 / (float64(maxPenetration) + 1.0)
 }
 
-// returns the length of intersection of two segments
-func calculateAxisOverlap(aMin, aMax, bMin, bMax int64) int64 {
-	// find the beginning of the overlap
-	overlapMin := max(aMin, bMin)
-	// find the end of the overlap
-	overlapMax := min(aMax, bMax)
 
-	// calculate the length of the overlap
-	return max(0, overlapMax-overlapMin)
+func (r *ClearanceRule) ComputeForce(subject *entity.Entity, forceCtx *ForceContext) ForceAccum {
+	var accum ForceAccum
+	if !r.Target.Matches(subject) {
+		return accum
+	}
+	subMin, subMax := subject.WorldBounds()
+	subMin.X -= r.Padding.X
+	subMin.Y -= r.Padding.Y
+	subMin.Z -= r.Padding.Z
+	subMax.X += r.Padding.X
+	subMax.Y += r.Padding.Y
+	subMax.Z += r.Padding.Z
+
+	for _, neighbor := range forceCtx.Neighbors {
+		if subject.Def.ID == neighbor.Def.ID || !r.Obstacle.Matches(neighbor) {
+			continue
+		}
+		nMin, nMax := neighbor.WorldBounds()
+		dx, dy, dz := calculateRepulsion(subMin, subMax, nMin, nMax)
+		accum.DX += dx
+		accum.DY += dy
+		accum.DZ += dz
+	}
+	return accum
 }

@@ -39,3 +39,22 @@ func (r *NoCollisionRule) Evaluate(subject *entity.Entity, ctx *RuleContext) flo
 
 	return 1.0
 }
+
+func (r *NoCollisionRule) ComputeForce(subject *entity.Entity, forceCtx *ForceContext) ForceAccum {
+	var accum ForceAccum
+	if !r.Target.Matches(subject) {
+		return accum
+	}
+	subMin, subMax := subject.WorldBounds()
+	for _, neighbor := range forceCtx.Neighbors {
+		if subject.Def.ID == neighbor.Def.ID || !r.Obstacle.Matches(neighbor) {
+			continue
+		}
+		nMin, nMax := neighbor.WorldBounds()
+		dx, dy, dz := calculateRepulsion(subMin, subMax, nMin, nMax)
+		accum.DX += dx
+		accum.DY += dy
+		accum.DZ += dz
+	}
+	return accum
+}
