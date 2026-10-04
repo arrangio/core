@@ -91,3 +91,72 @@ func (r *AlignmentRule) Evaluate(subject *entity.Entity, ctx *RuleContext) float
 
 	return 1.0 / float64(minDiff+1)
 }
+
+func (r *AlignmentRule) ComputeForce(subject *entity.Entity, forceCtx *ForceContext) ForceAccum {
+	var accum ForceAccum
+	if !r.Target.Matches(subject) {
+		return accum
+	}
+	anchor := subject.State.Anchor
+	var sVal int64
+	switch r.Axis {
+	case AxisX:
+		sVal = anchor.X
+	case AxisY:
+		sVal = anchor.Y
+	case AxisZ:
+		sVal = anchor.Z
+	default:
+		return accum
+	}
+
+	var minDiff int64 = math.MaxInt64
+	var bestDiff int64
+
+	for _, neighbor := range forceCtx.Neighbors {
+		if subject.Def.ID == neighbor.Def.ID || !r.Target.Matches(neighbor) {
+			continue
+		}
+
+		nAnchor := neighbor.State.Anchor
+		dx := anchor.X - nAnchor.X
+		dy := anchor.Y - nAnchor.Y
+		dz := anchor.Z - nAnchor.Z
+		if dx < -r.Radius || dx > r.Radius || dy < -r.Radius || dy > r.Radius || dz < -r.Radius || dz > r.Radius {
+			continue
+		}
+
+		var nVal int64
+		switch r.Axis {
+		case AxisX:
+			nVal = neighbor.State.Anchor.X
+		case AxisY:
+			nVal = neighbor.State.Anchor.Y
+		case AxisZ:
+			nVal = neighbor.State.Anchor.Z
+		}
+
+		diff := nVal - sVal
+		absDiff := diff
+		if absDiff < 0 {
+			absDiff = -absDiff
+		}
+
+		if absDiff < minDiff {
+			minDiff = absDiff
+			bestDiff = diff
+		}
+	}
+
+	if minDiff != math.MaxInt64 && minDiff != 0 {
+		switch r.Axis {
+		case AxisX:
+			accum.DX = bestDiff
+		case AxisY:
+			accum.DY = bestDiff
+		case AxisZ:
+			accum.DZ = bestDiff
+		}
+	}
+	return accum
+}

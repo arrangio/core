@@ -72,3 +72,37 @@ func (r *ProximityRule) Evaluate(subject *entity.Entity, ctx *RuleContext) float
 	// return normalized score -- greater means closer
 	return 1.0 - (float64(minDistSq) / float64(maxDistSq))
 }
+
+func (r *ProximityRule) ComputeForce(subject *entity.Entity, forceCtx *ForceContext) ForceAccum {
+	var accum ForceAccum
+	if !r.Target.Matches(subject) || r.MaxDist <= 0 {
+		return accum
+	}
+	anchor := subject.State.Anchor
+	maxDistSq := r.MaxDist * r.MaxDist
+	minDistSq := maxDistSq
+	var bestNeighbor *entity.Entity
+
+	for _, neighbor := range forceCtx.Neighbors {
+		if subject.Def.ID == neighbor.Def.ID || !r.To.Matches(neighbor) {
+			continue
+		}
+		nAnchor := neighbor.State.Anchor
+		dx := anchor.X - nAnchor.X
+		dy := anchor.Y - nAnchor.Y
+		dz := anchor.Z - nAnchor.Z
+		distSq := (dx * dx) + (dy * dy) + (dz * dz)
+		if distSq < minDistSq {
+			minDistSq = distSq
+			bestNeighbor = neighbor
+		}
+	}
+
+	if bestNeighbor != nil {
+		nAnchor := bestNeighbor.State.Anchor
+		accum.DX = nAnchor.X - anchor.X
+		accum.DY = nAnchor.Y - anchor.Y
+		accum.DZ = nAnchor.Z - anchor.Z
+	}
+	return accum
+}
