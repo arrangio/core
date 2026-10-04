@@ -1,9 +1,10 @@
 package rules
 
 import (
+	"math"
+
 	"github.com/arrangio/core/entity"
 	"github.com/arrangio/core/geometry"
-	"math"
 )
 
 type OrientationRule struct {
@@ -57,4 +58,18 @@ func (r *OrientationRule) Evaluate(e *entity.Entity, ctx *RuleContext) float64 {
 	score := (cosTheta + 1.0) / 2.0
 
 	return score
+}
+
+func (r *OrientationRule) ComputeForce(subject *entity.Entity, forceCtx *ForceContext) ForceAccum {
+	var accum ForceAccum
+	if !r.Target.Matches(subject) {
+		return accum
+	}
+
+	score := r.Evaluate(subject, nil)
+	if score < 1.0 {
+		accum.RotScore = 1.0 - score
+	}
+
+	return accum
 }
