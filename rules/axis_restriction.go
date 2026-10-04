@@ -86,3 +86,58 @@ func (r *AxisRestrictionRule) Evaluate(subject *entity.Entity, ctx *RuleContext)
 	// ...
 	return 1.0 / float64(diff+1)
 }
+
+func (r *AxisRestrictionRule) ComputeForce(subject *entity.Entity, forceCtx *ForceContext) ForceAccum {
+	var accum ForceAccum
+	var val int64
+	switch r.Axis {
+	case AxisX:
+		val = subject.State.Anchor.X
+	case AxisY:
+		val = subject.State.Anchor.Y
+	case AxisZ:
+		val = subject.State.Anchor.Z
+	default:
+		return accum
+	}
+
+	var push int64
+	switch r.Op {
+	case OpEq:
+		if val != r.Ref {
+			push = r.Ref - val
+		}
+	case OpNot:
+		if val == r.Ref {
+			push = 1 // arbitrary push to resolve equality
+		}
+	case OpLt:
+		if val >= r.Ref {
+			push = (r.Ref - 1) - val
+		}
+	case OpLe:
+		if val > r.Ref {
+			push = r.Ref - val
+		}
+	case OpGt:
+		if val <= r.Ref {
+			push = (r.Ref + 1) - val
+		}
+	case OpGe:
+		if val < r.Ref {
+			push = r.Ref - val
+		}
+	}
+
+	if push != 0 {
+		switch r.Axis {
+		case AxisX:
+			accum.DX = push
+		case AxisY:
+			accum.DY = push
+		case AxisZ:
+			accum.DZ = push
+		}
+	}
+	return accum
+}
