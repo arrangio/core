@@ -13,6 +13,18 @@ const (
 	AxisZ
 )
 
+// `ForceAccum` accumulates all the forces applied to a single object
+type ForceAccum struct {
+	DX, DY, DZ int64
+	BestRot    uint8
+	RotScore   float64 // how much does object wants to be rotated
+}
+
+type ForceContext struct {
+	Neighbors []*entity.Entity
+	Zones     []*zones.Zone
+}
+
 type RuleContext struct {
 	EntityGrid *grid.Grid[*entity.Entity]
 	ZoneGrid   *grid.Grid[*zones.Zone]
@@ -23,4 +35,6 @@ type RuleContext struct {
 
 type Rule interface {
 	Evaluate(subject *entity.Entity, ctx *RuleContext) float64
+	ComputeForce(subject *entity.Entity, forceCtx *ForceContext) ForceAccum
+}
 }
