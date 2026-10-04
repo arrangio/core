@@ -36,3 +36,25 @@ func (r *ZoneExclusionRule) Evaluate(subject *entity.Entity, ctx *RuleContext) f
 	}
 	return 1.0
 }
+
+func (r *ZoneExclusionRule) ComputeForce(subject *entity.Entity, forceCtx *ForceContext) ForceAccum {
+	var accum ForceAccum
+	if !r.Target.Matches(subject) {
+		return accum
+	}
+
+	subMin, subMax := subject.WorldBounds()
+
+	for _, z := range forceCtx.Zones {
+		if !r.Zone.MatchesZone(z) {
+			continue
+		}
+
+		zMin, zMax := z.WorldBounds()
+		dx, dy, dz := calculateRepulsion(subMin, subMax, zMin, zMax)
+		accum.DX += dx
+		accum.DY += dy
+		accum.DZ += dz
+	}
+	return accum
+}
