@@ -93,6 +93,7 @@ func (r *ClearanceRule) ComputeForce(subject *entity.Entity, forceCtx *ForceCont
 		accum.DX += dx
 		accum.DY += dy
 		accum.DZ += dz
+		accum.Penalty += absI64(dx) + absI64(dy) + absI64(dz)
 	}
 	return accum
 }

@@ -105,6 +105,7 @@ func (r *SeparationRule) ComputeForce(subject *entity.Entity, forceCtx *ForceCon
 		accum.DX += dx
 		accum.DY += dy
 		accum.DZ += dz
+		accum.Penalty += absI64(dx) + absI64(dy) + absI64(dz)
 	}
 	return accum
 }

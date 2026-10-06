@@ -47,6 +47,13 @@ func calculateAxisOverlap(aMin, aMax, bMin, bMax int64) int64 {
 	return max(0, overlapMax-overlapMin)
 }
 
+func absI64(v int64) int64 {
+	if v < 0 {
+		return -v
+	}
+	return v
+}
+
 func calculateRepulsion(subMin, subMax, nMin, nMax geometry.Point64, subID, nID uint64) (dx, dy, dz int64) {
 	overlapX := calculateAxisOverlap(subMin.X, subMax.X, nMin.X, nMax.X)
 	overlapY := calculateAxisOverlap(subMin.Y, subMax.Y, nMin.Y, nMax.Y)

@@ -66,9 +66,16 @@ func (r *OrientationRule) ComputeForce(subject *entity.Entity, forceCtx *ForceCo
 		return accum
 	}
 
+	sMin, sMax := subject.WorldBounds()
+	sizeX := sMax.X - sMin.X
+	sizeY := sMax.Y - sMin.Y
+	sizeZ := sMax.Z - sMin.Z
+	extent := max(sizeX, max(sizeY, sizeZ))
+
 	score := r.Evaluate(subject, nil)
 	if score < 1.0 {
 		accum.RotScore = 1.0 - score
+		accum.Penalty = int64(accum.RotScore * float64(extent))
 	}
 
 	return accum

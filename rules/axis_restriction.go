@@ -130,6 +130,7 @@ func (r *AxisRestrictionRule) ComputeForce(subject *entity.Entity, forceCtx *For
 	}
 
 	if push != 0 {
+		accum.Penalty = absI64(push)
 		switch r.Axis {
 		case AxisX:
 			accum.DX = push

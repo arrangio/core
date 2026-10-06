@@ -1,9 +1,10 @@
 package rules
 
 import (
+	"math"
+
 	"github.com/arrangio/core/entity"
 	"github.com/arrangio/core/geometry"
-	"math"
 )
 
 // Alignment rule helps to arrange objects in rows, ranks, etc...
@@ -149,6 +150,7 @@ func (r *AlignmentRule) ComputeForce(subject *entity.Entity, forceCtx *ForceCont
 	}
 
 	if minDiff != math.MaxInt64 && minDiff != 0 {
+		accum.Penalty = minDiff
 		switch r.Axis {
 		case AxisX:
 			accum.DX = bestDiff

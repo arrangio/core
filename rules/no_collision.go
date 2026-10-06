@@ -55,6 +55,7 @@ func (r *NoCollisionRule) ComputeForce(subject *entity.Entity, forceCtx *ForceCo
 		accum.DX += dx
 		accum.DY += dy
 		accum.DZ += dz
+		accum.Penalty += absI64(dx) + absI64(dy) + absI64(dz)
 	}
 	return accum
 }

@@ -1,6 +1,8 @@
 package rules
 
 import (
+	"math"
+
 	"github.com/arrangio/core/entity"
 	"github.com/arrangio/core/geometry"
 )
@@ -103,6 +105,7 @@ func (r *ProximityRule) ComputeForce(subject *entity.Entity, forceCtx *ForceCont
 		accum.DX = nAnchor.X - anchor.X
 		accum.DY = nAnchor.Y - anchor.Y
 		accum.DZ = nAnchor.Z - anchor.Z
+		accum.Penalty = int64(math.Sqrt(float64(minDistSq)))
 	}
 	return accum
 }
