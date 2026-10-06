@@ -51,7 +51,7 @@ func (r *NoCollisionRule) ComputeForce(subject *entity.Entity, forceCtx *ForceCo
 			continue
 		}
 		nMin, nMax := neighbor.WorldBounds()
-		dx, dy, dz := calculateRepulsion(subMin, subMax, nMin, nMax)
+		dx, dy, dz := calculateRepulsion(subMin, subMax, nMin, nMax, subject.GetID(), neighbor.GetID())
 		accum.DX += dx
 		accum.DY += dy
 		accum.DZ += dz

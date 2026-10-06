@@ -71,7 +71,6 @@ func (r *ClearanceRule) Evaluate(subject *entity.Entity, ctx *RuleContext) float
 	return 1.0 / (float64(maxPenetration) + 1.0)
 }
 
-
 func (r *ClearanceRule) ComputeForce(subject *entity.Entity, forceCtx *ForceContext) ForceAccum {
 	var accum ForceAccum
 	if !r.Target.Matches(subject) {
@@ -90,7 +89,7 @@ func (r *ClearanceRule) ComputeForce(subject *entity.Entity, forceCtx *ForceCont
 			continue
 		}
 		nMin, nMax := neighbor.WorldBounds()
-		dx, dy, dz := calculateRepulsion(subMin, subMax, nMin, nMax)
+		dx, dy, dz := calculateRepulsion(subMin, subMax, nMin, nMax, subject.GetID(), neighbor.GetID())
 		accum.DX += dx
 		accum.DY += dy
 		accum.DZ += dz

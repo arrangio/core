@@ -17,8 +17,9 @@ const (
 // `ForceAccum` accumulates all the forces applied to a single object
 type ForceAccum struct {
 	DX, DY, DZ int64
+	Penalty    int64 // modulo of all forces applied to a single object
 	BestRot    uint8
-	RotScore   float64 // how much does object wants to be rotated
+	RotScore   float64 // how much does object want to be rotated
 }
 
 type ForceContext struct {
@@ -46,23 +47,26 @@ func calculateAxisOverlap(aMin, aMax, bMin, bMax int64) int64 {
 	return max(0, overlapMax-overlapMin)
 }
 
-func calculateRepulsion(subMin, subMax, nMin, nMax geometry.Point64) (dx, dy, dz int64) {
+func calculateRepulsion(subMin, subMax, nMin, nMax geometry.Point64, subID, nID uint64) (dx, dy, dz int64) {
 	overlapX := calculateAxisOverlap(subMin.X, subMax.X, nMin.X, nMax.X)
 	overlapY := calculateAxisOverlap(subMin.Y, subMax.Y, nMin.Y, nMax.Y)
 	overlapZ := calculateAxisOverlap(subMin.Z, subMax.Z, nMin.Z, nMax.Z)
 
 	if overlapX > 0 && overlapY > 0 && overlapZ > 0 {
-		if (subMin.X+subMax.X)/2 >= (nMin.X+nMax.X)/2 {
+		subMidX, nMidX := subMin.X+subMax.X, nMin.X+nMax.X
+		subMidY, nMidY := subMin.Y+subMax.Y, nMin.Y+nMax.Y
+		subMidZ, nMidZ := subMin.Z+subMax.Z, nMin.Z+nMax.Z
+		if subMidX > nMidX || (subMidX == nMidX && subID > nID) {
 			dx = overlapX
 		} else {
 			dx = -overlapX
 		}
-		if (subMin.Y+subMax.Y)/2 >= (nMin.Y+nMax.Y)/2 {
+		if subMidY > nMidY || (subMidY == nMidY && subID > nID) {
 			dy = overlapY
 		} else {
 			dy = -overlapY
 		}
-		if (subMin.Z+subMax.Z)/2 >= (nMin.Z+nMax.Z)/2 {
+		if subMidZ > nMidZ || (subMidZ == nMidZ && subID > nID) {
 			dz = overlapZ
 		} else {
 			dz = -overlapZ
