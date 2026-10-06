@@ -182,13 +182,13 @@ func (g *Grid[T]) Remove(item T) {
 			yOffset := zOffset + (y * g.strideY)
 			for x := minX; x <= maxX; x++ {
 				cellIdx := x + yOffset
-				g.removeFromCell(cellIdx, item, itemID)
+				g.removeFromCell(cellIdx, itemID)
 			}
 		}
 	}
 }
 
-func (g *Grid[T]) removeFromCell(cellIdx int64, item T, itemID uint64) {
+func (g *Grid[T]) removeFromCell(cellIdx int64, itemID uint64) {
 	currentNodeIdx := g.heads[cellIdx]
 	var prevNodeIdx int32 = -1
 
@@ -263,7 +263,7 @@ func (g *Grid[T]) Move(item T, oldMin, oldMax, newMin, newMax geometry.Point64) 
 				if inOld && !inNew {
 					// Object has left this cell: remove it.
 					cellIdx := x + yOffset
-					g.removeFromCell(cellIdx, item, itemID)
+					g.removeFromCell(cellIdx, itemID)
 				} else if inNew && !inOld {
 					// Object has entered this cell: add it.
 					cellIdx := x + yOffset
