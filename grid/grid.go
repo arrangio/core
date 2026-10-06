@@ -327,3 +327,111 @@ func (g *Grid[T]) QueryBuf(searchMin, searchMax geometry.Point64, buffer []T) []
 func (g *Grid[T]) WorldBounds() (geometry.Point64, geometry.Point64) {
 	return geometry.Point64{X: g.originX, Y: g.originY, Z: g.originZ}, geometry.Point64{X: g.originX + g.sizeX<<g.shiftBits, Y: g.originY + g.sizeY<<g.shiftBits, Z: g.originZ + g.sizeZ<<g.shiftBits}
 }
+
+// QueryContext provides a reusable, allocation-free local context for spatial queries.
+// It is intended for thread-local usage, allowing multiple goroutines to query the Grid concurrently.
+type QueryContext[T Spatial] struct {
+	Buffer      []T
+	seenIDs     [64]uint64
+	seenCount   int
+	overflowMap map[uint64]struct{}
+}
+
+// NewQueryContext creates a new QueryContext with the specified initial buffer capacity.
+func NewQueryContext[T Spatial](initialCap int) *QueryContext[T] {
+	return &QueryContext[T]{
+		Buffer: make([]T, 0, initialCap),
+	}
+}
+
+// Reset clears the buffer and deduplication state for the next query.
+func (qc *QueryContext[T]) Reset() {
+	qc.Buffer = qc.Buffer[:0]
+	qc.seenCount = 0
+	if len(qc.overflowMap) > 0 {
+		clear(qc.overflowMap)
+	}
+}
+
+// Seen checks if the id was already encountered during the current query.
+// If it was seen, it returns true.
+// If it was not seen, it marks it as seen and returns false.
+func (qc *QueryContext[T]) Seen(id uint64) bool {
+	if qc.seenCount < len(qc.seenIDs) {
+		for i := 0; i < qc.seenCount; i++ {
+			if qc.seenIDs[i] == id {
+				return true
+			}
+		}
+		qc.seenIDs[qc.seenCount] = id
+		qc.seenCount++
+		return false
+	}
+
+	if qc.seenCount == len(qc.seenIDs) {
+		if qc.overflowMap == nil {
+			qc.overflowMap = make(map[uint64]struct{}, 64)
+		}
+		for i := 0; i < len(qc.seenIDs); i++ {
+			qc.overflowMap[qc.seenIDs[i]] = struct{}{}
+		}
+		qc.seenCount++
+	}
+
+	if _, exists := qc.overflowMap[id]; exists {
+		return true
+	}
+	qc.overflowMap[id] = struct{}{}
+	return false
+}
+
+// QueryBufWithContext queries all entities intersecting the search bounding box using a thread-local QueryContext.
+// Unlike QueryBuf, it does not mutate Grid state or entity state, making it safe for concurrent reads across goroutines.
+func (g *Grid[T]) QueryBufWithContext(searchMin, searchMax geometry.Point64, qctx *QueryContext[T]) []T {
+	if qctx == nil {
+		return nil
+	}
+	qctx.Reset()
+
+	minX, minY, minZ := g.worldToCell(searchMin.X, searchMin.Y, searchMin.Z)
+	maxX, maxY, maxZ := g.worldToCell(searchMax.X, searchMax.Y, searchMax.Z)
+
+	minX = max(0, minX)
+	minY = max(0, minY)
+	minZ = max(0, minZ)
+	maxX = min(g.sizeX-1, maxX)
+	maxY = min(g.sizeY-1, maxY)
+	maxZ = min(g.sizeZ-1, maxZ)
+
+	if minX > maxX || minY > maxY || minZ > maxZ {
+		return qctx.Buffer
+	}
+
+	for z := minZ; z <= maxZ; z++ {
+		zOffset := z * g.strideZ
+		for y := minY; y <= maxY; y++ {
+			yOffset := zOffset + (y * g.strideY)
+			for x := minX; x <= maxX; x++ {
+				cellIdx := x + yOffset
+				nodeIdx := g.heads[cellIdx]
+
+				for nodeIdx != -1 {
+					node := g.nodes[nodeIdx]
+					itemID := node.itemID
+
+					if !qctx.Seen(itemID) {
+						item := node.item
+						eMin, eMax := item.WorldBounds()
+						if eMax.X >= searchMin.X && eMin.X <= searchMax.X &&
+							eMax.Y >= searchMin.Y && eMin.Y <= searchMax.Y &&
+							eMax.Z >= searchMin.Z && eMin.Z <= searchMax.Z {
+							qctx.Buffer = append(qctx.Buffer, item)
+						}
+					}
+					nodeIdx = node.next
+				}
+			}
+		}
+	}
+	return qctx.Buffer
+}

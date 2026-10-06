@@ -83,6 +83,29 @@ func BenchmarkGridQuery_Dense(b *testing.B) {
 	}
 }
 
+func BenchmarkGridQueryWithContext_Dense(b *testing.B) {
+	g, _ := grid.NewGrid[*entity.Entity](3, -1000, -1000, -1000, 1000, 1000, 1000, 10000)
+
+	for id := uint64(1); id <= 100; id++ {
+		e := entity.BuildTestEntity(entity.TestEntity{
+			ID:     id,
+			Anchor: geometry.Point64{X: 10, Y: 10, Z: 10},
+			W:      5, H: 5, D: 5,
+		})
+		g.Insert(e)
+	}
+
+	minQ := geometry.Point64{X: 0, Y: 0, Z: 0}
+	maxQ := geometry.Point64{X: 30, Y: 30, Z: 30}
+	qctx := grid.NewQueryContext[*entity.Entity](200)
+
+	b.ReportAllocs()
+
+	for b.Loop() {
+		_ = g.QueryBufWithContext(minQ, maxQ, qctx)
+	}
+}
+
 
 func BenchmarkGridMove(b *testing.B) {
 	g, _ := grid.NewGrid[*entity.Entity](3, -1000, -1000, -1000, 1000, 1000, 1000, 10000)
