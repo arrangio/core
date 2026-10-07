@@ -47,7 +47,7 @@ func calculateAxisOverlap(aMin, aMax, bMin, bMax int64) int64 {
 	return max(0, overlapMax-overlapMin)
 }
 
-func absI64(v int64) int64 {
+func AbsI64(v int64) int64 {
 	if v < 0 {
 		return -v
 	}

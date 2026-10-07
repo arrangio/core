@@ -76,6 +76,6 @@ func (r *ContainmentRule) ComputeForce(subject *entity.Entity, forceCtx *ForceCo
 	} else if subMax.Z > r.Max.Z {
 		accum.DZ -= (subMax.Z - r.Max.Z)
 	}
-	accum.Penalty = absI64(accum.DX) + absI64(accum.DY) + absI64(accum.DZ)
+	accum.Penalty = AbsI64(accum.DX) + AbsI64(accum.DY) + AbsI64(accum.DZ)
 	return accum
 }
