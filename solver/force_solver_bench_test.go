@@ -155,6 +155,10 @@ func BenchmarkForceSolver_100K(b *testing.B) {
 }
 
 func BenchmarkForceSolver_1M(b *testing.B) {
+	if testing.Short() {
+		b.Skip("skipping 1M benchmark in short mode")
+	}
+
 	runBenchmark(b, 1_000_000, 10_000)
 }
 

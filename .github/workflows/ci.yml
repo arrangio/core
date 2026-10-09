@@ -112,7 +112,7 @@ jobs:
         run: go mod tidy
 
       - name: Run Benchmarks
-        run: go test -bench=. -benchmem ./... | tee bench.txt
+        run: go test -short -bench=. -benchmem ./... | tee bench.txt
 
       - name: Store Benchmark Results
         uses: benchmark-action/github-action-benchmark@v1
