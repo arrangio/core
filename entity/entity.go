@@ -7,12 +7,26 @@ import (
 
 // EntityDef holds the immutable definition of an entity
 type EntityDef struct {
-	ID       uint64
-	IsStatic bool
-	Tags     tags.Mask
-	Props    []float64
-	Shape    geometry.Shape
-	Facings  *geometry.Facings
+	ID            uint64
+	IsStatic      bool
+	Tags          tags.Mask
+	Props         []float64
+	Shape         geometry.Shape
+	Facings       *geometry.Facings
+	rotatedBounds [24][2]geometry.Point
+	boundsInit    bool
+}
+
+func (d *EntityDef) initRotatedBounds() {
+	if d.Shape == nil {
+		return
+	}
+	for r := uint8(0); r < 24; r++ {
+		minPt, maxPt := geometry.GetRotatedBounds(d.Shape, r)
+		d.rotatedBounds[r][0] = minPt
+		d.rotatedBounds[r][1] = maxPt
+	}
+	d.boundsInit = true
 }
 
 // EntityState holds the mutable state of an entity
@@ -29,15 +43,17 @@ type Entity struct {
 }
 
 func NewEntity(id uint64, isStatic bool, tagMask tags.Mask, props []float64, shape geometry.Shape, facings *geometry.Facings, anchor geometry.Point64) *Entity {
+	def := &EntityDef{
+		ID:       id,
+		IsStatic: isStatic,
+		Tags:     tagMask,
+		Props:    props,
+		Shape:    shape,
+		Facings:  facings,
+	}
+	def.initRotatedBounds()
 	return &Entity{
-		Def: &EntityDef{
-			ID:       id,
-			IsStatic: isStatic,
-			Tags:     tagMask,
-			Props:    props,
-			Shape:    shape,
-			Facings:  facings,
-		},
+		Def: def,
 		State: &EntityState{
 			Anchor: anchor,
 		},
@@ -80,8 +96,22 @@ func (e *Entity) GetRotation() uint8 {
 	return e.State.Rotation
 }
 
+func (e *Entity) fallbackBounds(rotation uint8) (geometry.Point, geometry.Point) {
+	if e.Def != nil && e.Def.Shape != nil {
+		return geometry.GetRotatedBounds(e.Def.Shape, rotation)
+	}
+	return geometry.Point{}, geometry.Point{}
+}
+
 func (e *Entity) BoundsAt(anchor geometry.Point64, rotation uint8) (geometry.Point64, geometry.Point64) {
-	localMin, localMax := geometry.GetRotatedBounds(e.Def.Shape, rotation)
+	if rotation >= 24 {
+		rotation = 0
+	}
+	localMin := e.Def.rotatedBounds[rotation][0]
+	localMax := e.Def.rotatedBounds[rotation][1]
+	if !e.Def.boundsInit {
+		localMin, localMax = e.fallbackBounds(rotation)
+	}
 
 	return geometry.Point64{
 			X: anchor.X + int64(localMin.X),

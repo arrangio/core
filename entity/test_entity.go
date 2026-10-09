@@ -34,14 +34,17 @@ func BuildTestEntity(cfg TestEntity) *Entity {
 		d = 1
 	}
 
+	def := &EntityDef{
+		ID:       cfg.ID,
+		IsStatic: cfg.IsStatic,
+		Tags:     mask,
+		Shape:    geometry.Box{W: w, H: h, D: d},
+		Facings:  cfg.Facings,
+	}
+	def.initRotatedBounds()
+
 	return &Entity{
-		Def: &EntityDef{
-			ID:       cfg.ID,
-			IsStatic: cfg.IsStatic,
-			Tags:     mask,
-			Shape:    geometry.Box{W: w, H: h, D: d},
-			Facings:  cfg.Facings,
-		},
+		Def: def,
 		State: &EntityState{
 			Anchor:   cfg.Anchor,
 			Rotation: cfg.Rotation,
