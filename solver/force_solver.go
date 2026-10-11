@@ -46,9 +46,9 @@ func DefaultForceSolverConfig() ForceSolverConfig {
 }
 
 type solverWorker struct {
-	qctx    *grid.QueryContext[*entity.Entity]
-	zoneBuf []*zones.Zone
-	fctx    rules.ForceContext
+	qctx     *grid.QueryContext[*entity.Entity]
+	zoneQctx *grid.QueryContext[*zones.Zone]
+	fctx     rules.ForceContext
 }
 
 type ForceSolver struct {
@@ -79,8 +79,8 @@ func NewForceSolver(state *State, cfg ForceSolverConfig) *ForceSolver {
 	workers := make([]*solverWorker, workersCount)
 	for i := range workers {
 		workers[i] = &solverWorker{
-			qctx:    grid.NewQueryContext[*entity.Entity](128),
-			zoneBuf: make([]*zones.Zone, 0, 16),
+			qctx:     grid.NewQueryContext[*entity.Entity](128),
+			zoneQctx: grid.NewQueryContext[*zones.Zone](128),
 		}
 	}
 
@@ -146,8 +146,7 @@ func (s *ForceSolver) calculateForces() {
 
 					wCtx.fctx.Neighbors = neighbors
 					if hasZones {
-						wCtx.zoneBuf = s.State.ZoneGrid.QueryBuf(subMin, subMax, wCtx.zoneBuf[:0])
-						wCtx.fctx.Zones = wCtx.zoneBuf
+						wCtx.fctx.Zones = s.State.ZoneGrid.QueryBufWithContext(searchMin, searchMax, wCtx.zoneQctx)
 					} else {
 						wCtx.fctx.Zones = nil
 					}
