@@ -56,28 +56,35 @@ func AbsI64(v int64) int64 {
 
 func calculateRepulsion(subMin, subMax, nMin, nMax geometry.Point64, subID, nID uint64) (dx, dy, dz int64) {
 	overlapX := calculateAxisOverlap(subMin.X, subMax.X, nMin.X, nMax.X)
+	if overlapX <= 0 {
+		return 0, 0, 0
+	}
 	overlapY := calculateAxisOverlap(subMin.Y, subMax.Y, nMin.Y, nMax.Y)
+	if overlapY <= 0 {
+		return 0, 0, 0
+	}
 	overlapZ := calculateAxisOverlap(subMin.Z, subMax.Z, nMin.Z, nMax.Z)
+	if overlapZ <= 0 {
+		return 0, 0, 0
+	}
 
-	if overlapX > 0 && overlapY > 0 && overlapZ > 0 {
-		subMidX, nMidX := subMin.X+subMax.X, nMin.X+nMax.X
-		subMidY, nMidY := subMin.Y+subMax.Y, nMin.Y+nMax.Y
-		subMidZ, nMidZ := subMin.Z+subMax.Z, nMin.Z+nMax.Z
-		if subMidX > nMidX || (subMidX == nMidX && subID > nID) {
-			dx = overlapX
-		} else {
-			dx = -overlapX
-		}
-		if subMidY > nMidY || (subMidY == nMidY && subID > nID) {
-			dy = overlapY
-		} else {
-			dy = -overlapY
-		}
-		if subMidZ > nMidZ || (subMidZ == nMidZ && subID > nID) {
-			dz = overlapZ
-		} else {
-			dz = -overlapZ
-		}
+	subMidX, nMidX := subMin.X+subMax.X, nMin.X+nMax.X
+	subMidY, nMidY := subMin.Y+subMax.Y, nMin.Y+nMax.Y
+	subMidZ, nMidZ := subMin.Z+subMax.Z, nMin.Z+nMax.Z
+	if subMidX > nMidX || (subMidX == nMidX && subID > nID) {
+		dx = overlapX
+	} else {
+		dx = -overlapX
+	}
+	if subMidY > nMidY || (subMidY == nMidY && subID > nID) {
+		dy = overlapY
+	} else {
+		dy = -overlapY
+	}
+	if subMidZ > nMidZ || (subMidZ == nMidZ && subID > nID) {
+		dz = overlapZ
+	} else {
+		dz = -overlapZ
 	}
 	return dx, dy, dz
 }
