@@ -49,6 +49,7 @@ type solverWorker struct {
 	qctx     *grid.QueryContext[*entity.Entity]
 	zoneQctx *grid.QueryContext[*zones.Zone]
 	fctx     rules.ForceContext
+	workCh   chan struct{}
 }
 
 type ForceSolver struct {
@@ -58,6 +59,9 @@ type ForceSolver struct {
 	penalties  []int64
 	workers    []*solverWorker
 	numWorkers int
+	chunkSize  int64
+	taskIndex  atomic.Int64
+	doneWg     sync.WaitGroup
 	rng        *rand.Rand
 }
 
@@ -81,11 +85,20 @@ func NewForceSolver(state *State, cfg ForceSolverConfig) *ForceSolver {
 		workers[i] = &solverWorker{
 			qctx:     grid.NewQueryContext[*entity.Entity](128),
 			zoneQctx: grid.NewQueryContext[*zones.Zone](128),
+			workCh:   make(chan struct{}, 1),
 		}
 	}
 
 	forces := make([]rules.ForceAccum, n)
 	penalties := make([]int64, n)
+
+	chunkSize := int64(n) / int64(workersCount*8)
+	if chunkSize < 64 {
+		chunkSize = 64
+	}
+	if chunkSize > 2048 {
+		chunkSize = 2048
+	}
 
 	rng := rand.New(rand.NewSource(time.Now().UnixNano())) // #nosec G404
 
@@ -96,47 +109,42 @@ func NewForceSolver(state *State, cfg ForceSolverConfig) *ForceSolver {
 		penalties:  penalties,
 		workers:    workers,
 		numWorkers: workersCount,
+		chunkSize:  chunkSize,
 		rng:        rng,
 	}
 }
 
-func (s *ForceSolver) calculateForces() {
+func (s *ForceSolver) startWorkers() func() {
+	stopCh := make(chan struct{})
+	for _, wCtx := range s.workers {
+		go s.workerLoop(wCtx, stopCh)
+	}
+	return func() {
+		close(stopCh)
+	}
+}
+
+func (s *ForceSolver) workerLoop(wCtx *solverWorker, stopCh <-chan struct{}) {
 	entities := s.State.Entities
 	n := int64(len(entities))
-	if n == 0 {
-		return
-	}
-
-	// dynamic chunk size bounded between 64 and 2048 items per task
-	chunkSize := n / int64(s.numWorkers*8)
-	if chunkSize < 64 {
-		chunkSize = 64
-	}
-	if chunkSize > 2048 {
-		chunkSize = 2048
-	}
-
-	var taskIndex atomic.Int64
-	var wg sync.WaitGroup
-
 	rad := s.State.MaxRadius
 	hasZones := s.State.ZoneGrid != nil
 	rulesList := s.State.Rules
+	chunkSize := s.chunkSize
 
-	for w := 0; w < s.numWorkers; w++ {
-		wg.Add(1)
-		go func(workerID int) {
-			defer wg.Done()
-			wCtx := s.workers[workerID]
-
+	for {
+		select {
+		case <-stopCh:
+			return
+		case <-wCtx.workCh:
 			for {
-				start := taskIndex.Add(chunkSize) - chunkSize
-				if start >= n {
+				startIdx := s.taskIndex.Add(chunkSize) - chunkSize
+				if startIdx >= n {
 					break
 				}
-				end := min(start+chunkSize, n)
+				endIdx := min(startIdx+chunkSize, n)
 
-				for j := start; j < end; j++ {
+				for j := startIdx; j < endIdx; j++ {
 					e := entities[j]
 					subMin, subMax := e.WorldBounds()
 					searchMin := geometry.Point64{X: subMin.X - rad, Y: subMin.Y - rad, Z: subMin.Z - rad}
@@ -165,9 +173,18 @@ func (s *ForceSolver) calculateForces() {
 					s.penalties[j] = rawPenalty
 				}
 			}
-		}(w)
+			s.doneWg.Done()
+		}
 	}
-	wg.Wait()
+}
+
+func (s *ForceSolver) calculateForces() {
+	s.taskIndex.Store(0)
+	s.doneWg.Add(s.numWorkers)
+	for _, w := range s.workers {
+		w.workCh <- struct{}{}
+	}
+	s.doneWg.Wait()
 }
 
 func clampI64(v, lo, hi int64) int64 {
@@ -231,6 +248,20 @@ func (s *ForceSolver) Solve() SolveResult {
 	reheats := 0
 	var finalStress int64
 	var finalViolators int
+
+	if len(s.State.Entities) == 0 {
+		return SolveResult{
+			Iterations:     0,
+			Converged:      true,
+			FinalStress:    0,
+			ViolatorsCount: 0,
+			Duration:       time.Since(start),
+			Reason:         ReasonConverged,
+		}
+	}
+
+	stopWorkers := s.startWorkers()
+	defer stopWorkers()
 
 	for iter := 0; iter < s.Config.MaxIterations; iter++ {
 		iterStart := time.Now()
