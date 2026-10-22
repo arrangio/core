@@ -369,7 +369,37 @@ func (qc *QueryContext[T]) Reset() {
 	}
 }
 
+func (qc *QueryContext[T]) grow() {
+	previousSlots := qc.slots
+	newCapacity := len(previousSlots) * 2
+	if newCapacity == 0 {
+		newCapacity = defaultSlotCapacity
+	}
+
+	expandedSlots := make([]querySlot, newCapacity)
+	newBitMask := newCapacity - 1
+	currentQueryID := qc.queryID
+
+	for slotIndex := range previousSlots {
+		existingSlot := &previousSlots[slotIndex]
+		if existingSlot.queryID == currentQueryID {
+			targetIndex := int(existingSlot.itemID*phi64>>32) & newBitMask
+			for expandedSlots[targetIndex].queryID == currentQueryID {
+				targetIndex = (targetIndex + 1) & newBitMask
+			}
+			expandedSlots[targetIndex] = *existingSlot
+		}
+	}
+
+	qc.slots = expandedSlots
+	qc.mask = newBitMask
+}
+
 func (qc *QueryContext[T]) Seen(id uint64) bool {
+	if qc.count*2 >= len(qc.slots) {
+		qc.grow()
+	}
+
 	idx := int(id*phi64>>32) & qc.mask
 	for {
 		s := &qc.slots[idx]
