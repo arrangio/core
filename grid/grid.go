@@ -6,6 +6,9 @@ import (
 	"github.com/arrangio/core/geometry"
 )
 
+const defaultSlotCapacity = 256  // needs to be a power of 2
+const phi64 = 0x9e3779b97f4a7c15 // goldens ratio for fast 64-bit hashing
+
 // gridNode is an element in a flat array `nods`
 // it is a node is a singly-linked list, links one entity to the next one in the same cell of the grid
 type gridNode[T Spatial] struct {
@@ -328,61 +331,59 @@ func (g *Grid[T]) WorldBounds() (geometry.Point64, geometry.Point64) {
 	return geometry.Point64{X: g.originX, Y: g.originY, Z: g.originZ}, geometry.Point64{X: g.originX + g.sizeX<<g.shiftBits, Y: g.originY + g.sizeY<<g.shiftBits, Z: g.originZ + g.sizeZ<<g.shiftBits}
 }
 
-// QueryContext provides a reusable, allocation-free local context for spatial queries.
-// It is intended for thread-local usage, allowing multiple goroutines to query the Grid concurrently.
-type QueryContext[T Spatial] struct {
-	Buffer      []T
-	seenIDs     [64]uint64
-	seenCount   int
-	overflowMap map[uint64]struct{}
+type querySlot struct {
+	itemID  uint64
+	queryID uint32
 }
 
-// NewQueryContext creates a new QueryContext with the specified initial buffer capacity.
+type QueryContext[T Spatial] struct {
+	Buffer []T
+
+	slots   []querySlot
+	mask    int
+	count   int
+	queryID uint32
+}
+
 func NewQueryContext[T Spatial](initialCap int) *QueryContext[T] {
+	slotCap := defaultSlotCapacity
+	for slotCap < initialCap*2 {
+		slotCap *= 2
+	}
+
 	return &QueryContext[T]{
-		Buffer: make([]T, 0, initialCap),
+		Buffer:  make([]T, 0, initialCap),
+		slots:   make([]querySlot, slotCap),
+		mask:    slotCap - 1,
+		queryID: 1,
 	}
 }
 
-// Reset clears the buffer and deduplication state for the next query.
 func (qc *QueryContext[T]) Reset() {
 	qc.Buffer = qc.Buffer[:0]
-	qc.seenCount = 0
-	if len(qc.overflowMap) > 0 {
-		clear(qc.overflowMap)
+	qc.count = 0
+	qc.queryID++
+	if qc.queryID == 0 {
+		clear(qc.slots)
+		qc.queryID = 1
 	}
 }
 
-// Seen checks if the id was already encountered during the current query.
-// If it was seen, it returns true.
-// If it was not seen, it marks it as seen and returns false.
 func (qc *QueryContext[T]) Seen(id uint64) bool {
-	if qc.seenCount < len(qc.seenIDs) {
-		for i := 0; i < qc.seenCount; i++ {
-			if qc.seenIDs[i] == id {
-				return true
-			}
+	idx := int(id*phi64>>32) & qc.mask
+	for {
+		s := &qc.slots[idx]
+		if s.queryID != qc.queryID {
+			s.queryID = qc.queryID
+			s.itemID = id
+			qc.count++
+			return false
 		}
-		qc.seenIDs[qc.seenCount] = id
-		qc.seenCount++
-		return false
-	}
-
-	if qc.seenCount == len(qc.seenIDs) {
-		if qc.overflowMap == nil {
-			qc.overflowMap = make(map[uint64]struct{}, 64)
+		if s.itemID == id {
+			return true
 		}
-		for i := 0; i < len(qc.seenIDs); i++ {
-			qc.overflowMap[qc.seenIDs[i]] = struct{}{}
-		}
-		qc.seenCount++
+		idx = (idx + 1) & qc.mask
 	}
-
-	if _, exists := qc.overflowMap[id]; exists {
-		return true
-	}
-	qc.overflowMap[id] = struct{}{}
-	return false
 }
 
 // QueryBufWithContext queries all entities intersecting the search bounding box using a thread-local QueryContext.
