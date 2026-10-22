@@ -234,6 +234,13 @@ func (g *Grid[T]) Move(item T, oldMin, oldMax, newMin, newMax geometry.Point64) 
 	newMinX, newMinY, newMinZ := g.worldToCell(newMin.X, newMin.Y, newMin.Z)
 	newMaxX, newMaxY, newMaxZ := g.worldToCell(newMax.X, newMax.Y, newMax.Z)
 
+	// fast-path if the object remains in the same cells
+	if oldMinX == newMinX && oldMaxX == newMaxX &&
+		oldMinY == newMinY && oldMaxY == newMaxY &&
+		oldMinZ == newMinZ && oldMaxZ == newMaxZ {
+		return
+	}
+
 	// Calculate the union of the old and new cell ranges.
 	// This defines the bounding box of all cells that could possibly be affected.
 	uMinX := min(oldMinX, newMinX)
