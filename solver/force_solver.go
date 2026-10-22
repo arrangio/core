@@ -216,7 +216,8 @@ func (s *ForceSolver) applyForces(alpha float64) (maxDisp int64, totalDisp int64
 		e.State.Anchor.X += dx
 		e.State.Anchor.Y += dy
 		e.State.Anchor.Z += dz
-		newMin, newMax := e.WorldBounds()
+		newMin := geometry.Point64{X: oldMin.X + dx, Y: oldMin.Y + dy, Z: oldMin.Z + dz}
+		newMax := geometry.Point64{X: oldMax.X + dx, Y: oldMax.Y + dy, Z: oldMax.Z + dz}
 
 		s.State.EntityGrid.Move(e, oldMin, oldMax, newMin, newMax)
 	}
