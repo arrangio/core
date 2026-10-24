@@ -106,6 +106,9 @@ func (r *ProximityRule) ComputeForce(subject *entity.Entity, forceCtx *ForceCont
 		accum.DY = nAnchor.Y - anchor.Y
 		accum.DZ = nAnchor.Z - anchor.Z
 		accum.Penalty = int64(math.Sqrt(float64(minDistSq)))
+	} else {
+		accum.Penalty = r.MaxDist
 	}
+
 	return accum
 }
