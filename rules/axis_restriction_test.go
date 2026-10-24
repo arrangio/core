@@ -16,9 +16,10 @@ func TestAxisRestrictionRule(t *testing.T) {
 		// OpEq (==)
 		{
 			rule: &rules.AxisRestrictionRule{
-				Axis: rules.AxisZ,
-				Op:   rules.OpEq,
-				Ref:  0,
+				Axis:   rules.AxisZ,
+				Op:     rules.OpEq,
+				Ref:    0,
+				Target: rules.Selector{MatchAny: true},
 			},
 			tc: RuleTestCase{
 				Name:     "OpEq: matched (Z == 0)",
@@ -28,9 +29,10 @@ func TestAxisRestrictionRule(t *testing.T) {
 		},
 		{
 			rule: &rules.AxisRestrictionRule{
-				Axis: rules.AxisZ,
-				Op:   rules.OpEq,
-				Ref:  0,
+				Axis:   rules.AxisZ,
+				Op:     rules.OpEq,
+				Ref:    0,
+				Target: rules.Selector{MatchAny: true},
 			},
 			tc: RuleTestCase{
 				Name:     "OpEq: violation above Ref (Z = 1 -> diff = 1 -> score 0.5)",
@@ -40,9 +42,10 @@ func TestAxisRestrictionRule(t *testing.T) {
 		},
 		{
 			rule: &rules.AxisRestrictionRule{
-				Axis: rules.AxisZ,
-				Op:   rules.OpEq,
-				Ref:  0,
+				Axis:   rules.AxisZ,
+				Op:     rules.OpEq,
+				Ref:    0,
+				Target: rules.Selector{MatchAny: true},
 			},
 			tc: RuleTestCase{
 				Name:     "OpEq: violation below Ref (Z = -2 -> diff = 2 -> score 1/3)",
@@ -53,9 +56,10 @@ func TestAxisRestrictionRule(t *testing.T) {
 		// OpNot (!=)
 		{
 			rule: &rules.AxisRestrictionRule{
-				Axis: rules.AxisX,
-				Op:   rules.OpNot,
-				Ref:  5,
+				Axis:   rules.AxisX,
+				Op:     rules.OpNot,
+				Ref:    5,
+				Target: rules.Selector{MatchAny: true},
 			},
 			tc: RuleTestCase{
 				Name:     "OpNot: matched (X != 5)",
@@ -65,9 +69,10 @@ func TestAxisRestrictionRule(t *testing.T) {
 		},
 		{
 			rule: &rules.AxisRestrictionRule{
-				Axis: rules.AxisX,
-				Op:   rules.OpNot,
-				Ref:  5,
+				Axis:   rules.AxisX,
+				Op:     rules.OpNot,
+				Ref:    5,
+				Target: rules.Selector{MatchAny: true},
 			},
 			tc: RuleTestCase{
 				Name:     "OpNot: violation (X == 5 -> score = 0.5)",
@@ -78,9 +83,10 @@ func TestAxisRestrictionRule(t *testing.T) {
 		// OpLt (<)
 		{
 			rule: &rules.AxisRestrictionRule{
-				Axis: rules.AxisX,
-				Op:   rules.OpLt,
-				Ref:  10,
+				Axis:   rules.AxisX,
+				Op:     rules.OpLt,
+				Ref:    10,
+				Target: rules.Selector{MatchAny: true},
 			},
 			tc: RuleTestCase{
 				Name:     "OpLt: matched (X = 9 < 10)",
@@ -90,9 +96,10 @@ func TestAxisRestrictionRule(t *testing.T) {
 		},
 		{
 			rule: &rules.AxisRestrictionRule{
-				Axis: rules.AxisX,
-				Op:   rules.OpLt,
-				Ref:  10,
+				Axis:   rules.AxisX,
+				Op:     rules.OpLt,
+				Ref:    10,
+				Target: rules.Selector{MatchAny: true},
 			},
 			tc: RuleTestCase{
 				Name:     "OpLt: violation (X = 10 -> diff = 10 - 9 = 1 -> score 0.5)",
@@ -103,9 +110,10 @@ func TestAxisRestrictionRule(t *testing.T) {
 		// OpLe (<=)
 		{
 			rule: &rules.AxisRestrictionRule{
-				Axis: rules.AxisY,
-				Op:   rules.OpLe,
-				Ref:  10,
+				Axis:   rules.AxisY,
+				Op:     rules.OpLe,
+				Ref:    10,
+				Target: rules.Selector{MatchAny: true},
 			},
 			tc: RuleTestCase{
 				Name:     "OpLe: matched (Y = 10 <= 10)",
@@ -115,9 +123,10 @@ func TestAxisRestrictionRule(t *testing.T) {
 		},
 		{
 			rule: &rules.AxisRestrictionRule{
-				Axis: rules.AxisY,
-				Op:   rules.OpLe,
-				Ref:  10,
+				Axis:   rules.AxisY,
+				Op:     rules.OpLe,
+				Ref:    10,
+				Target: rules.Selector{MatchAny: true},
 			},
 			tc: RuleTestCase{
 				Name:     "OpLe: violation (Y = 12 -> diff = 12 - 10 = 2 -> score 1/3)",
@@ -128,9 +137,10 @@ func TestAxisRestrictionRule(t *testing.T) {
 		// OpGt (>)
 		{
 			rule: &rules.AxisRestrictionRule{
-				Axis: rules.AxisZ,
-				Op:   rules.OpGt,
-				Ref:  5,
+				Axis:   rules.AxisZ,
+				Op:     rules.OpGt,
+				Ref:    5,
+				Target: rules.Selector{MatchAny: true},
 			},
 			tc: RuleTestCase{
 				Name:     "OpGt: matched (Z = 6 > 5)",
@@ -140,9 +150,10 @@ func TestAxisRestrictionRule(t *testing.T) {
 		},
 		{
 			rule: &rules.AxisRestrictionRule{
-				Axis: rules.AxisZ,
-				Op:   rules.OpGt,
-				Ref:  5,
+				Axis:   rules.AxisZ,
+				Op:     rules.OpGt,
+				Ref:    5,
+				Target: rules.Selector{MatchAny: true},
 			},
 			tc: RuleTestCase{
 				Name:     "OpGt: violation (Z = 5 -> diff = 6 - 5 = 1 -> score 0.5)",
@@ -153,9 +164,10 @@ func TestAxisRestrictionRule(t *testing.T) {
 		// OpGe (>=)
 		{
 			rule: &rules.AxisRestrictionRule{
-				Axis: rules.AxisY,
-				Op:   rules.OpGe,
-				Ref:  5,
+				Axis:   rules.AxisY,
+				Op:     rules.OpGe,
+				Ref:    5,
+				Target: rules.Selector{MatchAny: true},
 			},
 			tc: RuleTestCase{
 				Name:     "OpGe: matched (Y = 5 >= 5)",
@@ -165,9 +177,10 @@ func TestAxisRestrictionRule(t *testing.T) {
 		},
 		{
 			rule: &rules.AxisRestrictionRule{
-				Axis: rules.AxisY,
-				Op:   rules.OpGe,
-				Ref:  5,
+				Axis:   rules.AxisY,
+				Op:     rules.OpGe,
+				Ref:    5,
+				Target: rules.Selector{MatchAny: true},
 			},
 			tc: RuleTestCase{
 				Name:     "OpGe: violation (Y = 3 -> diff = 5 - 3 = 2 -> score 1/3)",
@@ -177,9 +190,10 @@ func TestAxisRestrictionRule(t *testing.T) {
 		},
 		{
 			rule: &rules.AxisRestrictionRule{
-				Axis: 99, // this axis does not exists
-				Op:   rules.OpEq,
-				Ref:  0,
+				Axis:   99, // this axis does not exists
+				Op:     rules.OpEq,
+				Ref:    0,
+				Target: rules.Selector{MatchAny: true},
 			},
 			tc: RuleTestCase{
 				Name:     "Invalid Axis returns 0.0",

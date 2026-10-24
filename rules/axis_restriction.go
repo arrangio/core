@@ -15,12 +15,17 @@ const (
 )
 
 type AxisRestrictionRule struct {
-	Axis uint8    // target axis value ('X', 'Y', 'Z')
-	Op   Operator // comparison operator
-	Ref  int64    // reference value to compare against
+	Axis   uint8    // target axis value ('X', 'Y', 'Z')
+	Op     Operator // comparison operator
+	Ref    int64    // reference value to compare against
+	Target Selector
 }
 
 func (r *AxisRestrictionRule) Evaluate(subject *entity.Entity, ctx *RuleContext) float64 {
+	if !r.Target.Matches(subject) {
+		return 1.0
+	}
+
 	var val int64
 	switch r.Axis {
 	case AxisX:
@@ -89,6 +94,11 @@ func (r *AxisRestrictionRule) Evaluate(subject *entity.Entity, ctx *RuleContext)
 
 func (r *AxisRestrictionRule) ComputeForce(subject *entity.Entity, forceCtx *ForceContext) ForceAccum {
 	var accum ForceAccum
+
+	if !r.Target.Matches(subject) {
+		return accum
+	}
+
 	var val int64
 	switch r.Axis {
 	case AxisX:
