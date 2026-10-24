@@ -45,9 +45,9 @@ func NewGrid[T Spatial](shiftBits uint8, minX, minY, minZ, maxX, maxY, maxZ int6
 	worldH := maxY - minY
 	worldD := maxZ - minZ
 
-	cellsX := worldW >> shiftBits
-	cellsY := worldH >> shiftBits
-	cellsZ := worldD >> shiftBits
+	cellsX := (worldW + (1 << shiftBits) - 1) >> shiftBits
+	cellsY := (worldH + (1 << shiftBits) - 1) >> shiftBits
+	cellsZ := (worldD + (1 << shiftBits) - 1) >> shiftBits
 
 	if cellsX == 0 {
 		cellsX = 1
