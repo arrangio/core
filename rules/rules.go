@@ -71,20 +71,29 @@ func calculateRepulsion(subMin, subMax, nMin, nMax geometry.Point64, subID, nID 
 	subMidX, nMidX := subMin.X+subMax.X, nMin.X+nMax.X
 	subMidY, nMidY := subMin.Y+subMax.Y, nMin.Y+nMax.Y
 	subMidZ, nMidZ := subMin.Z+subMax.Z, nMin.Z+nMax.Z
-	if subMidX > nMidX || (subMidX == nMidX && subID > nID) {
-		dx = overlapX
-	} else {
-		dx = -overlapX
+
+	minOverlap := min(overlapX, min(overlapY, overlapZ))
+
+	switch minOverlap {
+	case overlapX:
+		if subMidX > nMidX || (subMidX == nMidX && subID > nID) {
+			dx = overlapX
+		} else {
+			dx = -overlapX
+		}
+	case overlapY:
+		if subMidY > nMidY || (subMidY == nMidY && subID > nID) {
+			dy = overlapY
+		} else {
+			dy = -overlapY
+		}
+	case overlapZ:
+		if subMidZ > nMidZ || (subMidZ == nMidZ && subID > nID) {
+			dz = overlapZ
+		} else {
+			dz = -overlapZ
+		}
 	}
-	if subMidY > nMidY || (subMidY == nMidY && subID > nID) {
-		dy = overlapY
-	} else {
-		dy = -overlapY
-	}
-	if subMidZ > nMidZ || (subMidZ == nMidZ && subID > nID) {
-		dz = overlapZ
-	} else {
-		dz = -overlapZ
-	}
+
 	return dx, dy, dz
 }
