@@ -31,9 +31,10 @@ func (d *EntityDef) initRotatedBounds() {
 
 // EntityState holds the mutable state of an entity
 type EntityState struct {
-	Anchor      geometry.Point64
-	Rotation    uint8
-	LastQueryID uint64
+	Anchor       geometry.Point64
+	Rotation     uint8
+	LastQueryID  uint64
+	rotatedShape geometry.RotatedShape
 }
 
 // Entity is a lightweight wrapper that glues a shared definition with entity-specific state
@@ -52,10 +53,17 @@ func NewEntity(id uint64, isStatic bool, tagMask tags.Mask, props []float64, sha
 		Facings:  facings,
 	}
 	def.initRotatedBounds()
+
+	baseShape := shape
+	if rs, ok := shape.(*geometry.RotatedShape); ok {
+		baseShape = rs.Unwrap()
+	}
+
 	return &Entity{
 		Def: def,
 		State: &EntityState{
-			Anchor: anchor,
+			Anchor:       anchor,
+			rotatedShape: *geometry.NewRotatedShape(baseShape),
 		},
 	}
 }
@@ -66,9 +74,22 @@ func (e *Entity) HasTags(required tags.Mask) bool {
 
 // AsFootprint constructs a geometry.Footprint on the fly
 func (e *Entity) AsFootprint() geometry.Footprint {
+	shape := e.Def.Shape
+	if e.State.Rotation != 0 {
+		if e.State.rotatedShape.Unwrap() == nil && shape != nil {
+			base := shape
+			if rs, ok := shape.(*geometry.RotatedShape); ok {
+				base = rs.Unwrap()
+			}
+			e.State.rotatedShape = *geometry.NewRotatedShape(base)
+			e.State.rotatedShape.SetRotation(e.State.Rotation)
+		}
+		shape = &e.State.rotatedShape
+	}
+
 	return geometry.Footprint{
 		Anchor:  e.State.Anchor,
-		Shape:   e.Def.Shape,
+		Shape:   shape,
 		Facings: e.Def.Facings,
 	}
 }
@@ -90,6 +111,7 @@ func (e *Entity) SetRotation(rotation uint8) {
 		rotation = 0
 	}
 	e.State.Rotation = rotation
+	e.State.rotatedShape.SetRotation(rotation)
 }
 
 func (e *Entity) GetRotation() uint8 {
