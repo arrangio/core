@@ -122,6 +122,10 @@ func (g *Grid[T]) Insert(item T) {
 	maxY = min(g.sizeY-1, maxY)
 	maxZ = min(g.sizeZ-1, maxZ)
 
+	if minX > maxX || minY > maxY || minZ > maxZ {
+		return
+	}
+
 	for z := minZ; z <= maxZ; z++ {
 		zOffset := z * g.strideZ
 		for y := minY; y <= maxY; y++ {
@@ -178,6 +182,10 @@ func (g *Grid[T]) Remove(item T) {
 	maxX = min(g.sizeX-1, maxX)
 	maxY = min(g.sizeY-1, maxY)
 	maxZ = min(g.sizeZ-1, maxZ)
+
+	if minX > maxX || minY > maxY || minZ > maxZ {
+		return
+	}
 
 	for z := minZ; z <= maxZ; z++ {
 		zOffset := z * g.strideZ
@@ -303,6 +311,10 @@ func (g *Grid[T]) QueryBuf(searchMin, searchMax geometry.Point64, buffer []T) []
 	maxX = min(g.sizeX-1, maxX)
 	maxY = min(g.sizeY-1, maxY)
 	maxZ = min(g.sizeZ-1, maxZ)
+
+	if minX > maxX || minY > maxY || minZ > maxZ {
+		return result
+	}
 
 	for z := minZ; z <= maxZ; z++ {
 		zOffset := z * g.strideZ
