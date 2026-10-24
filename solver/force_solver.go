@@ -18,6 +18,14 @@ import (
 const (
 	stagnationStreakThreshold = 2
 	reheatAlphaFactor         = 0.8
+	// objects are unevenly distributed accross the grid
+	// when one worker finishes earlier, than others, it has to wait for the rest of the workers
+	// to take the next chunks
+	// if there are less than 4 chunks, some workers will have to wait
+	// if there are more than 4 chunks per worker, it will increase the load on the taskIndex atomic counter
+	chunksPerWorker = 4
+	// guarantees that chunk won't get out of L1 cache
+	maxChunkSize = 256
 )
 
 type ForceSolverConfig struct {
@@ -92,12 +100,12 @@ func NewForceSolver(state *State, cfg ForceSolverConfig) *ForceSolver {
 	forces := make([]rules.ForceAccum, n)
 	penalties := make([]int64, n)
 
-	chunkSize := int64(n) / int64(workersCount*8)
-	if chunkSize < 64 {
-		chunkSize = 64
+	chunkSize := int64(n) / int64(workersCount*chunksPerWorker)
+	if chunkSize < 1 {
+		chunkSize = 1
 	}
-	if chunkSize > 2048 {
-		chunkSize = 2048
+	if chunkSize > maxChunkSize {
+		chunkSize = maxChunkSize
 	}
 
 	rng := rand.New(rand.NewSource(time.Now().UnixNano())) // #nosec G404
