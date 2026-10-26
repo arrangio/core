@@ -212,6 +212,13 @@ func (s *ForceSolver) applyForces(alpha float64) (maxDisp int64, totalDisp int64
 
 		f := s.forces[i]
 
+		if f.RotScore > 0 && s.State.canRotate[i] && f.BestRot != e.GetRotation() {
+			oldMin, oldMax := e.WorldBounds()
+			e.SetRotation(f.BestRot)
+			newMin, newMax := e.WorldBounds()
+			s.State.EntityGrid.Move(e, oldMin, oldMax, newMin, newMax)
+		}
+
 		// apply stochastic jitter to stressed objects
 		if penalty > 0 && jitterMag > 0.5 {
 			f.DX += int64((s.rng.Float64() - 0.5) * 2 * jitterMag)
