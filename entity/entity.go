@@ -9,6 +9,7 @@ import (
 type EntityDef struct {
 	ID            uint64
 	IsStatic      bool
+	CanRotate     bool
 	Tags          tags.Mask
 	Props         []float64
 	Shape         geometry.Shape
@@ -43,14 +44,15 @@ type Entity struct {
 	State *EntityState
 }
 
-func NewEntity(id uint64, isStatic bool, tagMask tags.Mask, props []float64, shape geometry.Shape, facings *geometry.Facings, anchor geometry.Point64) *Entity {
+func NewEntity(id uint64, isStatic, canRotate bool, tagMask tags.Mask, props []float64, shape geometry.Shape, facings *geometry.Facings, anchor geometry.Point64) *Entity {
 	def := &EntityDef{
-		ID:       id,
-		IsStatic: isStatic,
-		Tags:     tagMask,
-		Props:    props,
-		Shape:    shape,
-		Facings:  facings,
+		ID:        id,
+		IsStatic:  isStatic,
+		CanRotate: canRotate,
+		Tags:      tagMask,
+		Props:     props,
+		Shape:     shape,
+		Facings:   facings,
 	}
 	def.initRotatedBounds()
 
@@ -107,6 +109,10 @@ func (e *Entity) GetID() uint64 {
 }
 
 func (e *Entity) SetRotation(rotation uint8) {
+	if e.Def != nil && !e.Def.CanRotate {
+		return
+	}
+
 	if rotation >= 24 {
 		rotation = 0
 	}

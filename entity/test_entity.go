@@ -7,13 +7,14 @@ import (
 
 // TestEntity is a "blank" for `buildTestEntity` function
 type TestEntity struct {
-	ID       uint64
-	IsStatic bool
-	Anchor   geometry.Point64
-	Tags     []int // tags that would be assigned to this entity
-	Facings  *geometry.Facings
-	W, H, D  int16 // 1x1x1 by default
-	Rotation uint8
+	ID        uint64
+	IsStatic  bool
+	CanRotate bool
+	Anchor    geometry.Point64
+	Tags      []int // tags that would be assigned to this entity
+	Facings   *geometry.Facings
+	W, H, D   int16 // 1x1x1 by default
+	Rotation  uint8
 }
 
 // BuildTestEntity builds an `Entity` from `TestEntity`
@@ -35,11 +36,12 @@ func BuildTestEntity(cfg TestEntity) *Entity {
 	}
 
 	def := &EntityDef{
-		ID:       cfg.ID,
-		IsStatic: cfg.IsStatic,
-		Tags:     mask,
-		Shape:    geometry.Box{W: w, H: h, D: d},
-		Facings:  cfg.Facings,
+		ID:        cfg.ID,
+		IsStatic:  cfg.IsStatic,
+		CanRotate: cfg.CanRotate,
+		Tags:      mask,
+		Shape:     geometry.Box{W: w, H: h, D: d},
+		Facings:   cfg.Facings,
 	}
 	def.initRotatedBounds()
 

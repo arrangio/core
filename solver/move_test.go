@@ -115,8 +115,8 @@ func TestMoves(t *testing.T) {
 		{
 			Name: "RotationMove: apply and revert updates state and grid correctly",
 			Entities: []entity.TestEntity{
-				{ID: 1, Anchor: geometry.Point64{X: 0, Y: 0, Z: 0}, W: 10, H: 2, D: 2, Rotation: 0},
-				{ID: 2, Anchor: geometry.Point64{X: 5, Y: 0, Z: 0}, W: 2, H: 2, D: 2, Rotation: 0},
+				{ID: 1, Anchor: geometry.Point64{X: 0, Y: 0, Z: 0}, W: 10, H: 2, D: 2, CanRotate: true, Rotation: 0},
+				{ID: 2, Anchor: geometry.Point64{X: 5, Y: 0, Z: 0}, W: 2, H: 2, D: 2, CanRotate: true, Rotation: 0},
 			},
 			Rules: []rules.Rule{
 				&rules.NoCollisionRule{

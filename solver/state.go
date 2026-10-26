@@ -2,7 +2,6 @@ package solver
 
 import (
 	"github.com/arrangio/core/entity"
-	"github.com/arrangio/core/geometry"
 	"github.com/arrangio/core/grid"
 	"github.com/arrangio/core/rules"
 	"github.com/arrangio/core/zones"
@@ -33,8 +32,7 @@ func NewState(
 			continue
 		}
 		movable = append(movable, e)
-		_, ok := e.Def.Shape.(geometry.Rotatable)
-		canRotate = append(canRotate, ok)
+		canRotate = append(canRotate, e.Def.CanRotate)
 	}
 
 	maxRadius := int64(0)
