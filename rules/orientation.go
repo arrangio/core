@@ -82,7 +82,7 @@ func (r *OrientationRule) ComputeForce(subject *entity.Entity, forceCtx *ForceCo
 		origRot := subject.GetRotation()
 
 		// calculate `bestRot`
-		for rot := uint8(1); rot < 24; rot++ {
+		for rot := uint8(0); rot < 24; rot++ {
 			subject.SetRotation(rot)
 			s := r.Evaluate(subject, nil)
 			if s > bestScore {
