@@ -105,8 +105,11 @@ func (g *MoveGenerator) NextRandom(state *State) Move {
 		return g.GenerateTeleport(target, pt)
 	}
 
-	// #nosec G115 -- rotation angle is in [0, 23], not overflowing uint8
-	newRot := uint8(g.rnd.Intn(24))
+	if !target.Def.CanRotate {
+		return g.GenerateShift(target, 1, 0, 0)
+	}
+
+	newRot := uint8(g.rnd.Intn(24)) // #nosec G115 -- rotation angle is in [0, 23], not overflowing uint8
 	return g.GenerateRotation(target, newRot)
 }
 
