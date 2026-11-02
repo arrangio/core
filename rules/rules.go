@@ -41,7 +41,7 @@ type Rule interface {
 }
 
 // returns the length of intersection of two segments
-func calculateAxisOverlap(aMin, aMax, bMin, bMax int64) int64 {
+func CalculateAxisOverlap(aMin, aMax, bMin, bMax int64) int64 {
 	overlapMin := max(aMin, bMin)
 	overlapMax := min(aMax, bMax)
 	return max(0, overlapMax-overlapMin)
@@ -54,16 +54,16 @@ func AbsI64(v int64) int64 {
 	return v
 }
 
-func calculateRepulsion(subMin, subMax, nMin, nMax geometry.Point64, subID, nID uint64) (dx, dy, dz int64) {
-	overlapX := calculateAxisOverlap(subMin.X, subMax.X, nMin.X, nMax.X)
+func CalculateRepulsion(subMin, subMax, nMin, nMax geometry.Point64, subID, nID uint64) (dx, dy, dz int64) {
+	overlapX := CalculateAxisOverlap(subMin.X, subMax.X, nMin.X, nMax.X)
 	if overlapX <= 0 {
 		return 0, 0, 0
 	}
-	overlapY := calculateAxisOverlap(subMin.Y, subMax.Y, nMin.Y, nMax.Y)
+	overlapY := CalculateAxisOverlap(subMin.Y, subMax.Y, nMin.Y, nMax.Y)
 	if overlapY <= 0 {
 		return 0, 0, 0
 	}
-	overlapZ := calculateAxisOverlap(subMin.Z, subMax.Z, nMin.Z, nMax.Z)
+	overlapZ := CalculateAxisOverlap(subMin.Z, subMax.Z, nMin.Z, nMax.Z)
 	if overlapZ <= 0 {
 		return 0, 0, 0
 	}

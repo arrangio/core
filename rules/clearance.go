@@ -53,9 +53,9 @@ func (r *ClearanceRule) Evaluate(subject *entity.Entity, ctx *RuleContext) float
 
 		nMin, nMax := neighbor.WorldBounds()
 
-		penX := calculateAxisOverlap(clearanceMin.X, clearanceMax.X, nMin.X, nMax.X)
-		penY := calculateAxisOverlap(clearanceMin.Y, clearanceMax.Y, nMin.Y, nMax.Y)
-		penZ := calculateAxisOverlap(clearanceMin.Z, clearanceMax.Z, nMin.Z, nMax.Z)
+		penX := CalculateAxisOverlap(clearanceMin.X, clearanceMax.X, nMin.X, nMax.X)
+		penY := CalculateAxisOverlap(clearanceMin.Y, clearanceMax.Y, nMin.Y, nMax.Y)
+		penZ := CalculateAxisOverlap(clearanceMin.Z, clearanceMax.Z, nMin.Z, nMax.Z)
 
 		// overlap in 3D occurs is if only all three axes overlap
 		if penX > 0 && penY > 0 && penZ > 0 {
@@ -89,7 +89,7 @@ func (r *ClearanceRule) ComputeForce(subject *entity.Entity, forceCtx *ForceCont
 			continue
 		}
 		nMin, nMax := neighbor.WorldBounds()
-		dx, dy, dz := calculateRepulsion(subMin, subMax, nMin, nMax, subject.GetID(), neighbor.GetID())
+		dx, dy, dz := CalculateRepulsion(subMin, subMax, nMin, nMax, subject.GetID(), neighbor.GetID())
 		accum.DX += dx
 		accum.DY += dy
 		accum.DZ += dz

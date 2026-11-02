@@ -101,7 +101,7 @@ func (r *SeparationRule) ComputeForce(subject *entity.Entity, forceCtx *ForceCon
 			continue
 		}
 		nMin, nMax := neighbor.WorldBounds()
-		dx, dy, dz := calculateRepulsion(subMin, subMax, nMin, nMax, subject.GetID(), neighbor.GetID())
+		dx, dy, dz := CalculateRepulsion(subMin, subMax, nMin, nMax, subject.GetID(), neighbor.GetID())
 		accum.DX += dx
 		accum.DY += dy
 		accum.DZ += dz

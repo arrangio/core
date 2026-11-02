@@ -51,7 +51,7 @@ func (r *ZoneExclusionRule) ComputeForce(subject *entity.Entity, forceCtx *Force
 		}
 
 		zMin, zMax := z.WorldBounds()
-		dx, dy, dz := calculateRepulsion(subMin, subMax, zMin, zMax, subject.GetID(), z.GetID())
+		dx, dy, dz := CalculateRepulsion(subMin, subMax, zMin, zMax, subject.GetID(), z.GetID())
 		accum.DX += dx
 		accum.DY += dy
 		accum.DZ += dz
