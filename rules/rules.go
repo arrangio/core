@@ -23,8 +23,13 @@ type ForceAccum struct {
 }
 
 type ForceContext struct {
-	Neighbors []*entity.Entity
-	Zones     []*zones.Zone
+	Neighbors   []*entity.Entity
+	Zones       []*zones.Zone
+	NeighborMin []geometry.Point64
+	NeighborMax []geometry.Point64
+	SubjectMin  geometry.Point64
+	SubjectMax  geometry.Point64
+	HasBounds   bool
 }
 
 type RuleContext struct {

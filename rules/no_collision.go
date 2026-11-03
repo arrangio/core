@@ -3,6 +3,7 @@ package rules
 import (
 	"github.com/arrangio/core/collision"
 	"github.com/arrangio/core/entity"
+	"github.com/arrangio/core/geometry"
 )
 
 type NoCollisionRule struct {
@@ -45,7 +46,12 @@ func (r *NoCollisionRule) ComputeForce(subject *entity.Entity, forceCtx *ForceCo
 	if !r.Target.Matches(subject) {
 		return accum
 	}
-	subMin, subMax := subject.WorldBounds()
+	var subMin, subMax geometry.Point64
+	if forceCtx != nil && forceCtx.HasBounds {
+		subMin, subMax = forceCtx.SubjectMin, forceCtx.SubjectMax
+	} else {
+		subMin, subMax = subject.WorldBounds()
+	}
 	for _, neighbor := range forceCtx.Neighbors {
 		if subject.Def.ID == neighbor.Def.ID || !r.Obstacle.Matches(neighbor) {
 			continue

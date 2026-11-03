@@ -88,7 +88,12 @@ func (r *SeparationRule) ComputeForce(subject *entity.Entity, forceCtx *ForceCon
 	if !r.Target.Matches(subject) {
 		return accum
 	}
-	subMin, subMax := subject.WorldBounds()
+	var subMin, subMax geometry.Point64
+	if forceCtx != nil && forceCtx.HasBounds {
+		subMin, subMax = forceCtx.SubjectMin, forceCtx.SubjectMax
+	} else {
+		subMin, subMax = subject.WorldBounds()
+	}
 	subMin.X -= r.MinDistance
 	subMin.Y -= r.MinDistance
 	subMin.Z -= r.MinDistance
