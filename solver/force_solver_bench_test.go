@@ -154,6 +154,38 @@ func BenchmarkForceSolver_100K(b *testing.B) {
 	runBenchmark(b, 100_000, 3_200)
 }
 
+func BenchmarkForceSolver_Dense_100K_80pct(b *testing.B) {
+	if testing.Short() {
+		b.Skip("skipping new (dense) 100K benchmark in short mode")
+	}
+	// 80% area density: gridSize = 2664
+	runBenchmark(b, 100_000, 2_664)
+}
+
+func BenchmarkForceSolver_Dense_100K_90pct(b *testing.B) {
+	if testing.Short() {
+		b.Skip("skipping new (dense) 100K benchmark in short mode")
+	}
+	// 90% area density: gridSize = 2512
+	runBenchmark(b, 100_000, 2_512)
+}
+
+func BenchmarkForceSolver_Dense_1M_80pct(b *testing.B) {
+	if testing.Short() {
+		b.Skip("skipping 1M benchmark in short mode")
+	}
+	// 80% area density for 1M: gridSize = 8426
+	runBenchmark(b, 1_000_000, 8_426)
+}
+
+func BenchmarkForceSolver_Dense_1M_90pct(b *testing.B) {
+	if testing.Short() {
+		b.Skip("skipping 1M benchmark in short mode")
+	}
+	// 90% area density for 1M: gridSize = 7944
+	runBenchmark(b, 1_000_000, 7_944)
+}
+
 func BenchmarkForceSolver_1M(b *testing.B) {
 	if testing.Short() {
 		b.Skip("skipping 1M benchmark in short mode")
@@ -162,8 +194,30 @@ func BenchmarkForceSolver_1M(b *testing.B) {
 	runBenchmark(b, 1_000_000, 10_000)
 }
 
+func BenchmarkForceSolver_10M(b *testing.B) {
+	if testing.Short() {
+		b.Skip("skipping 10M benchmark in short mode")
+	}
+
+	runBenchmark(b, 10_000_000, 31_620)
+}
+
 func BenchmarkForceSolver_Step_10K(b *testing.B) {
 	state, _ := setupBenchmarkState(10_000, 1_000)
+	cfg := solver.DefaultForceSolverConfig()
+	cfg.MaxIterations = 1
+	s := solver.NewForceSolver(state, cfg)
+
+	b.ReportAllocs()
+	b.ResetTimer()
+
+	for b.Loop() {
+		_ = s.Solve()
+	}
+}
+
+func BenchmarkForceSolver_Step_1M(b *testing.B) {
+	state, _ := setupBenchmarkState(1_000_000, 10_000)
 	cfg := solver.DefaultForceSolverConfig()
 	cfg.MaxIterations = 1
 	s := solver.NewForceSolver(state, cfg)
