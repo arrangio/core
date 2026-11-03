@@ -159,8 +159,8 @@ func part1By1(n uint32) uint32 {
 }
 
 func (g *Grid[T]) MortonKey(wx, wy int64) uint64 {
-	cx := uint32(max(0, (wx-g.originX)>>g.shiftBits))
-	cy := uint32(max(0, (wy-g.originY)>>g.shiftBits))
+	cx := uint32(max(0, (wx-g.originX)>>g.shiftBits)) // #nosec G115 - safe: values are clamped to [0, 0xffff]
+	cy := uint32(max(0, (wy-g.originY)>>g.shiftBits)) // #nosec G115 - safe: values are clamped to [0, 0xffff]
 	return (uint64(part1By1(cy)) << 1) | uint64(part1By1(cx))
 }
 
