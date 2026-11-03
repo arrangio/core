@@ -12,9 +12,11 @@ const phi64 = 0x9e3779b97f4a7c15 // goldens ratio for fast 64-bit hashing
 // gridNode is an element in a flat array `nods`
 // it is a node is a singly-linked list, links one entity to the next one in the same cell of the grid
 type gridNode[T Spatial] struct {
-	item   T
-	itemID uint64
-	next   int32 // index of the next node in the same cell chain (-1 if end of the list)
+	item      T
+	itemID    uint64
+	minBounds geometry.Point64
+	maxBounds geometry.Point64
+	next      int32 // index of the next node in the same cell chain (-1 if end of the list)
 }
 
 type Grid[T Spatial] struct {
@@ -31,9 +33,11 @@ type Grid[T Spatial] struct {
 
 	queryID uint64 // ID for deduplication in `QueryBuf` -- unique timestamp for current query session
 
-	heads     []int32       // maps each 3D cell to the the starting index of its linked list inside `nodes`
-	nodes     []gridNode[T] // stores all linked list nodes for all cells
-	freeNodes []int32       // tracks which indices in the `nodes` are currently empty
+	heads        []int32       // maps each 3D cell to the the starting index of its linked list inside `nodes`
+	nodes        []gridNode[T] // stores all linked list nodes for all cells
+	freeNodes    []int32       // tracks which indices in the `nodes` are currently empty
+	cellVersions []uint32
+	version      uint32
 }
 
 // `maxObjectsPerCell` acts as the initial capacity for total entity-to-cell linkages allowed.
@@ -93,10 +97,48 @@ func NewGrid[T Spatial](shiftBits uint8, minX, minY, minZ, maxX, maxY, maxZ int6
 		strideZ:   cellsX * cellsY,
 		queryID:   0,
 
-		heads:     heads,
-		nodes:     nodes,
-		freeNodes: freeNodes,
+		heads:        heads,
+		nodes:        nodes,
+		freeNodes:    freeNodes,
+		cellVersions: make([]uint32, totalCells),
+		version:      1,
 	}, nil
+}
+
+func (g *Grid[T]) SetVersion(v uint32) {
+	g.version = v
+}
+
+func (g *Grid[T]) IsRegionDirty(searchMin, searchMax geometry.Point64, lastVersion uint32) bool {
+	if len(g.cellVersions) == 0 {
+		return true
+	}
+	minX, minY, minZ := g.worldToCell(searchMin.X, searchMin.Y, searchMin.Z)
+	maxX, maxY, maxZ := g.worldToCell(searchMax.X, searchMax.Y, searchMax.Z)
+
+	minX = max(0, minX)
+	minY = max(0, minY)
+	minZ = max(0, minZ)
+	maxX = min(g.sizeX-1, maxX)
+	maxY = min(g.sizeY-1, maxY)
+	maxZ = min(g.sizeZ-1, maxZ)
+
+	if minX > maxX || minY > maxY || minZ > maxZ {
+		return false
+	}
+
+	for z := minZ; z <= maxZ; z++ {
+		zOffset := z * g.strideZ
+		for y := minY; y <= maxY; y++ {
+			row := g.cellVersions[zOffset+y*g.strideY+minX : zOffset+y*g.strideY+maxX+1]
+			for _, v := range row {
+				if v > lastVersion {
+					return true
+				}
+			}
+		}
+	}
+	return false
 }
 
 func (g *Grid[T]) worldToCell(wx, wy, wz int64) (cx, cy, cz int64) {
@@ -105,6 +147,21 @@ func (g *Grid[T]) worldToCell(wx, wy, wz int64) (cx, cy, cz int64) {
 	cz = (wz - g.originZ) >> g.shiftBits
 
 	return cx, cy, cz
+}
+
+func part1By1(n uint32) uint32 {
+	n &= 0x0000ffff
+	n = (n ^ (n << 8)) & 0x00ff00ff
+	n = (n ^ (n << 4)) & 0x0f0f0f0f
+	n = (n ^ (n << 2)) & 0x33333333
+	n = (n ^ (n << 1)) & 0x55555555
+	return n
+}
+
+func (g *Grid[T]) MortonKey(wx, wy int64) uint64 {
+	cx := uint32(max(0, (wx-g.originX)>>g.shiftBits))
+	cy := uint32(max(0, (wy-g.originY)>>g.shiftBits))
+	return (uint64(part1By1(cy)) << 1) | uint64(part1By1(cx))
 }
 
 func (g *Grid[T]) Insert(item T) {
@@ -132,13 +189,13 @@ func (g *Grid[T]) Insert(item T) {
 			yOffset := zOffset + (y * g.strideY)
 			for x := minX; x <= maxX; x++ {
 				cellIdx := x + yOffset
-				g.addToCell(cellIdx, item, itemID)
+				g.addToCell(cellIdx, item, itemID, minBounds, maxBounds)
 			}
 		}
 	}
 }
 
-func (g *Grid[T]) addToCell(cellIdx int64, item T, itemID uint64) {
+func (g *Grid[T]) addToCell(cellIdx int64, item T, itemID uint64, minB, maxB geometry.Point64) {
 	if len(g.freeNodes) == 0 {
 		oldSize := len(g.nodes)
 		newSize := oldSize * 2
@@ -161,11 +218,16 @@ func (g *Grid[T]) addToCell(cellIdx int64, item T, itemID uint64) {
 	g.freeNodes = g.freeNodes[:len(g.freeNodes)-1]
 
 	g.nodes[nodeIdx] = gridNode[T]{
-		item:   item,
-		itemID: itemID,
-		next:   g.heads[cellIdx],
+		item:      item,
+		itemID:    itemID,
+		minBounds: minB,
+		maxBounds: maxB,
+		next:      g.heads[cellIdx],
 	}
 	g.heads[cellIdx] = nodeIdx
+	if len(g.cellVersions) > 0 {
+		g.cellVersions[cellIdx] = g.version
+	}
 }
 
 func (g *Grid[T]) Remove(item T) {
@@ -223,11 +285,31 @@ func (g *Grid[T]) removeFromCell(cellIdx int64, itemID uint64) {
 			// zero out node to prevent memory leaks
 			var zero T
 			g.nodes[currentNodeIdx].item = zero
+			g.nodes[currentNodeIdx].minBounds = geometry.Point64{}
+			g.nodes[currentNodeIdx].maxBounds = geometry.Point64{}
+			if len(g.cellVersions) > 0 {
+				g.cellVersions[cellIdx] = g.version
+			}
 			break
 		}
 
 		prevNodeIdx = currentNodeIdx
 		currentNodeIdx = node.next
+	}
+}
+
+func (g *Grid[T]) updateBoundsInCell(cellIdx int64, itemID uint64, minB, maxB geometry.Point64) {
+	nodeIdx := g.heads[cellIdx]
+	for nodeIdx != -1 {
+		if g.nodes[nodeIdx].itemID == itemID {
+			g.nodes[nodeIdx].minBounds = minB
+			g.nodes[nodeIdx].maxBounds = maxB
+			if len(g.cellVersions) > 0 {
+				g.cellVersions[cellIdx] = g.version
+			}
+			return
+		}
+		nodeIdx = g.nodes[nodeIdx].next
 	}
 }
 
@@ -285,9 +367,12 @@ func (g *Grid[T]) Move(item T, oldMin, oldMax, newMin, newMax geometry.Point64) 
 				} else if inNew && !inOld {
 					// Object has entered this cell: add it.
 					cellIdx := x + yOffset
-					g.addToCell(cellIdx, item, itemID)
+					g.addToCell(cellIdx, item, itemID, newMin, newMax)
+				} else if inOld && inNew {
+					// Object stays in this cell: update its bounding box.
+					cellIdx := x + yOffset
+					g.updateBoundsInCell(cellIdx, itemID, newMin, newMax)
 				}
-				// If both are true, the object was here and stays here (no action needed).
 				// If both are false, the cell is in the union bounding box but belongs
 				// to neither the old nor new shape (e.g., corners of the union volume).
 			}
@@ -320,21 +405,18 @@ func (g *Grid[T]) QueryBuf(searchMin, searchMax geometry.Point64, buffer []T) []
 		zOffset := z * g.strideZ
 		for y := minY; y <= maxY; y++ {
 			yOffset := zOffset + (y * g.strideY)
-			for x := minX; x <= maxX; x++ {
-				cellIdx := x + yOffset
-				nodeIdx := g.heads[cellIdx]
-
+			row := g.heads[yOffset+minX : yOffset+maxX+1]
+			for _, nodeIdx := range row {
 				for nodeIdx != -1 {
-					node := g.nodes[nodeIdx]
+					node := &g.nodes[nodeIdx]
 					item := node.item
 
 					if item.GetQueryID() != currentQueryID {
 						item.SetQueryID(currentQueryID)
 
-						eMin, eMax := item.WorldBounds()
-						if eMax.X >= searchMin.X && eMin.X <= searchMax.X &&
-							eMax.Y >= searchMin.Y && eMin.Y <= searchMax.Y &&
-							eMax.Z >= searchMin.Z && eMin.Z <= searchMax.Z {
+						if node.maxBounds.X >= searchMin.X && node.minBounds.X <= searchMax.X &&
+							node.maxBounds.Y >= searchMin.Y && node.minBounds.Y <= searchMax.Y &&
+							node.maxBounds.Z >= searchMin.Z && node.minBounds.Z <= searchMax.Z {
 							result = append(result, item)
 						}
 					}
@@ -356,7 +438,12 @@ type querySlot struct {
 }
 
 type QueryContext[T Spatial] struct {
-	Buffer []T
+	Buffer    []T
+	BufferMin []geometry.Point64
+	BufferMax []geometry.Point64
+
+	fastSeen  [8]uint64
+	fastCount int
 
 	slots   []querySlot
 	mask    int
@@ -371,15 +458,20 @@ func NewQueryContext[T Spatial](initialCap int) *QueryContext[T] {
 	}
 
 	return &QueryContext[T]{
-		Buffer:  make([]T, 0, initialCap),
-		slots:   make([]querySlot, slotCap),
-		mask:    slotCap - 1,
-		queryID: 1,
+		Buffer:    make([]T, 0, initialCap),
+		BufferMin: make([]geometry.Point64, 0, initialCap),
+		BufferMax: make([]geometry.Point64, 0, initialCap),
+		slots:     make([]querySlot, slotCap),
+		mask:      slotCap - 1,
+		queryID:   1,
 	}
 }
 
 func (qc *QueryContext[T]) Reset() {
 	qc.Buffer = qc.Buffer[:0]
+	qc.BufferMin = qc.BufferMin[:0]
+	qc.BufferMax = qc.BufferMax[:0]
+	qc.fastCount = 0
 	qc.count = 0
 	qc.queryID++
 	if qc.queryID == 0 {
@@ -415,6 +507,26 @@ func (qc *QueryContext[T]) grow() {
 }
 
 func (qc *QueryContext[T]) Seen(id uint64) bool {
+	if qc.fastCount < 8 {
+		for i := 0; i < qc.fastCount; i++ {
+			if qc.fastSeen[i] == id {
+				return true
+			}
+		}
+		qc.fastSeen[qc.fastCount] = id
+		qc.fastCount++
+		return false
+	}
+
+	if qc.count == 0 {
+		for i := 0; i < 8; i++ {
+			qc.insertHash(qc.fastSeen[i])
+		}
+	}
+	return qc.insertHash(id)
+}
+
+func (qc *QueryContext[T]) insertHash(id uint64) bool {
 	if qc.count*2 >= len(qc.slots) {
 		qc.grow()
 	}
@@ -461,21 +573,17 @@ func (g *Grid[T]) QueryBufWithContext(searchMin, searchMax geometry.Point64, qct
 		zOffset := z * g.strideZ
 		for y := minY; y <= maxY; y++ {
 			yOffset := zOffset + (y * g.strideY)
-			for x := minX; x <= maxX; x++ {
-				cellIdx := x + yOffset
-				nodeIdx := g.heads[cellIdx]
-
+			row := g.heads[yOffset+minX : yOffset+maxX+1]
+			for _, nodeIdx := range row {
 				for nodeIdx != -1 {
-					node := g.nodes[nodeIdx]
-					itemID := node.itemID
-
-					if !qctx.Seen(itemID) {
-						item := node.item
-						eMin, eMax := item.WorldBounds()
-						if eMax.X >= searchMin.X && eMin.X <= searchMax.X &&
-							eMax.Y >= searchMin.Y && eMin.Y <= searchMax.Y &&
-							eMax.Z >= searchMin.Z && eMin.Z <= searchMax.Z {
-							qctx.Buffer = append(qctx.Buffer, item)
+					node := &g.nodes[nodeIdx]
+					if !qctx.Seen(node.itemID) {
+						if node.maxBounds.X >= searchMin.X && node.minBounds.X <= searchMax.X &&
+							node.maxBounds.Y >= searchMin.Y && node.minBounds.Y <= searchMax.Y &&
+							node.maxBounds.Z >= searchMin.Z && node.minBounds.Z <= searchMax.Z {
+							qctx.Buffer = append(qctx.Buffer, node.item)
+							qctx.BufferMin = append(qctx.BufferMin, node.minBounds)
+							qctx.BufferMax = append(qctx.BufferMax, node.maxBounds)
 						}
 					}
 					nodeIdx = node.next
