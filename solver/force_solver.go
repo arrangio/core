@@ -1,9 +1,11 @@
 package solver
 
 import (
+	"cmp"
 	"math"
 	"math/rand"
 	"runtime"
+	"slices"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -61,16 +63,22 @@ type solverWorker struct {
 }
 
 type ForceSolver struct {
-	State      *State
-	Config     ForceSolverConfig
-	forces     []rules.ForceAccum
-	penalties  []int64
-	workers    []*solverWorker
-	numWorkers int
-	chunkSize  int64
-	taskIndex  atomic.Int64
-	doneWg     sync.WaitGroup
-	rng        *rand.Rand
+	State           *State
+	Config          ForceSolverConfig
+	entities        []*entity.Entity
+	canRotate       []bool
+	forces          []rules.ForceAccum
+	penalties       []int64
+	boundsMin       []geometry.Point64
+	boundsMax       []geometry.Point64
+	lastEvalVersion []uint32
+	stepCount       uint32
+	workers         []*solverWorker
+	numWorkers      int
+	chunkSize       int64
+	taskIndex       atomic.Int64
+	doneWg          sync.WaitGroup
+	rng             *rand.Rand
 }
 
 var _ Solver = (*ForceSolver)(nil)
@@ -91,14 +99,49 @@ func NewForceSolver(state *State, cfg ForceSolverConfig) *ForceSolver {
 	workers := make([]*solverWorker, workersCount)
 	for i := range workers {
 		workers[i] = &solverWorker{
-			qctx:     grid.NewQueryContext[*entity.Entity](128),
+			qctx:     grid.NewQueryContext[*entity.Entity](512),
 			zoneQctx: grid.NewQueryContext[*zones.Zone](128),
 			workCh:   make(chan struct{}, 1),
 		}
 	}
 
+	entities := make([]*entity.Entity, n)
+	canRotate := make([]bool, n)
+	if state.EntityGrid != nil && n > 0 {
+		type sortItem struct {
+			key uint64
+			idx int32
+		}
+		items := make([]sortItem, n)
+		for i, e := range state.Entities {
+			minB, _ := e.WorldBounds()
+			items[i] = sortItem{
+				key: state.EntityGrid.MortonKey(minB.X, minB.Y),
+				idx: int32(i),
+			}
+		}
+		slices.SortFunc(items, func(a, b sortItem) int {
+			return cmp.Compare(a.key, b.key)
+		})
+		for i, it := range items {
+			entities[i] = state.Entities[it.idx]
+			if len(state.canRotate) > int(it.idx) {
+				canRotate[i] = state.canRotate[it.idx]
+			}
+		}
+	} else {
+		copy(entities, state.Entities)
+		copy(canRotate, state.canRotate)
+	}
+
 	forces := make([]rules.ForceAccum, n)
 	penalties := make([]int64, n)
+	boundsMin := make([]geometry.Point64, n)
+	boundsMax := make([]geometry.Point64, n)
+	lastEvalVersion := make([]uint32, n)
+	for i, e := range entities {
+		boundsMin[i], boundsMax[i] = e.WorldBounds()
+	}
 
 	chunkSize := int64(n) / int64(workersCount*chunksPerWorker)
 	if chunkSize < 1 {
@@ -111,14 +154,19 @@ func NewForceSolver(state *State, cfg ForceSolverConfig) *ForceSolver {
 	rng := rand.New(rand.NewSource(time.Now().UnixNano())) // #nosec G404
 
 	return &ForceSolver{
-		State:      state,
-		Config:     cfg,
-		forces:     forces,
-		penalties:  penalties,
-		workers:    workers,
-		numWorkers: workersCount,
-		chunkSize:  chunkSize,
-		rng:        rng,
+		State:           state,
+		Config:          cfg,
+		entities:        entities,
+		canRotate:       canRotate,
+		forces:          forces,
+		penalties:       penalties,
+		boundsMin:       boundsMin,
+		boundsMax:       boundsMax,
+		lastEvalVersion: lastEvalVersion,
+		workers:         workers,
+		numWorkers:      workersCount,
+		chunkSize:       chunkSize,
+		rng:             rng,
 	}
 }
 
@@ -133,7 +181,7 @@ func (s *ForceSolver) startWorkers() func() {
 }
 
 func (s *ForceSolver) workerLoop(wCtx *solverWorker, stopCh <-chan struct{}) {
-	entities := s.State.Entities
+	entities := s.entities
 	n := int64(len(entities))
 	rad := s.State.MaxRadius
 	hasZones := s.State.ZoneGrid != nil
@@ -154,13 +202,22 @@ func (s *ForceSolver) workerLoop(wCtx *solverWorker, stopCh <-chan struct{}) {
 
 				for j := startIdx; j < endIdx; j++ {
 					e := entities[j]
-					subMin, subMax := e.WorldBounds()
+					subMin := s.boundsMin[j]
+					subMax := s.boundsMax[j]
 					searchMin := geometry.Point64{X: subMin.X - rad, Y: subMin.Y - rad, Z: subMin.Z - rad}
 					searchMax := geometry.Point64{X: subMax.X + rad, Y: subMax.Y + rad, Z: subMax.Z + rad}
 
-					neighbors := s.State.EntityGrid.QueryBufWithContext(searchMin, searchMax, wCtx.qctx)
+					if s.stepCount > 1 && !s.State.EntityGrid.IsRegionDirty(searchMin, searchMax, s.lastEvalVersion[j]) {
+						continue
+					}
 
+					neighbors := s.State.EntityGrid.QueryBufWithContext(searchMin, searchMax, wCtx.qctx)
 					wCtx.fctx.Neighbors = neighbors
+					wCtx.fctx.NeighborMin = wCtx.qctx.BufferMin
+					wCtx.fctx.NeighborMax = wCtx.qctx.BufferMax
+					wCtx.fctx.SubjectMin = subMin
+					wCtx.fctx.SubjectMax = subMax
+					wCtx.fctx.HasBounds = true
 					if hasZones {
 						wCtx.fctx.Zones = s.State.ZoneGrid.QueryBufWithContext(searchMin, searchMax, wCtx.zoneQctx)
 					} else {
@@ -179,6 +236,7 @@ func (s *ForceSolver) workerLoop(wCtx *solverWorker, stopCh <-chan struct{}) {
 
 					s.forces[j] = total
 					s.penalties[j] = rawPenalty
+					s.lastEvalVersion[j] = s.stepCount
 				}
 			}
 			s.doneWg.Done()
@@ -200,7 +258,7 @@ func clampI64(v, lo, hi int64) int64 {
 }
 
 func (s *ForceSolver) applyForces(alpha float64) (maxDisp int64, totalDisp int64, sysStress int64, violators int) {
-	entities := s.State.Entities
+	entities := s.entities
 	jitterMag := s.Config.JitterAmount * alpha
 
 	for i, e := range entities {
@@ -212,11 +270,15 @@ func (s *ForceSolver) applyForces(alpha float64) (maxDisp int64, totalDisp int64
 
 		f := s.forces[i]
 
-		if f.RotScore > 0 && s.State.canRotate[i] && f.BestRot != e.GetRotation() {
-			oldMin, oldMax := e.WorldBounds()
+		oldMin, oldMax := s.boundsMin[i], s.boundsMax[i]
+
+		if f.RotScore > 0 && s.canRotate[i] && f.BestRot != e.GetRotation() {
 			e.SetRotation(f.BestRot)
 			newMin, newMax := e.WorldBounds()
 			s.State.EntityGrid.Move(e, oldMin, oldMax, newMin, newMax)
+			s.boundsMin[i] = newMin
+			s.boundsMax[i] = newMax
+			oldMin, oldMax = newMin, newMax
 			totalDisp++
 			if maxDisp < 1 {
 				maxDisp = 1
@@ -248,12 +310,13 @@ func (s *ForceSolver) applyForces(alpha float64) (maxDisp int64, totalDisp int64
 			maxDisp = disp
 		}
 
-		oldMin, oldMax := e.WorldBounds()
 		e.State.Anchor.X += dx
 		e.State.Anchor.Y += dy
 		e.State.Anchor.Z += dz
 		newMin := geometry.Point64{X: oldMin.X + dx, Y: oldMin.Y + dy, Z: oldMin.Z + dz}
 		newMax := geometry.Point64{X: oldMax.X + dx, Y: oldMax.Y + dy, Z: oldMax.Z + dz}
+		s.boundsMin[i] = newMin
+		s.boundsMax[i] = newMax
 
 		s.State.EntityGrid.Move(e, oldMin, oldMax, newMin, newMax)
 	}
@@ -279,11 +342,20 @@ func (s *ForceSolver) Solve() SolveResult {
 		}
 	}
 
+	for i, e := range s.entities {
+		s.boundsMin[i], s.boundsMax[i] = e.WorldBounds()
+	}
+
+	clear(s.lastEvalVersion)
+	s.stepCount = 0
+
 	stopWorkers := s.startWorkers()
 	defer stopWorkers()
 
 	for iter := 0; iter < s.Config.MaxIterations; iter++ {
 		iterStart := time.Now()
+		s.stepCount = uint32(iter + 1)
+		s.State.EntityGrid.SetVersion(s.stepCount)
 
 		s.calculateForces()
 		maxDisp, totalDisp, sysStress, violators := s.applyForces(alpha)
