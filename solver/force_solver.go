@@ -67,6 +67,9 @@ type ForceSolver struct {
 	Config          ForceSolverConfig
 	entities        []*entity.Entity
 	canRotate       []bool
+	anchorX         []int64
+	anchorY         []int64
+	anchorZ         []int64
 	forces          []rules.ForceAccum
 	penalties       []int64
 	boundsMin       []geometry.Point64
@@ -139,8 +142,16 @@ func NewForceSolver(state *State, cfg ForceSolverConfig) *ForceSolver {
 	boundsMin := make([]geometry.Point64, n)
 	boundsMax := make([]geometry.Point64, n)
 	lastEvalVersion := make([]uint32, n)
+	anchorX := make([]int64, n)
+	anchorY := make([]int64, n)
+	anchorZ := make([]int64, n)
 	for i, e := range entities {
 		boundsMin[i], boundsMax[i] = e.WorldBounds()
+		if e != nil && e.State != nil {
+			anchorX[i] = e.State.Anchor.X
+			anchorY[i] = e.State.Anchor.Y
+			anchorZ[i] = e.State.Anchor.Z
+		}
 	}
 
 	chunkSize := int64(n) / int64(workersCount*chunksPerWorker)
@@ -158,6 +169,9 @@ func NewForceSolver(state *State, cfg ForceSolverConfig) *ForceSolver {
 		Config:          cfg,
 		entities:        entities,
 		canRotate:       canRotate,
+		anchorX:         anchorX,
+		anchorY:         anchorY,
+		anchorZ:         anchorZ,
 		forces:          forces,
 		penalties:       penalties,
 		boundsMin:       boundsMin,
@@ -310,9 +324,12 @@ func (s *ForceSolver) applyForces(alpha float64) (maxDisp int64, totalDisp int64
 			maxDisp = disp
 		}
 
-		e.State.Anchor.X += dx
-		e.State.Anchor.Y += dy
-		e.State.Anchor.Z += dz
+		s.anchorX[i] += dx
+		s.anchorY[i] += dy
+		s.anchorZ[i] += dz
+		e.State.Anchor.X = s.anchorX[i]
+		e.State.Anchor.Y = s.anchorY[i]
+		e.State.Anchor.Z = s.anchorZ[i]
 		newMin := geometry.Point64{X: oldMin.X + dx, Y: oldMin.Y + dy, Z: oldMin.Z + dz}
 		newMax := geometry.Point64{X: oldMax.X + dx, Y: oldMax.Y + dy, Z: oldMax.Z + dz}
 		s.boundsMin[i] = newMin
@@ -321,6 +338,17 @@ func (s *ForceSolver) applyForces(alpha float64) (maxDisp int64, totalDisp int64
 		s.State.EntityGrid.Move(e, oldMin, oldMax, newMin, newMax)
 	}
 	return maxDisp, totalDisp, sysStress, violators
+}
+
+// `writeBackAnchors` gives back object's anchor coordinates when exiting from `Solver()`
+func (s *ForceSolver) writeBackAnchors() {
+	for i, e := range s.entities {
+		if e != nil && e.State != nil {
+			e.State.Anchor.X = s.anchorX[i]
+			e.State.Anchor.Y = s.anchorY[i]
+			e.State.Anchor.Z = s.anchorZ[i]
+		}
+	}
 }
 
 func (s *ForceSolver) Solve() SolveResult {
@@ -376,6 +404,7 @@ func (s *ForceSolver) Solve() SolveResult {
 		}
 
 		if sysStress == 0 {
+			s.writeBackAnchors()
 			return SolveResult{
 				Iterations:     iter + 1,
 				Converged:      true,
@@ -395,6 +424,7 @@ func (s *ForceSolver) Solve() SolveResult {
 					reheats++
 					continue
 				}
+				s.writeBackAnchors()
 				return SolveResult{
 					Iterations:     iter + 1,
 					Converged:      false,
@@ -414,6 +444,7 @@ func (s *ForceSolver) Solve() SolveResult {
 		}
 	}
 
+	s.writeBackAnchors()
 	return SolveResult{
 		Iterations:     s.Config.MaxIterations,
 		Converged:      false,
