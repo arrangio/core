@@ -20,7 +20,7 @@ import (
 const (
 	stagnationStreakThreshold = 2
 	reheatAlphaFactor         = 0.8
-	// objects are unevenly distributed accross the grid
+	// objects are unevenly distributed across the grid
 	// when one worker finishes earlier, than others, it has to wait for the rest of the workers
 	// to take the next chunks
 	// if there are less than 4 chunks, some workers will have to wait
@@ -250,7 +250,7 @@ func (s *ForceSolver) workerLoop(wCtx *solverWorker, stopCh <-chan struct{}) {
 
 					s.forces[j] = total
 					s.penalties[j] = rawPenalty
-					s.lastEvalVersion[j] = s.stepCount
+					s.lastEvalVersion[j] = s.stepCount - 1
 				}
 			}
 			s.doneWg.Done()
@@ -372,8 +372,15 @@ func (s *ForceSolver) Solve() SolveResult {
 
 	for i, e := range s.entities {
 		s.boundsMin[i], s.boundsMax[i] = e.WorldBounds()
+		if e != nil && e.State != nil {
+			s.anchorX[i] = e.State.Anchor.X
+			s.anchorY[i] = e.State.Anchor.Y
+			s.anchorZ[i] = e.State.Anchor.Z
+		}
 	}
 
+	clear(s.forces)
+	clear(s.penalties)
 	clear(s.lastEvalVersion)
 	s.stepCount = 0
 
@@ -383,9 +390,11 @@ func (s *ForceSolver) Solve() SolveResult {
 	for iter := 0; iter < s.Config.MaxIterations; iter++ {
 		iterStart := time.Now()
 		s.stepCount = uint32(iter + 1)
-		s.State.EntityGrid.SetVersion(s.stepCount)
 
 		s.calculateForces()
+		if s.State.EntityGrid != nil {
+			s.State.EntityGrid.SetVersion(s.stepCount)
+		}
 		maxDisp, totalDisp, sysStress, violators := s.applyForces(alpha)
 
 		finalStress = sysStress
