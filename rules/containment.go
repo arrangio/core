@@ -57,25 +57,48 @@ func (r *ContainmentRule) ComputeForce(subject *entity.Entity, forceCtx *ForceCo
 		return accum
 	}
 
-	subMin, subMax := subject.WorldBounds()
+	var subMin, subMax geometry.Point64
+	if forceCtx != nil && forceCtx.HasBounds {
+		subMin, subMax = forceCtx.SubjectMin, forceCtx.SubjectMax
+	} else {
+		subMin, subMax = subject.WorldBounds()
+	}
+
+	var penX, penY, penZ int64
 
 	if subMin.X < r.Min.X {
-		accum.DX += (r.Min.X - subMin.X)
-	} else if subMax.X > r.Max.X {
-		accum.DX -= (subMax.X - r.Max.X)
+		push := r.Min.X - subMin.X
+		accum.DX += push
+		penX += push
+	}
+	if subMax.X > r.Max.X {
+		push := subMax.X - r.Max.X
+		accum.DX -= push
+		penX += push
 	}
 
 	if subMin.Y < r.Min.Y {
-		accum.DY += (r.Min.Y - subMin.Y)
-	} else if subMax.Y > r.Max.Y {
-		accum.DY -= (subMax.Y - r.Max.Y)
+		push := r.Min.Y - subMin.Y
+		accum.DY += push
+		penY += push
+	}
+	if subMax.Y > r.Max.Y {
+		push := subMax.Y - r.Max.Y
+		accum.DY -= push
+		penY += push
 	}
 
 	if subMin.Z < r.Min.Z {
-		accum.DZ += (r.Min.Z - subMin.Z)
-	} else if subMax.Z > r.Max.Z {
-		accum.DZ -= (subMax.Z - r.Max.Z)
+		push := r.Min.Z - subMin.Z
+		accum.DZ += push
+		penZ += push
 	}
-	accum.Penalty = AbsI64(accum.DX) + AbsI64(accum.DY) + AbsI64(accum.DZ)
+	if subMax.Z > r.Max.Z {
+		push := subMax.Z - r.Max.Z
+		accum.DZ -= push
+		penZ += push
+	}
+
+	accum.Penalty = penX + penY + penZ
 	return accum
 }
