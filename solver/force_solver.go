@@ -246,6 +246,10 @@ func (s *ForceSolver) workerLoop(wCtx *solverWorker, stopCh <-chan struct{}) {
 						total.DX += f.DX
 						total.DY += f.DY
 						total.DZ += f.DZ
+						if s.canRotate[j] && f.RotScore > total.RotScore {
+							total.RotScore = f.RotScore
+							total.BestRot = f.BestRot
+						}
 					}
 
 					s.forces[j] = total
