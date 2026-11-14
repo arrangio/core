@@ -96,10 +96,26 @@ func (e *Entity) AsFootprint() geometry.Footprint {
 	}
 }
 
-// WorldFacing delegates to Footprint.WorldFacing by constructing a temporary Footprint
+// `WorldFacingAt` delegates to Footprint.WorldFacing by constructing a temporary Footprint
+func (e *Entity) WorldFacingAt(marker string, rotation uint8) (geometry.Point64, bool) {
+	if e.Def == nil {
+		return geometry.Point64{}, false
+	}
+
+	if !e.Def.CanRotate {
+		rotation = e.State.Rotation
+	}
+	fp := geometry.Footprint{
+		Anchor:  e.State.Anchor,
+		Shape:   e.Def.Shape,
+		Facings: e.Def.Facings,
+	}
+	return fp.WorldFacingAt(marker, rotation)
+}
+
+// `WorldFacing` delegates to `WorldFacingAt` with current entity rotation
 func (e *Entity) WorldFacing(marker string) (geometry.Point64, bool) {
-	fp := e.AsFootprint()
-	return fp.WorldFacing(marker)
+	return e.WorldFacingAt(marker, e.State.Rotation)
 }
 
 // Spatial interface implementation
@@ -142,14 +158,14 @@ func (e *Entity) BoundsAt(anchor geometry.Point64, rotation uint8) (geometry.Poi
 	}
 
 	return geometry.Point64{
-			X: anchor.X + int64(localMin.X),
-			Y: anchor.Y + int64(localMin.Y),
-			Z: anchor.Z + int64(localMin.Z),
-		}, geometry.Point64{
-			X: anchor.X + int64(localMax.X),
-			Y: anchor.Y + int64(localMax.Y),
-			Z: anchor.Z + int64(localMax.Z),
-		}
+		X: anchor.X + int64(localMin.X),
+		Y: anchor.Y + int64(localMin.Y),
+		Z: anchor.Z + int64(localMin.Z),
+	}, geometry.Point64{
+		X: anchor.X + int64(localMax.X),
+		Y: anchor.Y + int64(localMax.Y),
+		Z: anchor.Z + int64(localMax.Z),
+	}
 }
 
 func (e *Entity) WorldBounds() (geometry.Point64, geometry.Point64) {

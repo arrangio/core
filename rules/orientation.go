@@ -13,18 +13,7 @@ type OrientationRule struct {
 	TargetVector geometry.Point64
 }
 
-func (r *OrientationRule) Evaluate(e *entity.Entity, ctx *RuleContext) float64 {
-	if !r.Target.Matches(e) {
-		return 1.0
-	}
-
-	worldFacing, ok := e.WorldFacing(r.Marker)
-
-	// object has no facing with such Marker
-	if !ok {
-		return 1.0
-	}
-
+func (r *OrientationRule) scoreFacing(worldFacing geometry.Point64) float64 {
 	// we can calculate an angle between two vectors by using dot product:
 	// dot_product = |a| * |b| * cos_theta
 	// cos_theta = dot_product / (|a| * |b|)
@@ -55,9 +44,22 @@ func (r *OrientationRule) Evaluate(e *entity.Entity, ctx *RuleContext) float64 {
 	// cos(0°)   = 1.0  -> Score = 1.0 (perfect)
 	// cos(90°)  = 0.0  -> Score = 0.5 (perpendicularly)
 	// cos(180°) = -1.0 -> Score = 0.0 (looks at the opposite direction)
-	score := (cosTheta + 1.0) / 2.0
+	return (cosTheta + 1.0) / 2.0
+}
 
-	return score
+func (r *OrientationRule) Evaluate(e *entity.Entity, ctx *RuleContext) float64 {
+	if !r.Target.Matches(e) {
+		return 1.0
+	}
+
+	worldFacing, ok := e.WorldFacing(r.Marker)
+
+	// object has no facing with such Marker
+	if !ok {
+		return 1.0
+	}
+
+	return r.scoreFacing(worldFacing)
 }
 
 func (r *OrientationRule) ComputeForce(subject *entity.Entity, forceCtx *ForceContext) ForceAccum {
@@ -66,7 +68,12 @@ func (r *OrientationRule) ComputeForce(subject *entity.Entity, forceCtx *ForceCo
 		return accum
 	}
 
-	sMin, sMax := subject.WorldBounds()
+	var sMin, sMax geometry.Point64
+	if forceCtx != nil && forceCtx.HasBounds {
+		sMin, sMax = forceCtx.SubjectMin, forceCtx.SubjectMax
+	} else {
+		sMin, sMax = subject.WorldBounds()
+	}
 	sizeX := sMax.X - sMin.X
 	sizeY := sMax.Y - sMin.Y
 	sizeZ := sMax.Z - sMin.Z
@@ -74,23 +81,29 @@ func (r *OrientationRule) ComputeForce(subject *entity.Entity, forceCtx *ForceCo
 
 	score := r.Evaluate(subject, nil)
 	if score < 1.0 {
-		accum.RotScore = 1.0 - score
-		accum.Penalty = int64(accum.RotScore * float64(extent))
+		penalty := int64((1.0 - score) * float64(extent))
+		accum.Penalty = penalty
 
+		if subject.Def == nil || !subject.Def.CanRotate {
+			return accum
+		}
+
+		accum.RotScore = 1.0 - score
 		bestScore := score
 		bestRot := subject.GetRotation()
-		origRot := subject.GetRotation()
 
-		// calculate `bestRot`
+		// calculate `bestRot` functionally without mutating live entity state
 		for rot := uint8(0); rot < 24; rot++ {
-			subject.SetRotation(rot)
-			s := r.Evaluate(subject, nil)
+			wf, ok := subject.WorldFacingAt(r.Marker, rot)
+			if !ok {
+				continue
+			}
+			s := r.scoreFacing(wf)
 			if s > bestScore {
 				bestScore = s
 				bestRot = rot
 			}
 		}
-		subject.SetRotation(origRot)
 		accum.BestRot = bestRot
 	}
 
