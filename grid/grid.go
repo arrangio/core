@@ -117,7 +117,7 @@ func (g *Grid[T]) IsRegionDirty(searchMin, searchMax geometry.Point64, lastVersi
 		return true
 	}
 	minX, minY, minZ := g.worldToCell(searchMin.X, searchMin.Y, searchMin.Z)
-	maxX, maxY, maxZ := g.worldToCell(searchMax.X, searchMax.Y, searchMax.Z)
+	maxX, maxY, maxZ := g.maxBoundsToCell(searchMin, searchMax)
 
 	minX = max(0, minX)
 	minY = max(0, minY)
@@ -152,6 +152,24 @@ func (g *Grid[T]) worldToCell(wx, wy, wz int64) (cx, cy, cz int64) {
 	return cx, cy, cz
 }
 
+// maxBoundsToCell converts the upper bound of a half-open bounding box [minPt, maxPt)
+// to cell coordinates by evaluating the inclusive maximum point max(minPt, maxPt - 1).
+func (g *Grid[T]) maxBoundsToCell(minPt, maxPt geometry.Point64) (cx, cy, cz int64) {
+	mx := maxPt.X - 1
+	if mx < minPt.X {
+		mx = minPt.X
+	}
+	my := maxPt.Y - 1
+	if my < minPt.Y {
+		my = minPt.Y
+	}
+	mz := maxPt.Z - 1
+	if mz < minPt.Z {
+		mz = minPt.Z
+	}
+	return g.worldToCell(mx, my, mz)
+}
+
 func part1By1(n uint32) uint32 {
 	n &= 0x0000ffff
 	n = (n ^ (n << 8)) & 0x00ff00ff
@@ -172,7 +190,7 @@ func (g *Grid[T]) Insert(item T) {
 	itemID := item.GetID() // Hoist GetID() out of grid traversal loops
 
 	minX, minY, minZ := g.worldToCell(minBounds.X, minBounds.Y, minBounds.Z)
-	maxX, maxY, maxZ := g.worldToCell(maxBounds.X, maxBounds.Y, maxBounds.Z)
+	maxX, maxY, maxZ := g.maxBoundsToCell(minBounds, maxBounds)
 
 	// Clamp bounds to eliminate innermost loop bounds checking.
 	minX = max(0, minX)
@@ -236,7 +254,7 @@ func (g *Grid[T]) Remove(item T) {
 	itemID := item.GetID() // Hoist GetID() out of grid traversal loops
 
 	minX, minY, minZ := g.worldToCell(minBounds.X, minBounds.Y, minBounds.Z)
-	maxX, maxY, maxZ := g.worldToCell(maxBounds.X, maxBounds.Y, maxBounds.Z)
+	maxX, maxY, maxZ := g.maxBoundsToCell(minBounds, maxBounds)
 
 	// Clamp bounds to eliminate innermost loop bounds checking.
 	minX = max(0, minX)
@@ -304,9 +322,9 @@ func (g *Grid[T]) removeFromCell(cellIdx int64, itemID uint64) {
 func (g *Grid[T]) Move(item T, oldMin, oldMax, newMin, newMax geometry.Point64) {
 	itemID := item.GetID() // Hoist GetID() out of grid traversal loops
 	oldMinX, oldMinY, oldMinZ := g.worldToCell(oldMin.X, oldMin.Y, oldMin.Z)
-	oldMaxX, oldMaxY, oldMaxZ := g.worldToCell(oldMax.X, oldMax.Y, oldMax.Z)
+	oldMaxX, oldMaxY, oldMaxZ := g.maxBoundsToCell(oldMin, oldMax)
 	newMinX, newMinY, newMinZ := g.worldToCell(newMin.X, newMin.Y, newMin.Z)
-	newMaxX, newMaxY, newMaxZ := g.worldToCell(newMax.X, newMax.Y, newMax.Z)
+	newMaxX, newMaxY, newMaxZ := g.maxBoundsToCell(newMin, newMax)
 
 	// fast-path if the object remains in the same cells
 	if oldMinX == newMinX && oldMaxX == newMaxX &&
@@ -371,7 +389,7 @@ func (g *Grid[T]) QueryBuf(searchMin, searchMax geometry.Point64, buffer []T) []
 	result := buffer[:0]
 
 	minX, minY, minZ := g.worldToCell(searchMin.X, searchMin.Y, searchMin.Z)
-	maxX, maxY, maxZ := g.worldToCell(searchMax.X, searchMax.Y, searchMax.Z)
+	maxX, maxY, maxZ := g.maxBoundsToCell(searchMin, searchMax)
 
 	// Clamp bounds to eliminate innermost loop bounds checking.
 	minX = max(0, minX)
@@ -427,7 +445,7 @@ type QueryContext[T Spatial] struct {
 	BufferMin []geometry.Point64
 	BufferMax []geometry.Point64
 
-	fastSeen  [8]uint64
+	fastSeen  [16]uint64
 	fastCount int
 
 	slots   []querySlot
@@ -492,7 +510,7 @@ func (qc *QueryContext[T]) grow() {
 }
 
 func (qc *QueryContext[T]) Seen(id uint64) bool {
-	if qc.fastCount < 8 {
+	if qc.fastCount < 16 {
 		for i := 0; i < qc.fastCount; i++ {
 			if qc.fastSeen[i] == id {
 				return true
@@ -504,7 +522,7 @@ func (qc *QueryContext[T]) Seen(id uint64) bool {
 	}
 
 	if qc.count == 0 {
-		for i := 0; i < 8; i++ {
+		for i := 0; i < 16; i++ {
 			qc.insertHash(qc.fastSeen[i])
 		}
 	}
@@ -541,7 +559,7 @@ func (g *Grid[T]) QueryBufWithContext(searchMin, searchMax geometry.Point64, qct
 	qctx.Reset()
 
 	minX, minY, minZ := g.worldToCell(searchMin.X, searchMin.Y, searchMin.Z)
-	maxX, maxY, maxZ := g.worldToCell(searchMax.X, searchMax.Y, searchMax.Z)
+	maxX, maxY, maxZ := g.maxBoundsToCell(searchMin, searchMax)
 
 	minX = max(0, minX)
 	minY = max(0, minY)
