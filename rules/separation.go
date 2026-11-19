@@ -101,11 +101,17 @@ func (r *SeparationRule) ComputeForce(subject *entity.Entity, forceCtx *ForceCon
 	subMax.Y += r.MinDistance
 	subMax.Z += r.MinDistance
 
-	for _, neighbor := range forceCtx.Neighbors {
+	for i, neighbor := range forceCtx.Neighbors {
 		if subject.Def.ID == neighbor.Def.ID || !r.Obstacle.Matches(neighbor) {
 			continue
 		}
-		nMin, nMax := neighbor.WorldBounds()
+		var nMin, nMax geometry.Point64
+
+		if forceCtx != nil && i < len(forceCtx.NeighborMin) {
+			nMin, nMax = forceCtx.NeighborMin[i], forceCtx.NeighborMax[i]
+		} else {
+			nMin, nMax = neighbor.WorldBounds()
+		}
 		dx, dy, dz := CalculateRepulsion(subMin, subMax, nMin, nMax, subject.GetID(), neighbor.GetID())
 		accum.DX += dx
 		accum.DY += dy

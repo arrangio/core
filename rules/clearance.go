@@ -89,11 +89,16 @@ func (r *ClearanceRule) ComputeForce(subject *entity.Entity, forceCtx *ForceCont
 	subMax.Y += r.Padding.Y
 	subMax.Z += r.Padding.Z
 
-	for _, neighbor := range forceCtx.Neighbors {
+	for i, neighbor := range forceCtx.Neighbors {
 		if subject.Def.ID == neighbor.Def.ID || !r.Obstacle.Matches(neighbor) {
 			continue
 		}
-		nMin, nMax := neighbor.WorldBounds()
+		var nMin, nMax geometry.Point64
+		if forceCtx != nil && i < len(forceCtx.NeighborMin) {
+			nMin, nMax = forceCtx.NeighborMin[i], forceCtx.NeighborMax[i]
+		} else {
+			nMin, nMax = neighbor.WorldBounds()
+		}
 		dx, dy, dz := CalculateRepulsion(subMin, subMax, nMin, nMax, subject.GetID(), neighbor.GetID())
 		accum.DX += dx
 		accum.DY += dy

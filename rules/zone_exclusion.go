@@ -3,6 +3,7 @@ package rules
 import (
 	"github.com/arrangio/core/collision"
 	"github.com/arrangio/core/entity"
+	"github.com/arrangio/core/geometry"
 )
 
 // ZoneExclusionRule prevents objects matching `Target` from entering zones matching `Zone`.
@@ -43,7 +44,12 @@ func (r *ZoneExclusionRule) ComputeForce(subject *entity.Entity, forceCtx *Force
 		return accum
 	}
 
-	subMin, subMax := subject.WorldBounds()
+	var subMin, subMax geometry.Point64
+	if forceCtx != nil && forceCtx.HasBounds {
+		subMin, subMax = forceCtx.SubjectMin, forceCtx.SubjectMax
+	} else {
+		subMin, subMax = subject.WorldBounds()
+	}
 
 	for _, z := range forceCtx.Zones {
 		if !r.Zone.MatchesZone(z) {
