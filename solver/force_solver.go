@@ -387,6 +387,9 @@ func (s *ForceSolver) Solve() SolveResult {
 	clear(s.penalties)
 	clear(s.lastEvalVersion)
 	s.stepCount = 0
+	if s.State.EntityGrid != nil {
+		s.State.EntityGrid.ClearCellVersions()
+	}
 
 	stopWorkers := s.startWorkers()
 	defer stopWorkers()

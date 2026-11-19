@@ -14,7 +14,7 @@ import (
 
 func setupBenchmarkState(numObjects int, gridSize int64) (*solver.State, []geometry.Point64) {
 	gridShiftBits := uint8(4)
-	maxObjectsPerCell := numObjects
+	maxObjectsPerCell := numObjects * 4
 	if maxObjectsPerCell < 1000 {
 		maxObjectsPerCell = 1000
 	}
@@ -129,10 +129,14 @@ func runBenchmark(b *testing.B, numObjects int, gridSize int64) {
 		for i, e := range state.Entities {
 			oldMin, oldMax := e.WorldBounds()
 			e.State.Anchor = initialAnchors[i]
+			e.SetRotation(0)
 			newMin, newMax := e.WorldBounds()
 			if oldMin != newMin || oldMax != newMax {
 				state.EntityGrid.Move(e, oldMin, oldMax, newMin, newMax)
 			}
+		}
+		if state.EntityGrid != nil {
+			state.EntityGrid.ClearCellVersions()
 		}
 		b.StartTimer()
 

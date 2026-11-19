@@ -107,6 +107,11 @@ func (g *Grid[T]) SetVersion(v uint32) {
 	g.version = v
 }
 
+func (g *Grid[T]) ClearCellVersions() {
+	clear(g.cellVersions)
+	g.version = 1
+}
+
 func (g *Grid[T]) IsRegionDirty(searchMin, searchMax geometry.Point64, lastVersion uint32) bool {
 	if len(g.cellVersions) == 0 {
 		return true
