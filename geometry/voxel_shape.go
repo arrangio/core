@@ -1,13 +1,25 @@
 package geometry
 
+import "math"
+
 // VoxelShape -- specified by list of points
 type VoxelShape struct {
 	points    []Point  // store it for faster `ForEachPoint`
 	bitset    []uint64 // for O(1) `Contains` function (1 bit = 1 voxel)
 	minBounds Point
 	maxBounds Point
+	w         int
+	h         int
+	d         int
 	strideY   int
 	strideZ   int
+}
+
+func satInc(v int16) int16 {
+	if v < math.MaxInt16 {
+		return v + 1
+	}
+	return math.MaxInt16
 }
 
 func NewVoxelShape(points []Point) *VoxelShape {
@@ -40,16 +52,13 @@ func NewVoxelShape(points []Point) *VoxelShape {
 		}
 	}
 
-	// working with semi-open intervals
-	maxBounds := Point{X: max.X + 1, Y: max.Y + 1, Z: max.Z + 1}
-
-	w := int(maxBounds.X - min.X)
-	h := int(maxBounds.Y - min.Y)
-	d := int(maxBounds.Z - min.Z)
+	w := int(max.X) - int(min.X) + 1
+	h := int(max.Y) - int(min.Y) + 1
+	d := int(max.Z) - int(min.Z) + 1
 
 	strideY := w
 	strideZ := w * h
-	totalBits := strideZ * d
+	totalBits := int64(strideZ) * int64(d)
 
 	// (totalBits + 63) >> 6 = ceil(totalBits / 64)
 	bitset := make([]uint64, (totalBits+63)>>6)
@@ -71,27 +80,35 @@ func NewVoxelShape(points []Point) *VoxelShape {
 	pointsCopy := make([]Point, len(points))
 	copy(pointsCopy, points)
 
+	maxBounds := Point{
+		X: satInc(max.X),
+		Y: satInc(max.Y),
+		Z: satInc(max.Z),
+	}
+
 	return &VoxelShape{
 		points:    pointsCopy,
 		bitset:    bitset,
 		minBounds: min,
 		maxBounds: maxBounds,
+		w:         w,
+		h:         h,
+		d:         d,
 		strideY:   strideY,
 		strideZ:   strideZ,
 	}
 }
 
 func (v *VoxelShape) Contains(lx, ly, lz int16) bool {
-	if lx < v.minBounds.X || lx >= v.maxBounds.X ||
-		ly < v.minBounds.Y || ly >= v.maxBounds.Y ||
-		lz < v.minBounds.Z || lz >= v.maxBounds.Z {
+	dx := int(lx) - int(v.minBounds.X)
+	dy := int(ly) - int(v.minBounds.Y)
+	dz := int(lz) - int(v.minBounds.Z)
+
+	if dx < 0 || dx >= v.w ||
+		dy < 0 || dy >= v.h ||
+		dz < 0 || dz >= v.d {
 		return false
 	}
-
-	// shift coordinates to local grid basis (from 0)
-	dx := int(lx - v.minBounds.X)
-	dy := int(ly - v.minBounds.Y)
-	dz := int(lz - v.minBounds.Z)
 
 	idx := dz*v.strideZ + dy*v.strideY + dx
 
