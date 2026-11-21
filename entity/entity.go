@@ -169,7 +169,25 @@ func (e *Entity) BoundsAt(anchor geometry.Point64, rotation uint8) (geometry.Poi
 }
 
 func (e *Entity) WorldBounds() (geometry.Point64, geometry.Point64) {
-	return e.BoundsAt(e.State.Anchor, e.State.Rotation)
+	rot := e.State.Rotation
+	if rot >= 24 {
+		rot = 0
+	}
+	if !e.Def.boundsInit {
+		return e.BoundsAt(e.State.Anchor, rot)
+	}
+	b := e.Def.rotatedBounds[rot]
+	ax, ay, az := e.State.Anchor.X, e.State.Anchor.Y, e.State.Anchor.Z
+
+	return geometry.Point64{
+		X: ax + int64(b[0].X),
+		Y: ay + int64(b[0].Y),
+		Z: az + int64(b[0].Z),
+	}, geometry.Point64{
+		X: ax + int64(b[1].X),
+		Y: ay + int64(b[1].Y),
+		Z: az + int64(b[1].Z),
+	}
 }
 
 func (e *Entity) GetQueryID() uint64 {

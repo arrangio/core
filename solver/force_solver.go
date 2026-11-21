@@ -225,6 +225,7 @@ func (s *ForceSolver) workerLoop(wCtx *solverWorker, stopCh <-chan struct{}) {
 						continue
 					}
 
+					wCtx.qctx.ExcludeID = e.Def.ID
 					neighbors := s.State.EntityGrid.QueryBufWithContext(searchMin, searchMax, wCtx.qctx)
 					wCtx.fctx.Neighbors = neighbors
 					wCtx.fctx.NeighborMin = wCtx.qctx.BufferMin

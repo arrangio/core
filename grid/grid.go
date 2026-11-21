@@ -448,10 +448,11 @@ type QueryContext[T Spatial] struct {
 	fastSeen  [16]uint64
 	fastCount int
 
-	slots   []querySlot
-	mask    int
-	count   int
-	queryID uint32
+	slots     []querySlot
+	mask      int
+	count     int
+	queryID   uint32
+	ExcludeID uint64
 }
 
 func NewQueryContext[T Spatial](initialCap int) *QueryContext[T] {
@@ -476,6 +477,10 @@ func (qc *QueryContext[T]) Reset() {
 	qc.BufferMax = qc.BufferMax[:0]
 	qc.fastCount = 0
 	qc.count = 0
+	if qc.ExcludeID != 0 {
+		qc.fastSeen[0] = qc.ExcludeID
+		qc.fastCount = 1
+	}
 	qc.queryID++
 	if qc.queryID == 0 {
 		clear(qc.slots)
