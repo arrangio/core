@@ -3,6 +3,10 @@ package collision
 import "github.com/arrangio/core/geometry"
 
 func CheckCollision(a, b *geometry.Footprint) bool {
+	if a == nil || a.Shape == nil || b == nil || b.Shape == nil {
+		return false
+	}
+
 	aMin, aMax := a.Shape.Bounds()
 	bMin, bMax := b.Shape.Bounds()
 
@@ -19,6 +23,12 @@ func CheckCollision(a, b *geometry.Footprint) bool {
 	bMaxY := b.Anchor.Y + int64(bMax.Y)
 	bMinZ := b.Anchor.Z + int64(bMin.Z)
 	bMaxZ := b.Anchor.Z + int64(bMax.Z)
+
+	// Degenerate checks: objects with non-positive volume cannot collide
+	if aMinX >= aMaxX || aMinY >= aMaxY || aMinZ >= aMaxZ ||
+		bMinX >= bMaxX || bMinY >= bMaxY || bMinZ >= bMaxZ {
+		return false
+	}
 
 	// broad-phase: objects do not overlap if their bounds do not
 	if aMinX >= bMaxX || aMaxX <= bMinX ||

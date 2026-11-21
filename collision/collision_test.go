@@ -1,8 +1,9 @@
 package collision
 
 import (
-	"github.com/arrangio/core/geometry"
 	"testing"
+
+	"github.com/arrangio/core/geometry"
 )
 
 func TestCheckCollision(t *testing.T) {
@@ -33,6 +34,20 @@ func TestCheckCollision(t *testing.T) {
 	t.Run("Should not detect collision", func(t *testing.T) {
 		if CheckCollision(objA, objC) {
 			t.Error("Collision between A and C detected, but should not have")
+		}
+	})
+
+	t.Run("Should not detect collision for 0-volume box", func(t *testing.T) {
+		box0 := geometry.Box{W: 0, H: 0, D: 0}
+		fp0 := &geometry.Footprint{
+			Anchor: geometry.Point64{X: 1, Y: 1, Z: 1},
+			Shape:  box0,
+		}
+		if CheckCollision(objA, fp0) {
+			t.Error("Collision between box and 0-volume box detected, but should not have")
+		}
+		if CheckCollision(fp0, objA) {
+			t.Error("Collision between 0-volume box and box detected, but should not have")
 		}
 	})
 }
