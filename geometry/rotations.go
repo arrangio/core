@@ -9,6 +9,16 @@ type RotationMatrix [3][3]int16
 // precomputed pool of all 24 valid 3D rotations
 var rotationMatrices = computeRotations()
 
+func clampInt16(v int32) int16 {
+	if v > math.MaxInt16 {
+		return math.MaxInt16
+	}
+	if v < math.MinInt16 {
+		return math.MinInt16
+	}
+	return int16(v)
+}
+
 // rotates local point `p` forward into world space with matrix `m`
 // standard matrix-vector multiplication
 func applyForwardRotation(p Point, m RotationMatrix) Point {
@@ -16,9 +26,9 @@ func applyForwardRotation(p Point, m RotationMatrix) Point {
 	y := int32(p.X)*int32(m[1][0]) + int32(p.Y)*int32(m[1][1]) + int32(p.Z)*int32(m[1][2])
 	z := int32(p.X)*int32(m[2][0]) + int32(p.Y)*int32(m[2][1]) + int32(p.Z)*int32(m[2][2])
 	return Point{
-		X: int16(min(x, math.MaxInt16)),
-		Y: int16(min(y, math.MaxInt16)),
-		Z: int16(min(z, math.MaxInt16)),
+		X: clampInt16(x),
+		Y: clampInt16(y),
+		Z: clampInt16(z),
 	}
 }
 
@@ -37,9 +47,9 @@ func transformBounds(minPt, maxPt Point, m RotationMatrix) (Point, Point) {
 		Z: min(p1.Z, p2.Z),
 	}
 	resMax := Point{
-		X: int16(min(int32(max(p1.X, p2.X))+1, math.MaxInt16)),
-		Y: int16(min(int32(max(p1.Y, p2.Y))+1, math.MaxInt16)),
-		Z: int16(min(int32(max(p1.Z, p2.Z))+1, math.MaxInt16)),
+		X: clampInt16(int32(max(p1.X, p2.X)) + 1),
+		Y: clampInt16(int32(max(p1.Y, p2.Y)) + 1),
+		Z: clampInt16(int32(max(p1.Z, p2.Z)) + 1),
 	}
 
 	return resMin, resMax
