@@ -1,5 +1,7 @@
 package geometry
 
+import "math"
+
 // because we rotate only in 90--degree increments, the matrix cells
 // only contain -1, 0, 1
 type RotationMatrix [3][3]int16
@@ -10,40 +12,35 @@ var rotationMatrices = computeRotations()
 // rotates local point `p` forward into world space with matrix `m`
 // standard matrix-vector multiplication
 func applyForwardRotation(p Point, m RotationMatrix) Point {
+	x := int32(p.X)*int32(m[0][0]) + int32(p.Y)*int32(m[0][1]) + int32(p.Z)*int32(m[0][2])
+	y := int32(p.X)*int32(m[1][0]) + int32(p.Y)*int32(m[1][1]) + int32(p.Z)*int32(m[1][2])
+	z := int32(p.X)*int32(m[2][0]) + int32(p.Y)*int32(m[2][1]) + int32(p.Z)*int32(m[2][2])
 	return Point{
-		X: p.X*m[0][0] + p.Y*m[0][1] + p.Z*m[0][2],
-		Y: p.X*m[1][0] + p.Y*m[1][1] + p.Z*m[1][2],
-		Z: p.X*m[2][0] + p.Y*m[2][1] + p.Z*m[2][2],
+		X: int16(min(x, math.MaxInt16)),
+		Y: int16(min(y, math.MaxInt16)),
+		Z: int16(min(z, math.MaxInt16)),
 	}
 }
 
 // calculates new bounding box for a rotated shape
-func transformBounds(min, max Point, m RotationMatrix) (Point, Point) {
-	if min.X >= max.X || min.Y >= max.Y || min.Z >= max.Z {
-		return min, max
+func transformBounds(minPt, maxPt Point, m RotationMatrix) (Point, Point) {
+	if minPt.X >= maxPt.X || minPt.Y >= maxPt.Y || minPt.Z >= maxPt.Z {
+		return minPt, maxPt
 	}
 
-	incMax := Point{X: max.X - 1, Y: max.Y - 1, Z: max.Z - 1}
+	p1 := applyForwardRotation(minPt, m)
+	p2 := applyForwardRotation(Point{X: maxPt.X - 1, Y: maxPt.Y - 1, Z: maxPt.Z - 1}, m)
 
-	p1 := applyForwardRotation(min, m)
-	p2 := applyForwardRotation(incMax, m)
-
-	resMin := p1
-	resMax := p2
-
-	if p1.X > p2.X {
-		resMin.X, resMax.X = p2.X, p1.X
+	resMin := Point{
+		X: min(p1.X, p2.X),
+		Y: min(p1.Y, p2.Y),
+		Z: min(p1.Z, p2.Z),
 	}
-	if p1.Y > p2.Y {
-		resMin.Y, resMax.Y = p2.Y, p1.Y
+	resMax := Point{
+		X: int16(min(int32(max(p1.X, p2.X))+1, math.MaxInt16)),
+		Y: int16(min(int32(max(p1.Y, p2.Y))+1, math.MaxInt16)),
+		Z: int16(min(int32(max(p1.Z, p2.Z))+1, math.MaxInt16)),
 	}
-	if p1.Z > p2.Z {
-		resMin.Z, resMax.Z = p2.Z, p1.Z
-	}
-
-	resMax.X++
-	resMax.Y++
-	resMax.Z++
 
 	return resMin, resMax
 }
