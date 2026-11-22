@@ -81,8 +81,7 @@ func (r *ProximityRule) ComputeForce(subject *entity.Entity, forceCtx *ForceCont
 		return accum
 	}
 	anchor := subject.State.Anchor
-	maxDistSq := r.MaxDist * r.MaxDist
-	minDistSq := maxDistSq
+	minDistSq := int64(math.MaxInt64)
 	var bestNeighbor *entity.Entity
 
 	for _, neighbor := range forceCtx.Neighbors {
@@ -105,9 +104,12 @@ func (r *ProximityRule) ComputeForce(subject *entity.Entity, forceCtx *ForceCont
 		accum.DX = nAnchor.X - anchor.X
 		accum.DY = nAnchor.Y - anchor.Y
 		accum.DZ = nAnchor.Z - anchor.Z
-		accum.Penalty = int64(math.Sqrt(float64(minDistSq)))
-	} else {
-		accum.Penalty = r.MaxDist
+		dist := int64(math.Round(math.Sqrt(float64(minDistSq))))
+		if dist > r.MaxDist {
+			accum.Penalty = r.MaxDist
+		} else {
+			accum.Penalty = dist
+		}
 	}
 
 	return accum
