@@ -81,15 +81,16 @@ func (e *Entity) HasTags(required tags.Mask) bool {
 func (e *Entity) AsFootprint() geometry.Footprint {
 	shape := e.Def.Shape
 	if e.State.Rotation != 0 {
+		rotShape := e.State.rotatedShape
 		if e.State.rotatedShape.Unwrap() == nil && shape != nil {
 			base := shape
 			if rs, ok := shape.(*geometry.RotatedShape); ok {
 				base = rs.Unwrap()
 			}
-			e.State.rotatedShape = *geometry.NewRotatedShape(base)
-			e.State.rotatedShape.SetRotation(e.State.Rotation)
+			rotShape = *geometry.NewRotatedShape(base)
 		}
-		shape = &e.State.rotatedShape
+		rotShape.SetRotation(e.State.Rotation)
+		shape = &rotShape
 	}
 
 	return geometry.Footprint{
