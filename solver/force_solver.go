@@ -82,6 +82,9 @@ type ForceSolver struct {
 	taskIndex       atomic.Int64
 	doneWg          sync.WaitGroup
 	rng             *rand.Rand
+	stopCh          chan struct{}
+	workerWg        sync.WaitGroup
+	closed          atomic.Bool
 }
 
 var _ Solver = (*ForceSolver)(nil)
@@ -164,7 +167,7 @@ func NewForceSolver(state *State, cfg ForceSolverConfig) *ForceSolver {
 
 	rng := rand.New(rand.NewSource(time.Now().UnixNano())) // #nosec G404
 
-	return &ForceSolver{
+	s := &ForceSolver{
 		State:           state,
 		Config:          cfg,
 		entities:        entities,
@@ -181,20 +184,23 @@ func NewForceSolver(state *State, cfg ForceSolverConfig) *ForceSolver {
 		numWorkers:      workersCount,
 		chunkSize:       chunkSize,
 		rng:             rng,
+		stopCh:          make(chan struct{}),
 	}
+
+	s.startWorkers()
+	return s
 }
 
-func (s *ForceSolver) startWorkers() func() {
-	stopCh := make(chan struct{})
+func (s *ForceSolver) startWorkers() {
+	s.workerWg.Add(s.numWorkers)
 	for _, wCtx := range s.workers {
-		go s.workerLoop(wCtx, stopCh)
-	}
-	return func() {
-		close(stopCh)
+		go s.workerLoop(wCtx)
 	}
 }
 
-func (s *ForceSolver) workerLoop(wCtx *solverWorker, stopCh <-chan struct{}) {
+func (s *ForceSolver) workerLoop(wCtx *solverWorker) {
+	defer s.workerWg.Done()
+
 	entities := s.entities
 	n := int64(len(entities))
 	rad := s.State.MaxRadius
@@ -204,7 +210,7 @@ func (s *ForceSolver) workerLoop(wCtx *solverWorker, stopCh <-chan struct{}) {
 
 	for {
 		select {
-		case <-stopCh:
+		case <-s.stopCh:
 			return
 		case <-wCtx.workCh:
 			for {
@@ -358,6 +364,12 @@ func (s *ForceSolver) writeBackAnchors() {
 
 func (s *ForceSolver) Solve() SolveResult {
 	start := time.Now()
+	if s.closed.Load() {
+		return SolveResult{
+			Duration: time.Since(start),
+			Reason:   ReasonSolverIsClosed,
+		}
+	}
 	alpha := s.Config.InitialAlpha
 	stagnantStreak := 0
 	reheats := 0
@@ -391,9 +403,6 @@ func (s *ForceSolver) Solve() SolveResult {
 	if s.State.EntityGrid != nil {
 		s.State.EntityGrid.ClearCellVersions()
 	}
-
-	stopWorkers := s.startWorkers()
-	defer stopWorkers()
 
 	for iter := 0; iter < s.Config.MaxIterations; iter++ {
 		iterStart := time.Now()
@@ -470,4 +479,13 @@ func (s *ForceSolver) Solve() SolveResult {
 		Duration:       time.Since(start),
 		Reason:         ReasonMaxIterations,
 	}
+}
+
+func (s *ForceSolver) Close() error {
+	if !s.closed.CompareAndSwap(false, true) {
+		return nil
+	}
+	close(s.stopCh)
+	s.workerWg.Wait()
+	return nil
 }

@@ -7,9 +7,10 @@ import (
 type TerminationReason int
 
 const (
-	ReasonConverged     TerminationReason = iota // solution is found
-	ReasonMaxIterations                          // iteration limit exceeded
-	ReasonStagnant                               // stagnated after several reheat cycles
+	ReasonConverged      TerminationReason = iota // solution is found
+	ReasonMaxIterations                           // iteration limit exceeded
+	ReasonStagnant                                // stagnated after several reheat cycles
+	ReasonSolverIsClosed                          // solver is closed
 )
 
 type StepInfo struct {
