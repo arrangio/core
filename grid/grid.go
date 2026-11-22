@@ -29,8 +29,6 @@ type Grid[T Spatial] struct {
 	strideY   int64 // precomputed offsets used to flatten 3D grid coordinates
 	strideZ   int64 // into a single-dimensional `heads` slice index
 
-	queryID uint64 // ID for deduplication in `QueryBuf` -- unique timestamp for current query session
-
 	heads        []int32       // maps each 3D cell to the the starting index of its linked list inside `nodes`
 	nodes        []gridNode[T] // stores all linked list nodes for all cells
 	freeNodes    []int32       // tracks which indices in the `nodes` are currently empty
@@ -93,7 +91,6 @@ func NewGrid[T Spatial](shiftBits uint8, minX, minY, minZ, maxX, maxY, maxZ int6
 		sizeZ:     cellsZ,
 		strideY:   cellsX,
 		strideZ:   cellsX * cellsY,
-		queryID:   0,
 
 		heads:        heads,
 		nodes:        nodes,
@@ -382,55 +379,6 @@ func (g *Grid[T]) Move(item T, oldMin, oldMax, newMin, newMax geometry.Point64) 
 	}
 }
 
-// return all entities from searchMin point to searchMax point
-func (g *Grid[T]) QueryBuf(searchMin, searchMax geometry.Point64, buffer []T) []T {
-	currentQueryID := g.queryID + 1
-	g.queryID = currentQueryID
-	result := buffer[:0]
-
-	minX, minY, minZ := g.worldToCell(searchMin.X, searchMin.Y, searchMin.Z)
-	maxX, maxY, maxZ := g.maxBoundsToCell(searchMin, searchMax)
-
-	// Clamp bounds to eliminate innermost loop bounds checking.
-	minX = max(0, minX)
-	minY = max(0, minY)
-	minZ = max(0, minZ)
-	maxX = min(g.sizeX-1, maxX)
-	maxY = min(g.sizeY-1, maxY)
-	maxZ = min(g.sizeZ-1, maxZ)
-
-	if minX > maxX || minY > maxY || minZ > maxZ {
-		return result
-	}
-
-	for z := minZ; z <= maxZ; z++ {
-		zOffset := z * g.strideZ
-		for y := minY; y <= maxY; y++ {
-			yOffset := zOffset + (y * g.strideY)
-			row := g.heads[yOffset+minX : yOffset+maxX+1]
-			for _, nodeIdx := range row {
-				for nodeIdx != -1 {
-					node := &g.nodes[nodeIdx]
-					item := node.item
-
-					if item.GetQueryID() != currentQueryID {
-						item.SetQueryID(currentQueryID)
-
-						minB, maxB := item.WorldBounds()
-						if maxB.X >= searchMin.X && minB.X <= searchMax.X &&
-							maxB.Y >= searchMin.Y && minB.Y <= searchMax.Y &&
-							maxB.Z >= searchMin.Z && minB.Z <= searchMax.Z {
-							result = append(result, item)
-						}
-					}
-					nodeIdx = node.next
-				}
-			}
-		}
-	}
-	return result
-}
-
 func (g *Grid[T]) WorldBounds() (geometry.Point64, geometry.Point64) {
 	return geometry.Point64{X: g.originX, Y: g.originY, Z: g.originZ}, geometry.Point64{X: g.originX + g.sizeX<<g.shiftBits, Y: g.originY + g.sizeY<<g.shiftBits, Z: g.originZ + g.sizeZ<<g.shiftBits}
 }
@@ -555,11 +503,11 @@ func (qc *QueryContext[T]) insertHash(id uint64) bool {
 	}
 }
 
-// QueryBufWithContext queries all entities intersecting the search bounding box using a thread-local QueryContext.
-// Unlike QueryBuf, it does not mutate Grid state or entity state, making it safe for concurrent reads across goroutines.
-func (g *Grid[T]) QueryBufWithContext(searchMin, searchMax geometry.Point64, qctx *QueryContext[T]) []T {
+// QueryBuf queries all entities intersecting the search bounding box using a thread-local QueryContext.
+// It does not mutate Grid state or entity state, making it safe for concurrent reads across goroutines.
+func (g *Grid[T]) QueryBuf(searchMin, searchMax geometry.Point64, qctx *QueryContext[T]) []T {
 	if qctx == nil {
-		return nil
+		qctx = NewQueryContext[T](64)
 	}
 	qctx.Reset()
 

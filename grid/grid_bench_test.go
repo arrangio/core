@@ -51,12 +51,12 @@ func BenchmarkGridInsert_Giant(b *testing.B) {
 
 	minQ := geometry.Point64{X: 0, Y: 0, Z: 0}
 	maxQ := geometry.Point64{X: 50, Y: 50, Z: 50}
-	buf := make([]*entity.Entity, 0, 10)
+	qctx := grid.NewQueryContext[*entity.Entity](10)
 
 	b.ReportAllocs()
 
 	for b.Loop() {
-		buf = g.QueryBuf(minQ, maxQ, buf[:0])
+		_ = g.QueryBuf(minQ, maxQ, qctx)
 	}
 }
 
@@ -74,12 +74,12 @@ func BenchmarkGridQuery_Dense(b *testing.B) {
 
 	minQ := geometry.Point64{X: 0, Y: 0, Z: 0}
 	maxQ := geometry.Point64{X: 30, Y: 30, Z: 30}
-	buf := make([]*entity.Entity, 0, 200)
+	qctx := grid.NewQueryContext[*entity.Entity](200)
 
 	b.ReportAllocs()
 
 	for b.Loop() {
-		buf = g.QueryBuf(minQ, maxQ, buf[:0])
+		_ = g.QueryBuf(minQ, maxQ, qctx)
 	}
 }
 
@@ -102,7 +102,7 @@ func BenchmarkGridQueryWithContext_Dense(b *testing.B) {
 	b.ReportAllocs()
 
 	for b.Loop() {
-		_ = g.QueryBufWithContext(minQ, maxQ, qctx)
+		_ = g.QueryBuf(minQ, maxQ, qctx)
 	}
 }
 

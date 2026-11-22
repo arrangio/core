@@ -37,10 +37,10 @@ func (r *SeparationRule) Evaluate(e *entity.Entity, ctx *RuleContext) float64 {
 		Z: sMax.Z + r.MinDistance,
 	}
 
-	ctx.EntityBuffer = ctx.EntityGrid.QueryBuf(searchMin, searchMax, ctx.EntityBuffer)
+	neighbors := ctx.EntityGrid.QueryBuf(searchMin, searchMax, ctx.EntityQCtx)
 
 	// iterate through all objects in `searchMin` to `searchMax` range
-	for _, neighbor := range ctx.EntityBuffer {
+	for _, neighbor := range neighbors {
 		if neighbor.Def.ID == e.Def.ID || !r.Obstacle.Matches(neighbor) {
 			continue
 		}

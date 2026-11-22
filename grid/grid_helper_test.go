@@ -96,8 +96,8 @@ func RunGridTest(t *testing.T, tc GridTestCase) {
 				g.Remove(e)
 				delete(entityCache, act.EntityID)
 			case Query:
-				buf := make([]*entity.Entity, 0, 50)
-				res := g.QueryBuf(act.QueryMin, act.QueryMax, buf)
+				qctx := grid.NewQueryContext[*entity.Entity](50)
+				res := g.QueryBuf(act.QueryMin, act.QueryMax, qctx)
 
 				gotIDs := make([]uint64, len(res))
 				for i, e := range res {

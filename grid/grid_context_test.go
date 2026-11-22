@@ -10,7 +10,7 @@ import (
 	"github.com/arrangio/core/grid"
 )
 
-func TestQueryBufWithContext_Basic(t *testing.T) {
+func TestQueryBuf_Basic(t *testing.T) {
 	g, err := grid.NewGrid[*entity.Entity](3, -100, -100, -100, 100, 100, 100, 50)
 	if err != nil {
 		t.Fatalf("failed to create grid: %v", err)
@@ -42,7 +42,7 @@ func TestQueryBufWithContext_Basic(t *testing.T) {
 	searchMin := geometry.Point64{X: 0, Y: 0, Z: 0}
 	searchMax := geometry.Point64{X: 30, Y: 30, Z: 30}
 
-	res := g.QueryBufWithContext(searchMin, searchMax, qctx)
+	res := g.QueryBuf(searchMin, searchMax, qctx)
 	if len(res) != 2 {
 		t.Fatalf("expected 2 entities, got %d", len(res))
 	}
@@ -52,16 +52,9 @@ func TestQueryBufWithContext_Basic(t *testing.T) {
 	if gotIDs[0] != 1 || gotIDs[1] != 2 {
 		t.Fatalf("unexpected IDs: %v", gotIDs)
 	}
-
-	// Compare with QueryBuf
-	bufLegacy := make([]*entity.Entity, 0, 16)
-	resLegacy := g.QueryBuf(searchMin, searchMax, bufLegacy)
-	if len(resLegacy) != len(res) {
-		t.Fatalf("QueryBufWithContext (%d) differs from QueryBuf (%d)", len(res), len(resLegacy))
-	}
 }
 
-func TestQueryBufWithContext_OutOfBounds(t *testing.T) {
+func TestQueryBuf_OutOfBounds(t *testing.T) {
 	g, err := grid.NewGrid[*entity.Entity](3, 0, 0, 0, 100, 100, 100, 50)
 	if err != nil {
 		t.Fatalf("failed to create grid: %v", err)
@@ -77,7 +70,7 @@ func TestQueryBufWithContext_OutOfBounds(t *testing.T) {
 	qctx := grid.NewQueryContext[*entity.Entity](16)
 
 	// Far outside right
-	res := g.QueryBufWithContext(
+	res := g.QueryBuf(
 		geometry.Point64{X: 500, Y: 500, Z: 500},
 		geometry.Point64{X: 600, Y: 600, Z: 600},
 		qctx,
@@ -87,7 +80,7 @@ func TestQueryBufWithContext_OutOfBounds(t *testing.T) {
 	}
 
 	// Far outside left
-	res = g.QueryBufWithContext(
+	res = g.QueryBuf(
 		geometry.Point64{X: -500, Y: -500, Z: -500},
 		geometry.Point64{X: -400, Y: -400, Z: -400},
 		qctx,
@@ -97,7 +90,7 @@ func TestQueryBufWithContext_OutOfBounds(t *testing.T) {
 	}
 }
 
-func TestQueryBufWithContext_DenseClusterOverflow(t *testing.T) {
+func TestQueryBuf_DenseClusterOverflow(t *testing.T) {
 	g, err := grid.NewGrid[*entity.Entity](3, 0, 0, 0, 200, 200, 200, 5000)
 	if err != nil {
 		t.Fatalf("failed to create grid: %v", err)
@@ -117,7 +110,7 @@ func TestQueryBufWithContext_DenseClusterOverflow(t *testing.T) {
 	qctx := grid.NewQueryContext[*entity.Entity](128)
 
 	// Query around the dense cluster
-	res := g.QueryBufWithContext(
+	res := g.QueryBuf(
 		geometry.Point64{X: 40, Y: 40, Z: 40},
 		geometry.Point64{X: 70, Y: 70, Z: 70},
 		qctx,
@@ -137,7 +130,7 @@ func TestQueryBufWithContext_DenseClusterOverflow(t *testing.T) {
 	}
 
 	// Second query using same context must reset and succeed
-	res2 := g.QueryBufWithContext(
+	res2 := g.QueryBuf(
 		geometry.Point64{X: 40, Y: 40, Z: 40},
 		geometry.Point64{X: 70, Y: 70, Z: 70},
 		qctx,
@@ -147,7 +140,7 @@ func TestQueryBufWithContext_DenseClusterOverflow(t *testing.T) {
 	}
 }
 
-func TestQueryBufWithContext_ConcurrentReads(t *testing.T) {
+func TestQueryBuf_ConcurrentReads(t *testing.T) {
 	g, err := grid.NewGrid[*entity.Entity](3, 0, 0, 0, 500, 500, 500, 1000)
 	if err != nil {
 		t.Fatalf("failed to create grid: %v", err)
@@ -184,7 +177,7 @@ func TestQueryBufWithContext_ConcurrentReads(t *testing.T) {
 				searchMin := geometry.Point64{X: centerX - 25, Y: centerY - 25, Z: centerZ - 25}
 				searchMax := geometry.Point64{X: centerX + 25, Y: centerY + 25, Z: centerZ + 25}
 
-				res := g.QueryBufWithContext(searchMin, searchMax, qctx)
+				res := g.QueryBuf(searchMin, searchMax, qctx)
 
 				// Ensure no duplicates in result
 				for i := 0; i < len(res); i++ {

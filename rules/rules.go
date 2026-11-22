@@ -35,9 +35,8 @@ type ForceContext struct {
 type RuleContext struct {
 	EntityGrid *grid.Grid[*entity.Entity]
 	ZoneGrid   *grid.Grid[*zones.Zone]
-	// pre-allocated buffer for `QueryBuf` method
-	EntityBuffer []*entity.Entity
-	ZoneBuffer   []*zones.Zone
+	EntityQCtx *grid.QueryContext[*entity.Entity]
+	ZoneQCtx   *grid.QueryContext[*zones.Zone]
 }
 
 type Rule interface {

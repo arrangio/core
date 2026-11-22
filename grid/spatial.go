@@ -8,6 +8,4 @@ import "github.com/arrangio/core/geometry"
 type Spatial interface {
 	GetID() uint64
 	WorldBounds() (min, max geometry.Point64)
-	GetQueryID() uint64
-	SetQueryID(id uint64)
 }

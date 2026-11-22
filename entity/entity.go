@@ -34,7 +34,6 @@ func (d *EntityDef) initRotatedBounds() {
 type EntityState struct {
 	Anchor       geometry.Point64
 	Rotation     uint8
-	LastQueryID  uint64
 	rotatedShape geometry.RotatedShape
 }
 
@@ -190,10 +189,3 @@ func (e *Entity) WorldBounds() (geometry.Point64, geometry.Point64) {
 	}
 }
 
-func (e *Entity) GetQueryID() uint64 {
-	return e.State.LastQueryID
-}
-
-func (e *Entity) SetQueryID(id uint64) {
-	e.State.LastQueryID = id
-}

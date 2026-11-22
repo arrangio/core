@@ -226,7 +226,7 @@ func (s *ForceSolver) workerLoop(wCtx *solverWorker, stopCh <-chan struct{}) {
 					}
 
 					wCtx.qctx.ExcludeID = e.Def.ID
-					neighbors := s.State.EntityGrid.QueryBufWithContext(searchMin, searchMax, wCtx.qctx)
+					neighbors := s.State.EntityGrid.QueryBuf(searchMin, searchMax, wCtx.qctx)
 					wCtx.fctx.Neighbors = neighbors
 					wCtx.fctx.NeighborMin = wCtx.qctx.BufferMin
 					wCtx.fctx.NeighborMax = wCtx.qctx.BufferMax
@@ -234,7 +234,7 @@ func (s *ForceSolver) workerLoop(wCtx *solverWorker, stopCh <-chan struct{}) {
 					wCtx.fctx.SubjectMax = subMax
 					wCtx.fctx.HasBounds = true
 					if hasZones {
-						wCtx.fctx.Zones = s.State.ZoneGrid.QueryBufWithContext(searchMin, searchMax, wCtx.zoneQctx)
+						wCtx.fctx.Zones = s.State.ZoneGrid.QueryBuf(searchMin, searchMax, wCtx.zoneQctx)
 					} else {
 						wCtx.fctx.Zones = nil
 					}

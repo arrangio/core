@@ -42,13 +42,13 @@ func (r *ProximityRule) Evaluate(subject *entity.Entity, ctx *RuleContext) float
 	}
 
 	// all entities from `searchMin` to `searchMax`
-	ctx.EntityBuffer = ctx.EntityGrid.QueryBuf(searchMin, searchMax, ctx.EntityBuffer)
+	neighbors := ctx.EntityGrid.QueryBuf(searchMin, searchMax, ctx.EntityQCtx)
 
 	maxDistSq := r.MaxDist * r.MaxDist
 	minDistSq := maxDistSq
 	found := false
 
-	for _, neighbor := range ctx.EntityBuffer {
+	for _, neighbor := range neighbors {
 		if subject.Def.ID == neighbor.Def.ID || !r.To.Matches(neighbor) {
 			continue
 		}

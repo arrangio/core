@@ -24,9 +24,9 @@ func (r *ZoneExclusionRule) Evaluate(subject *entity.Entity, ctx *RuleContext) f
 
 	sMin, sMax := subject.WorldBounds()
 
-	ctx.ZoneBuffer = ctx.ZoneGrid.QueryBuf(sMin, sMax, ctx.ZoneBuffer)
+	zones := ctx.ZoneGrid.QueryBuf(sMin, sMax, ctx.ZoneQCtx)
 
-	for _, z := range ctx.ZoneBuffer {
+	for _, z := range zones {
 		if !r.Zone.MatchesZone(z) {
 			continue
 		}

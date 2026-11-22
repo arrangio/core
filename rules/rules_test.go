@@ -50,10 +50,10 @@ func RunRuleTest(t *testing.T, rule rules.Rule, tc RuleTestCase) {
 		g.Insert(subject)
 
 		ctx := &rules.RuleContext{
-			EntityGrid:   g,
-			ZoneGrid:     zg,
-			EntityBuffer: make([]*entity.Entity, 0, 50),
-			ZoneBuffer:   make([]*zones.Zone, 0, 50),
+			EntityGrid: g,
+			ZoneGrid:   zg,
+			EntityQCtx: grid.NewQueryContext[*entity.Entity](50),
+			ZoneQCtx:   grid.NewQueryContext[*zones.Zone](50),
 		}
 
 		got := rule.Evaluate(subject, ctx)
