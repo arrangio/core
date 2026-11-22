@@ -47,7 +47,7 @@ func (r *ClearanceRule) Evaluate(subject *entity.Entity, ctx *RuleContext) float
 	var maxPenetration int64
 
 	for _, neighbor := range neighbors {
-		if neighbor.Def.ID == subject.Def.ID || !r.Obstacle.Matches(neighbor) {
+		if neighbor.ID == subject.ID || !r.Obstacle.Matches(neighbor) {
 			continue
 		}
 
@@ -90,7 +90,7 @@ func (r *ClearanceRule) ComputeForce(subject *entity.Entity, forceCtx *ForceCont
 	subMax.Z += r.Padding.Z
 
 	for i, neighbor := range forceCtx.Neighbors {
-		if subject.Def.ID == neighbor.Def.ID || !r.Obstacle.Matches(neighbor) {
+		if subject.ID == neighbor.ID || !r.Obstacle.Matches(neighbor) {
 			continue
 		}
 		var nMin, nMax geometry.Point64

@@ -49,7 +49,7 @@ func (r *ProximityRule) Evaluate(subject *entity.Entity, ctx *RuleContext) float
 	found := false
 
 	for _, neighbor := range neighbors {
-		if subject.Def.ID == neighbor.Def.ID || !r.To.Matches(neighbor) {
+		if subject.ID == neighbor.ID || !r.To.Matches(neighbor) {
 			continue
 		}
 
@@ -85,7 +85,7 @@ func (r *ProximityRule) ComputeForce(subject *entity.Entity, forceCtx *ForceCont
 	var bestNeighbor *entity.Entity
 
 	for _, neighbor := range forceCtx.Neighbors {
-		if subject.Def.ID == neighbor.Def.ID || !r.To.Matches(neighbor) {
+		if subject.ID == neighbor.ID || !r.To.Matches(neighbor) {
 			continue
 		}
 		nAnchor := neighbor.State.Anchor

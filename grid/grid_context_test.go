@@ -47,7 +47,7 @@ func TestQueryBuf_Basic(t *testing.T) {
 		t.Fatalf("expected 2 entities, got %d", len(res))
 	}
 
-	gotIDs := []uint64{res[0].Def.ID, res[1].Def.ID}
+	gotIDs := []uint64{res[0].ID, res[1].ID}
 	slices.Sort(gotIDs)
 	if gotIDs[0] != 1 || gotIDs[1] != 2 {
 		t.Fatalf("unexpected IDs: %v", gotIDs)
@@ -123,10 +123,10 @@ func TestQueryBuf_DenseClusterOverflow(t *testing.T) {
 	// Verify no duplicates
 	seen := make(map[uint64]bool)
 	for _, e := range res {
-		if seen[e.Def.ID] {
-			t.Fatalf("duplicate entity ID %d returned", e.Def.ID)
+		if seen[e.ID] {
+			t.Fatalf("duplicate entity ID %d returned", e.ID)
 		}
-		seen[e.Def.ID] = true
+		seen[e.ID] = true
 	}
 
 	// Second query using same context must reset and succeed
@@ -182,8 +182,8 @@ func TestQueryBuf_ConcurrentReads(t *testing.T) {
 				// Ensure no duplicates in result
 				for i := 0; i < len(res); i++ {
 					for j := i + 1; j < len(res); j++ {
-						if res[i].Def.ID == res[j].Def.ID {
-							t.Errorf("worker %d: duplicate entity %d found", workerID, res[i].Def.ID)
+						if res[i].ID == res[j].ID {
+							t.Errorf("worker %d: duplicate entity %d found", workerID, res[i].ID)
 						}
 					}
 				}

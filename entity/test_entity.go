@@ -35,21 +35,15 @@ func BuildTestEntity(cfg TestEntity) *Entity {
 		d = 1
 	}
 
-	def := &EntityDef{
-		ID:        cfg.ID,
-		IsStatic:  cfg.IsStatic,
-		CanRotate: cfg.CanRotate,
-		Tags:      mask,
-		Shape:     geometry.Box{W: w, H: h, D: d},
-		Facings:   cfg.Facings,
+	def := NewEntityDef(cfg.IsStatic, cfg.CanRotate, nil, geometry.Box{W: w, H: h, D: d}, cfg.Facings)
+	e := NewEntity(def, cfg.ID, mask, cfg.Anchor)
+	if cfg.Rotation != 0 {
+		rot := cfg.Rotation
+		if rot >= 24 {
+			rot = 0
+		}
+		e.State.Rotation = rot
+		e.State.rotatedShape.SetRotation(rot)
 	}
-	def.initRotatedBounds()
-
-	return &Entity{
-		Def: def,
-		State: &EntityState{
-			Anchor:   cfg.Anchor,
-			Rotation: cfg.Rotation,
-		},
-	}
+	return e
 }

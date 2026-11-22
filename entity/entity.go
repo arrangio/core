@@ -7,10 +7,8 @@ import (
 
 // EntityDef holds the immutable definition of an entity
 type EntityDef struct {
-	ID            uint64
 	IsStatic      bool
 	CanRotate     bool
-	Tags          tags.Mask
 	Props         []float64
 	Shape         geometry.Shape
 	Facings       *geometry.Facings
@@ -30,6 +28,18 @@ func (d *EntityDef) initRotatedBounds() {
 	d.boundsInit = true
 }
 
+func NewEntityDef(isStatic, canRotate bool, props []float64, shape geometry.Shape, facings *geometry.Facings) *EntityDef {
+	def := &EntityDef{
+		IsStatic:  isStatic,
+		CanRotate: canRotate,
+		Props:     props,
+		Shape:     shape,
+		Facings:   facings,
+	}
+	def.initRotatedBounds()
+	return def
+}
+
 // EntityState holds the mutable state of an entity
 type EntityState struct {
 	Anchor       geometry.Point64
@@ -39,29 +49,23 @@ type EntityState struct {
 
 // Entity is a lightweight wrapper that glues a shared definition with entity-specific state
 type Entity struct {
+	ID    uint64
+	Tags  tags.Mask
 	Def   *EntityDef
 	State *EntityState
 }
 
-func NewEntity(id uint64, isStatic, canRotate bool, tagMask tags.Mask, props []float64, shape geometry.Shape, facings *geometry.Facings, anchor geometry.Point64) *Entity {
-	def := &EntityDef{
-		ID:        id,
-		IsStatic:  isStatic,
-		CanRotate: canRotate,
-		Tags:      tagMask,
-		Props:     props,
-		Shape:     shape,
-		Facings:   facings,
-	}
-	def.initRotatedBounds()
-
-	baseShape := shape
-	if rs, ok := shape.(*geometry.RotatedShape); ok {
+// NewEntity creates a new Entity instance bound to a shared EntityDef archetype
+func NewEntity(def *EntityDef, id uint64, tagMask tags.Mask, anchor geometry.Point64) *Entity {
+	baseShape := def.Shape
+	if rs, ok := def.Shape.(*geometry.RotatedShape); ok {
 		baseShape = rs.Unwrap()
 	}
 
 	return &Entity{
-		Def: def,
+		ID:   id,
+		Tags: tagMask,
+		Def:  def,
 		State: &EntityState{
 			Anchor:       anchor,
 			rotatedShape: *geometry.NewRotatedShape(baseShape),
@@ -70,7 +74,7 @@ func NewEntity(id uint64, isStatic, canRotate bool, tagMask tags.Mask, props []f
 }
 
 func (e *Entity) HasTags(required tags.Mask) bool {
-	return e.Def.Tags.Has(required)
+	return e.Tags.Has(required)
 }
 
 // AsFootprint constructs a geometry.Footprint on the fly
@@ -120,7 +124,7 @@ func (e *Entity) WorldFacing(marker string) (geometry.Point64, bool) {
 // Spatial interface implementation
 
 func (e *Entity) GetID() uint64 {
-	return e.Def.ID
+	return e.ID
 }
 
 func (e *Entity) SetRotation(rotation uint8) {
@@ -188,4 +192,3 @@ func (e *Entity) WorldBounds() (geometry.Point64, geometry.Point64) {
 		Z: az + int64(b[1].Z),
 	}
 }
-

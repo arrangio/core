@@ -20,7 +20,7 @@ type TestRig struct {
 // Access entity by ID
 func (r *TestRig) GetEntity(id uint64) *entity.Entity {
 	for _, e := range r.Entities {
-		if e.Def.ID == id {
+		if e.ID == id {
 			return e
 		}
 	}

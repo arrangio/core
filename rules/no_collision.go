@@ -24,7 +24,7 @@ func (r *NoCollisionRule) Evaluate(subject *entity.Entity, ctx *RuleContext) flo
 	subFp := subject.AsFootprint()
 
 	for _, neighbor := range neighbors {
-		if subject.Def.ID == neighbor.Def.ID {
+		if subject.ID == neighbor.ID {
 			continue
 		}
 
@@ -53,7 +53,7 @@ func (r *NoCollisionRule) ComputeForce(subject *entity.Entity, forceCtx *ForceCo
 		subMin, subMax = subject.WorldBounds()
 	}
 	for i, neighbor := range forceCtx.Neighbors {
-		if subject.Def.ID == neighbor.Def.ID || !r.Obstacle.Matches(neighbor) {
+		if subject.ID == neighbor.ID || !r.Obstacle.Matches(neighbor) {
 			continue
 		}
 		var nMin, nMax geometry.Point64

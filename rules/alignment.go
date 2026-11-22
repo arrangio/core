@@ -57,7 +57,7 @@ func (r *AlignmentRule) Evaluate(subject *entity.Entity, ctx *RuleContext) float
 
 	for _, neighbor := range neighbors {
 		// align only with objects within the `Radius` range and matching Selector
-		if subject.Def.ID == neighbor.Def.ID || !r.Target.Matches(neighbor) {
+		if subject.ID == neighbor.ID || !r.Target.Matches(neighbor) {
 			continue
 		}
 
@@ -115,7 +115,7 @@ func (r *AlignmentRule) ComputeForce(subject *entity.Entity, forceCtx *ForceCont
 	var bestDiff int64
 
 	for _, neighbor := range forceCtx.Neighbors {
-		if subject.Def.ID == neighbor.Def.ID || !r.Target.Matches(neighbor) {
+		if subject.ID == neighbor.ID || !r.Target.Matches(neighbor) {
 			continue
 		}
 

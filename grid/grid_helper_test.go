@@ -86,7 +86,7 @@ func RunGridTest(t *testing.T, tc GridTestCase) {
 					t.Fatalf("%s: nil Entity for Insert operation", stepName)
 				}
 				e := entity.BuildTestEntity(*act.Entity)
-				entityCache[e.Def.ID] = e
+				entityCache[e.ID] = e
 				g.Insert(e)
 			case Remove:
 				e, ok := entityCache[act.EntityID]
@@ -101,7 +101,7 @@ func RunGridTest(t *testing.T, tc GridTestCase) {
 
 				gotIDs := make([]uint64, len(res))
 				for i, e := range res {
-					gotIDs[i] = e.Def.ID
+					gotIDs[i] = e.ID
 				}
 				slices.Sort(gotIDs)
 

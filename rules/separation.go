@@ -41,7 +41,7 @@ func (r *SeparationRule) Evaluate(e *entity.Entity, ctx *RuleContext) float64 {
 
 	// iterate through all objects in `searchMin` to `searchMax` range
 	for _, neighbor := range neighbors {
-		if neighbor.Def.ID == e.Def.ID || !r.Obstacle.Matches(neighbor) {
+		if neighbor.ID == e.ID || !r.Obstacle.Matches(neighbor) {
 			continue
 		}
 
@@ -102,7 +102,7 @@ func (r *SeparationRule) ComputeForce(subject *entity.Entity, forceCtx *ForceCon
 	subMax.Z += r.MinDistance
 
 	for i, neighbor := range forceCtx.Neighbors {
-		if subject.Def.ID == neighbor.Def.ID || !r.Obstacle.Matches(neighbor) {
+		if subject.ID == neighbor.ID || !r.Obstacle.Matches(neighbor) {
 			continue
 		}
 		var nMin, nMax geometry.Point64
