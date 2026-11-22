@@ -34,6 +34,10 @@ func (r *OrientationRule) scoreFacing(worldFacing geometry.Point64) float64 {
 	// angle between vectors `worldFacing` and `TargetSelector`
 	cosTheta := dot / (lenFacing * lenTarget)
 
+	if math.IsNaN(cosTheta) {
+		return 0.0
+	}
+
 	// protection from float64 inaccuracy
 	if cosTheta > 1.0 {
 		cosTheta = 1.0
