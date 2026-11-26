@@ -165,6 +165,42 @@ func TestScoreDirector(t *testing.T) {
 				}
 			},
 		},
+		{
+			Name: "Delta: static obstacle does not skew delta on MatchAny rule",
+			Entities: []entity.TestEntity{
+				{ID: 1, IsStatic: true, Anchor: geometry.Point64{X: 0, Y: 0, Z: 0}, W: 2, H: 2, D: 2},
+				{ID: 2, Anchor: geometry.Point64{X: 0, Y: 0, Z: 0}, W: 2, H: 2, D: 2},
+			},
+			Rules: []rules.Rule{
+				&rules.NoCollisionRule{
+					Target:   rules.Selector{MatchAny: true},
+					Obstacle: rules.Selector{MatchAny: true},
+				},
+			},
+			Run: func(t *testing.T, rig *TestRig) {
+				e2 := rig.GetEntity(2)
+				initialScore := rig.Director.CalculateTotalScore()
+
+				oldMin, oldMax := e2.WorldBounds()
+				newAnchor := geometry.Point64{X: 10, Y: 0, Z: 0}
+				newMin, newMax := e2.BoundsAt(newAnchor, 0)
+
+				delta := rig.Director.CalculateDelta(e2, oldMin, oldMax, newMin, newMax, func() {
+					e2.State.Anchor = newAnchor
+					rig.State.EntityGrid.Move(e2, oldMin, oldMax, newMin, newMax)
+				})
+
+				newTotalScore := rig.Director.CalculateTotalScore()
+
+				if math.Abs(delta-1.0) > 1e-9 {
+					t.Errorf("expected delta 1.0, got %f", delta)
+				}
+
+				if math.Abs(delta-(newTotalScore-initialScore)) > 1e-9 {
+					t.Errorf("CalculateDelta = %f, but actual difference is %f", delta, newTotalScore-initialScore)
+				}
+			},
+		},
 	}
 
 	for _, tc := range tests {
