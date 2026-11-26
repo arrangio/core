@@ -10,6 +10,7 @@ type ScoreDirector struct {
 	State          *State
 	affectedBuffer []*entity.Entity
 	qctx           *grid.QueryContext[*entity.Entity]
+	affectedSeen   *grid.QueryContext[*entity.Entity]
 }
 
 func NewScoreDirector(state *State) *ScoreDirector {
@@ -17,6 +18,7 @@ func NewScoreDirector(state *State) *ScoreDirector {
 		State:          state,
 		affectedBuffer: make([]*entity.Entity, 0, 32),
 		qctx:           grid.NewQueryContext[*entity.Entity](64),
+		affectedSeen:   grid.NewQueryContext[*entity.Entity](64),
 	}
 }
 
@@ -59,6 +61,7 @@ func (sd *ScoreDirector) collectAffected(
 	target *entity.Entity,
 	oldMin, oldMax, newMin, newMax geometry.Point64,
 ) []*entity.Entity {
+	sd.affectedSeen.Reset()
 	sd.affectedBuffer = sd.affectedBuffer[:0]
 	if target.Def != nil && !target.Def.IsStatic {
 		sd.affectedBuffer = append(sd.affectedBuffer, target)
@@ -72,12 +75,11 @@ func (sd *ScoreDirector) collectAffected(
 	buf := sd.State.EntityGrid.QueryBuf(oldSearchMin, oldSearchMax, sd.qctx)
 
 	for _, e := range buf {
-		if e.Def != nil && e.Def.IsStatic {
+		if e == target || (e.Def != nil && e.Def.IsStatic) || sd.affectedSeen.Seen(e.ID) {
 			continue
 		}
-		if e != target {
-			sd.affectedBuffer = append(sd.affectedBuffer, e)
-		}
+
+		sd.affectedBuffer = append(sd.affectedBuffer, e)
 	}
 
 	newSearchMin := geometry.Point64{X: newMin.X - maxRad, Y: newMin.Y - maxRad, Z: newMin.Z - maxRad}
@@ -86,20 +88,11 @@ func (sd *ScoreDirector) collectAffected(
 	buf = sd.State.EntityGrid.QueryBuf(newSearchMin, newSearchMax, sd.qctx)
 
 	for _, e := range buf {
-		if e == target || (e.Def != nil && e.Def.IsStatic) {
+		if e == target || (e.Def != nil && e.Def.IsStatic) || sd.affectedSeen.Seen(e.ID) {
 			continue
 		}
 
-		duplicate := false
-		for _, a := range sd.affectedBuffer {
-			if a == e {
-				duplicate = true
-				break
-			}
-		}
-		if !duplicate {
-			sd.affectedBuffer = append(sd.affectedBuffer, e)
-		}
+		sd.affectedBuffer = append(sd.affectedBuffer, e)
 	}
 
 	return sd.affectedBuffer
