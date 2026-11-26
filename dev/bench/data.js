@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1795365535142,
+  "lastUpdate": 1795710675166,
   "repoUrl": "https://github.com/arrangio/core",
   "entries": {
     "Benchmark": [
@@ -4704,6 +4704,354 @@ window.BENCHMARK_DATA = {
             "value": 0,
             "unit": "allocs/op",
             "extra": "429 times\n4 procs"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "d@dvprokofiev.ru",
+            "name": "dvprokofiev",
+            "username": "dvprokofiev"
+          },
+          "committer": {
+            "email": "d@dvprokofiev.ru",
+            "name": "dvprokofiev",
+            "username": "dvprokofiev"
+          },
+          "distinct": true,
+          "id": "a8861ccf662c16a7a22698b6a49dae88bdc549df",
+          "message": "fix(gosec): ignore G115 overflow conversion warnings",
+          "timestamp": "2026-11-26T19:27:54+03:00",
+          "tree_id": "a0fea48bd28c948c20dc99d6867598015449bb41",
+          "url": "https://github.com/arrangio/core/commit/a8861ccf662c16a7a22698b6a49dae88bdc549df"
+        },
+        "date": 1795710674494,
+        "tool": "go",
+        "benches": [
+          {
+            "name": "BenchmarkGridInsert (github.com/arrangio/core/grid)",
+            "value": 48.82,
+            "unit": "ns/op\t       0 B/op\t       0 allocs/op",
+            "extra": "24928309 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridInsert (github.com/arrangio/core/grid) - ns/op",
+            "value": 48.82,
+            "unit": "ns/op",
+            "extra": "24928309 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridInsert (github.com/arrangio/core/grid) - B/op",
+            "value": 0,
+            "unit": "B/op",
+            "extra": "24928309 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridInsert (github.com/arrangio/core/grid) - allocs/op",
+            "value": 0,
+            "unit": "allocs/op",
+            "extra": "24928309 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridQuery (github.com/arrangio/core/grid)",
+            "value": 3676,
+            "unit": "ns/op\t       0 B/op\t       0 allocs/op",
+            "extra": "328070 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridQuery (github.com/arrangio/core/grid) - ns/op",
+            "value": 3676,
+            "unit": "ns/op",
+            "extra": "328070 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridQuery (github.com/arrangio/core/grid) - B/op",
+            "value": 0,
+            "unit": "B/op",
+            "extra": "328070 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridQuery (github.com/arrangio/core/grid) - allocs/op",
+            "value": 0,
+            "unit": "allocs/op",
+            "extra": "328070 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridInsert_Giant (github.com/arrangio/core/grid)",
+            "value": 455.4,
+            "unit": "ns/op\t       0 B/op\t       0 allocs/op",
+            "extra": "2635088 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridInsert_Giant (github.com/arrangio/core/grid) - ns/op",
+            "value": 455.4,
+            "unit": "ns/op",
+            "extra": "2635088 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridInsert_Giant (github.com/arrangio/core/grid) - B/op",
+            "value": 0,
+            "unit": "B/op",
+            "extra": "2635088 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridInsert_Giant (github.com/arrangio/core/grid) - allocs/op",
+            "value": 0,
+            "unit": "allocs/op",
+            "extra": "2635088 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridQuery_Dense (github.com/arrangio/core/grid)",
+            "value": 2071,
+            "unit": "ns/op\t       0 B/op\t       0 allocs/op",
+            "extra": "589645 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridQuery_Dense (github.com/arrangio/core/grid) - ns/op",
+            "value": 2071,
+            "unit": "ns/op",
+            "extra": "589645 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridQuery_Dense (github.com/arrangio/core/grid) - B/op",
+            "value": 0,
+            "unit": "B/op",
+            "extra": "589645 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridQuery_Dense (github.com/arrangio/core/grid) - allocs/op",
+            "value": 0,
+            "unit": "allocs/op",
+            "extra": "589645 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridQueryWithContext_Dense (github.com/arrangio/core/grid)",
+            "value": 1995,
+            "unit": "ns/op\t       0 B/op\t       0 allocs/op",
+            "extra": "595882 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridQueryWithContext_Dense (github.com/arrangio/core/grid) - ns/op",
+            "value": 1995,
+            "unit": "ns/op",
+            "extra": "595882 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridQueryWithContext_Dense (github.com/arrangio/core/grid) - B/op",
+            "value": 0,
+            "unit": "B/op",
+            "extra": "595882 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridQueryWithContext_Dense (github.com/arrangio/core/grid) - allocs/op",
+            "value": 0,
+            "unit": "allocs/op",
+            "extra": "595882 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridMove (github.com/arrangio/core/grid)",
+            "value": 41.71,
+            "unit": "ns/op\t       0 B/op\t       0 allocs/op",
+            "extra": "28522704 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridMove (github.com/arrangio/core/grid) - ns/op",
+            "value": 41.71,
+            "unit": "ns/op",
+            "extra": "28522704 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridMove (github.com/arrangio/core/grid) - B/op",
+            "value": 0,
+            "unit": "B/op",
+            "extra": "28522704 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkGridMove (github.com/arrangio/core/grid) - allocs/op",
+            "value": 0,
+            "unit": "allocs/op",
+            "extra": "28522704 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkForceSolver_1K (github.com/arrangio/core/solver)",
+            "value": 201082619,
+            "unit": "ns/op\t        68.00 iters/op\t     24205 stress\t   20405 B/op\t       2 allocs/op",
+            "extra": "6 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkForceSolver_1K (github.com/arrangio/core/solver) - ns/op",
+            "value": 201082619,
+            "unit": "ns/op",
+            "extra": "6 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkForceSolver_1K (github.com/arrangio/core/solver) - iters/op",
+            "value": 68,
+            "unit": "iters/op",
+            "extra": "6 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkForceSolver_1K (github.com/arrangio/core/solver) - stress",
+            "value": 24205,
+            "unit": "stress",
+            "extra": "6 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkForceSolver_1K (github.com/arrangio/core/solver) - B/op",
+            "value": 20405,
+            "unit": "B/op",
+            "extra": "6 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkForceSolver_1K (github.com/arrangio/core/solver) - allocs/op",
+            "value": 2,
+            "unit": "allocs/op",
+            "extra": "6 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkForceSolver_10K (github.com/arrangio/core/solver)",
+            "value": 2532955074,
+            "unit": "ns/op\t        74.00 iters/op\t    241217 stress\t 2654096 B/op\t      23 allocs/op",
+            "extra": "1 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkForceSolver_10K (github.com/arrangio/core/solver) - ns/op",
+            "value": 2532955074,
+            "unit": "ns/op",
+            "extra": "1 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkForceSolver_10K (github.com/arrangio/core/solver) - iters/op",
+            "value": 74,
+            "unit": "iters/op",
+            "extra": "1 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkForceSolver_10K (github.com/arrangio/core/solver) - stress",
+            "value": 241217,
+            "unit": "stress",
+            "extra": "1 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkForceSolver_10K (github.com/arrangio/core/solver) - B/op",
+            "value": 2654096,
+            "unit": "B/op",
+            "extra": "1 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkForceSolver_10K (github.com/arrangio/core/solver) - allocs/op",
+            "value": 23,
+            "unit": "allocs/op",
+            "extra": "1 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkForceSolver_100K (github.com/arrangio/core/solver)",
+            "value": 29060143354,
+            "unit": "ns/op\t        81.00 iters/op\t   2504423 stress\t32260768 B/op\t      40 allocs/op",
+            "extra": "1 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkForceSolver_100K (github.com/arrangio/core/solver) - ns/op",
+            "value": 29060143354,
+            "unit": "ns/op",
+            "extra": "1 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkForceSolver_100K (github.com/arrangio/core/solver) - iters/op",
+            "value": 81,
+            "unit": "iters/op",
+            "extra": "1 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkForceSolver_100K (github.com/arrangio/core/solver) - stress",
+            "value": 2504423,
+            "unit": "stress",
+            "extra": "1 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkForceSolver_100K (github.com/arrangio/core/solver) - B/op",
+            "value": 32260768,
+            "unit": "B/op",
+            "extra": "1 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkForceSolver_100K (github.com/arrangio/core/solver) - allocs/op",
+            "value": 40,
+            "unit": "allocs/op",
+            "extra": "1 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkForceSolver_Step_10K (github.com/arrangio/core/solver)",
+            "value": 46289071,
+            "unit": "ns/op\t  102093 B/op\t       1 allocs/op",
+            "extra": "26 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkForceSolver_Step_10K (github.com/arrangio/core/solver) - ns/op",
+            "value": 46289071,
+            "unit": "ns/op",
+            "extra": "26 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkForceSolver_Step_10K (github.com/arrangio/core/solver) - B/op",
+            "value": 102093,
+            "unit": "B/op",
+            "extra": "26 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkForceSolver_Step_10K (github.com/arrangio/core/solver) - allocs/op",
+            "value": 1,
+            "unit": "allocs/op",
+            "extra": "26 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkForceSolver_Step_1M (github.com/arrangio/core/solver)",
+            "value": 5297240401,
+            "unit": "ns/op\t313221456 B/op\t      47 allocs/op",
+            "extra": "1 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkForceSolver_Step_1M (github.com/arrangio/core/solver) - ns/op",
+            "value": 5297240401,
+            "unit": "ns/op",
+            "extra": "1 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkForceSolver_Step_1M (github.com/arrangio/core/solver) - B/op",
+            "value": 313221456,
+            "unit": "B/op",
+            "extra": "1 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkForceSolver_Step_1M (github.com/arrangio/core/solver) - allocs/op",
+            "value": 47,
+            "unit": "allocs/op",
+            "extra": "1 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkForceSolver_ZeroAllocs (github.com/arrangio/core/solver)",
+            "value": 25955,
+            "unit": "ns/op\t       0 B/op\t       0 allocs/op",
+            "extra": "46082 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkForceSolver_ZeroAllocs (github.com/arrangio/core/solver) - ns/op",
+            "value": 25955,
+            "unit": "ns/op",
+            "extra": "46082 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkForceSolver_ZeroAllocs (github.com/arrangio/core/solver) - B/op",
+            "value": 0,
+            "unit": "B/op",
+            "extra": "46082 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkForceSolver_ZeroAllocs (github.com/arrangio/core/solver) - allocs/op",
+            "value": 0,
+            "unit": "allocs/op",
+            "extra": "46082 times\n4 procs"
           }
         ]
       }
