@@ -34,39 +34,41 @@ type Grid[T Spatial] struct {
 	freeNodes []int32       // tracks which indices in the `nodes` are currently empty
 }
 
+const maxTotalCells = 50_000_000
+
 // `maxObjectsPerCell` acts as the initial capacity for total entity-to-cell linkages allowed.
 // The grid will dynamically grow if this limit is exceeded, but pre-allocating accurately avoids allocations.
 // rule of thumb: `maxObjectsPerCell` = N * 8, where N is the number of entities
 // assuming the worst of case of all 8 neighbor shapes overlapping at one cell.
 func NewGrid[T Spatial](shiftBits uint8, minX, minY, minZ, maxX, maxY, maxZ int64, maxObjectsPerCell int) (*Grid[T], error) {
-	worldW := maxX - minX
-	worldH := maxY - minY
-	worldD := maxZ - minZ
-
-	cellsX := (worldW + (1 << shiftBits) - 1) >> shiftBits
-	cellsY := (worldH + (1 << shiftBits) - 1) >> shiftBits
-	cellsZ := (worldD + (1 << shiftBits) - 1) >> shiftBits
-
-	if cellsX == 0 {
-		cellsX = 1
+	if shiftBits >= 62 {
+		return nil, fmt.Errorf("grid: invalid shiftBits (%d)", shiftBits)
 	}
-	if cellsY == 0 {
-		cellsY = 1
+	if maxObjectsPerCell < 0 {
+		return nil, fmt.Errorf("grid: invalid maxObjectsPerCell (%d)", maxObjectsPerCell)
 	}
-	if cellsZ == 0 {
-		cellsZ = 1
+	if maxX < minX || maxY < minY || maxZ < minZ {
+		return nil, fmt.Errorf("grid: invalid bounds [%d,%d]x[%d,%d]x[%d,%d]", minX, maxX, minY, maxY, minZ, maxZ)
 	}
 
-	totalCells := cellsX * cellsY * cellsZ
+	cellsX := uint64(1)
+	if maxX > minX {
+		cellsX = ((uint64(maxX-minX) - 1) >> shiftBits) + 1
+	}
+	cellsY := uint64(1)
+	if maxY > minY {
+		cellsY = ((uint64(maxY-minY) - 1) >> shiftBits) + 1
+	}
+	cellsZ := uint64(1)
+	if maxZ > minZ {
+		cellsZ = ((uint64(maxZ-minZ) - 1) >> shiftBits) + 1
+	}
 
-	// rough estimate for bounds checking to prevent OOM
-	// 50M cells limit is approximately ~200MB memory for the heads array
-	if totalCells <= 0 {
-		return nil, fmt.Errorf("grid: invalid dimensions (totalCells = %d)", totalCells)
+	if cellsX > maxTotalCells || cellsY > maxTotalCells/cellsX || cellsZ > maxTotalCells/(cellsX*cellsY) {
+		return nil, fmt.Errorf("grid: boundaries too large, exceeds 50M cells limit")
 	}
-	if totalCells > 50_000_000 {
-		return nil, fmt.Errorf("grid: boundaries too large, exceeds 50M cells limit (got %d)", totalCells)
-	}
+
+	totalCells := int64(cellsX * cellsY * cellsZ)
 
 	heads := make([]int32, totalCells)
 	for i := range heads {
@@ -84,11 +86,11 @@ func NewGrid[T Spatial](shiftBits uint8, minX, minY, minZ, maxX, maxY, maxZ int6
 		originY:   minY,
 		originZ:   minZ,
 		shiftBits: shiftBits,
-		sizeX:     cellsX,
-		sizeY:     cellsY,
-		sizeZ:     cellsZ,
-		strideY:   cellsX,
-		strideZ:   cellsX * cellsY,
+		sizeX:     int64(cellsX),
+		sizeY:     int64(cellsY),
+		sizeZ:     int64(cellsZ),
+		strideY:   int64(cellsX),
+		strideZ:   int64(cellsX * cellsY),
 
 		heads:     heads,
 		nodes:     nodes,
