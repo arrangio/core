@@ -23,9 +23,10 @@ type TeleportMove struct {
 }
 
 type RotationMove struct {
-	Target *entity.Entity
-	OldRot uint8
-	NewRot uint8
+	Target    *entity.Entity
+	OldRot    uint8
+	NewRot    uint8
+	oldAnchor geometry.Point64
 }
 
 func (m *ShiftMove) Apply(sd *ScoreDirector) float64 {
@@ -65,9 +66,19 @@ func (m *TeleportMove) Revert(sd *ScoreDirector) {
 
 func (m *RotationMove) Apply(sd *ScoreDirector) float64 {
 	oldMin, oldMax := m.Target.BoundsAt(m.Target.State.Anchor, m.OldRot)
-	newMin, newMax := m.Target.BoundsAt(m.Target.State.Anchor, m.NewRot)
+	rotMin, _ := m.Target.BoundsAt(geometry.Point64{}, m.NewRot)
+
+	newAnchor := geometry.Point64{
+		X: oldMin.X - rotMin.X,
+		Y: oldMin.Y - rotMin.Y,
+		Z: oldMin.Z - rotMin.Z,
+	}
+
+	newMin, newMax := m.Target.BoundsAt(newAnchor, m.NewRot)
 
 	return sd.CalculateDelta(m.Target, oldMin, oldMax, newMin, newMax, func() {
+		m.oldAnchor = m.Target.State.Anchor
+		m.Target.State.Anchor = newAnchor
 		m.Target.SetRotation(m.NewRot)
 		sd.State.EntityGrid.Move(m.Target, oldMin, oldMax, newMin, newMax)
 	})
@@ -75,6 +86,7 @@ func (m *RotationMove) Apply(sd *ScoreDirector) float64 {
 
 func (m *RotationMove) Revert(sd *ScoreDirector) {
 	oldMin, oldMax := m.Target.BoundsAt(m.Target.State.Anchor, m.NewRot)
+	m.Target.State.Anchor = m.oldAnchor
 	newMin, newMax := m.Target.BoundsAt(m.Target.State.Anchor, m.OldRot)
 
 	m.Target.SetRotation(m.OldRot)

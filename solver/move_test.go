@@ -159,6 +159,38 @@ func TestMoves(t *testing.T) {
 				}
 			},
 		},
+		{
+			Name: "RotationMove: preserves worldMin across all rotations and restores anchor on revert",
+			Entities: []entity.TestEntity{
+				{ID: 1, Anchor: geometry.Point64{X: 10, Y: 20, Z: 30}, W: 10, H: 4, D: 2, CanRotate: true, Rotation: 0},
+			},
+			Rules: []rules.Rule{},
+			Run: func(t *testing.T, rig *TestRig) {
+				e1 := rig.GetEntity(1)
+				origAnchor := e1.State.Anchor
+				origMin, _ := e1.WorldBounds()
+
+				for newRot := uint8(1); newRot < 24; newRot++ {
+					move := &solver.RotationMove{
+						Target: e1,
+						OldRot: 0,
+						NewRot: newRot,
+					}
+					move.Apply(rig.Director)
+
+					gotMin, _ := e1.WorldBounds()
+					if gotMin != origMin {
+						t.Fatalf("rot %d: expected worldMin %v, got %v", newRot, origMin, gotMin)
+					}
+
+					move.Revert(rig.Director)
+					revMin, _ := e1.WorldBounds()
+					if e1.State.Anchor != origAnchor || e1.State.Rotation != 0 || revMin != origMin {
+						t.Fatalf("rot %d revert: anchor=%v rot=%d min=%v", newRot, e1.State.Anchor, e1.State.Rotation, revMin)
+					}
+				}
+			},
+		},
 	}
 
 	for _, tc := range tests {
