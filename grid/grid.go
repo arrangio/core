@@ -29,11 +29,9 @@ type Grid[T Spatial] struct {
 	strideY   int64 // precomputed offsets used to flatten 3D grid coordinates
 	strideZ   int64 // into a single-dimensional `heads` slice index
 
-	heads        []int32       // maps each 3D cell to the the starting index of its linked list inside `nodes`
-	nodes        []gridNode[T] // stores all linked list nodes for all cells
-	freeNodes    []int32       // tracks which indices in the `nodes` are currently empty
-	cellVersions []uint32
-	version      uint32
+	heads     []int32       // maps each 3D cell to the the starting index of its linked list inside `nodes`
+	nodes     []gridNode[T] // stores all linked list nodes for all cells
+	freeNodes []int32       // tracks which indices in the `nodes` are currently empty
 }
 
 // `maxObjectsPerCell` acts as the initial capacity for total entity-to-cell linkages allowed.
@@ -92,53 +90,10 @@ func NewGrid[T Spatial](shiftBits uint8, minX, minY, minZ, maxX, maxY, maxZ int6
 		strideY:   cellsX,
 		strideZ:   cellsX * cellsY,
 
-		heads:        heads,
-		nodes:        nodes,
-		freeNodes:    freeNodes,
-		cellVersions: make([]uint32, totalCells),
-		version:      1,
+		heads:     heads,
+		nodes:     nodes,
+		freeNodes: freeNodes,
 	}, nil
-}
-
-func (g *Grid[T]) SetVersion(v uint32) {
-	g.version = v
-}
-
-func (g *Grid[T]) ClearCellVersions() {
-	clear(g.cellVersions)
-	g.version = 1
-}
-
-func (g *Grid[T]) IsRegionDirty(searchMin, searchMax geometry.Point64, lastVersion uint32) bool {
-	if len(g.cellVersions) == 0 {
-		return true
-	}
-	minX, minY, minZ := g.worldToCell(searchMin.X, searchMin.Y, searchMin.Z)
-	maxX, maxY, maxZ := g.maxBoundsToCell(searchMin, searchMax)
-
-	minX = max(0, minX)
-	minY = max(0, minY)
-	minZ = max(0, minZ)
-	maxX = min(g.sizeX-1, maxX)
-	maxY = min(g.sizeY-1, maxY)
-	maxZ = min(g.sizeZ-1, maxZ)
-
-	if minX > maxX || minY > maxY || minZ > maxZ {
-		return false
-	}
-
-	for z := minZ; z <= maxZ; z++ {
-		zOffset := z * g.strideZ
-		for y := minY; y <= maxY; y++ {
-			row := g.cellVersions[zOffset+y*g.strideY+minX : zOffset+y*g.strideY+maxX+1]
-			for _, v := range row {
-				if v > lastVersion {
-					return true
-				}
-			}
-		}
-	}
-	return false
 }
 
 func (g *Grid[T]) worldToCell(wx, wy, wz int64) (cx, cy, cz int64) {
@@ -241,9 +196,6 @@ func (g *Grid[T]) addToCell(cellIdx int64, item T, itemID uint64) {
 		next:   g.heads[cellIdx],
 	}
 	g.heads[cellIdx] = nodeIdx
-	if len(g.cellVersions) > 0 {
-		g.cellVersions[cellIdx] = g.version
-	}
 }
 
 func (g *Grid[T]) Remove(item T) {
@@ -301,9 +253,6 @@ func (g *Grid[T]) removeFromCell(cellIdx int64, itemID uint64) {
 			// zero out node to prevent memory leaks
 			var zero T
 			g.nodes[currentNodeIdx].item = zero
-			if len(g.cellVersions) > 0 {
-				g.cellVersions[cellIdx] = g.version
-			}
 			break
 		}
 
@@ -367,12 +316,6 @@ func (g *Grid[T]) Move(item T, oldMin, oldMax, newMin, newMax geometry.Point64) 
 					// Object has entered this cell: add it.
 					cellIdx := x + yOffset
 					g.addToCell(cellIdx, item, itemID)
-				} else if inOld && inNew {
-					// Object stays in this cell: mark cell version dirty without traversing linked list!
-					if len(g.cellVersions) > 0 {
-						cellIdx := x + yOffset
-						g.cellVersions[cellIdx] = g.version
-					}
 				}
 			}
 		}

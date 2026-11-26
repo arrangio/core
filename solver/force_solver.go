@@ -18,8 +18,9 @@ import (
 )
 
 const (
-	stagnationStreakThreshold = 2
-	reheatAlphaFactor         = 0.8
+	phaseCalcForces    = 0
+	phaseWakeNeighbors = 1
+	phi64              = 0x9e3779b97f4a7c15
 	// objects are unevenly distributed across the grid
 	// when one worker finishes earlier, than others, it has to wait for the rest of the workers
 	// to take the next chunks
@@ -29,6 +30,17 @@ const (
 	// guarantees that chunk won't get out of L1 cache
 	maxChunkSize = 256
 )
+
+type movedRecord struct {
+	id      uint64
+	wakeMin geometry.Point64
+	wakeMax geometry.Point64
+}
+
+type idIdxSlot struct {
+	id       uint64
+	idxPlus1 uint32
+}
 
 type ForceSolverConfig struct {
 	MaxIterations int
@@ -63,28 +75,32 @@ type solverWorker struct {
 }
 
 type ForceSolver struct {
-	State           *State
-	Config          ForceSolverConfig
-	entities        []*entity.Entity
-	canRotate       []bool
-	anchorX         []int64
-	anchorY         []int64
-	anchorZ         []int64
-	forces          []rules.ForceAccum
-	penalties       []int64
-	boundsMin       []geometry.Point64
-	boundsMax       []geometry.Point64
-	lastEvalVersion []uint32
-	stepCount       uint32
-	workers         []*solverWorker
-	numWorkers      int
-	chunkSize       int64
-	taskIndex       atomic.Int64
-	doneWg          sync.WaitGroup
-	rng             *rand.Rand
-	stopCh          chan struct{}
-	workerWg        sync.WaitGroup
-	closed          atomic.Bool
+	State        *State
+	Config       ForceSolverConfig
+	entities     []*entity.Entity
+	canRotate    []bool
+	anchorX      []int64
+	anchorY      []int64
+	anchorZ      []int64
+	forces       []rules.ForceAccum
+	penalties    []int64
+	boundsMin    []geometry.Point64
+	boundsMax    []geometry.Point64
+	asleep       []atomic.Bool
+	idTable      []idIdxSlot
+	idMask       uint64
+	movedRecords []movedRecord
+	hasSleeping  bool
+	workerPhase  int
+	workers      []*solverWorker
+	numWorkers   int
+	chunkSize    int64
+	taskIndex    atomic.Int64
+	doneWg       sync.WaitGroup
+	rng          *rand.Rand
+	stopCh       chan struct{}
+	workerWg     sync.WaitGroup
+	closed       atomic.Bool
 }
 
 var _ Solver = (*ForceSolver)(nil)
@@ -144,7 +160,7 @@ func NewForceSolver(state *State, cfg ForceSolverConfig) *ForceSolver {
 	penalties := make([]int64, n)
 	boundsMin := make([]geometry.Point64, n)
 	boundsMax := make([]geometry.Point64, n)
-	lastEvalVersion := make([]uint32, n)
+	asleep := make([]atomic.Bool, n)
 	anchorX := make([]int64, n)
 	anchorY := make([]int64, n)
 	anchorZ := make([]int64, n)
@@ -154,6 +170,28 @@ func NewForceSolver(state *State, cfg ForceSolverConfig) *ForceSolver {
 			anchorX[i] = e.State.Anchor.X
 			anchorY[i] = e.State.Anchor.Y
 			anchorZ[i] = e.State.Anchor.Z
+		}
+	}
+
+	var idTable []idIdxSlot
+	var idMask uint64
+	if n > 0 {
+		tableCap := 2
+		for tableCap < n*2 {
+			tableCap <<= 1
+		}
+		idTable = make([]idIdxSlot, tableCap)
+		idMask = uint64(tableCap - 1)
+		for i, e := range entities {
+			if e == nil {
+				continue
+			}
+			// upper bits of Fibonacci product mix carries better; & idMask wraps into [0, tableCap-1]
+			pos := ((e.ID * phi64) >> 32) & idMask
+			for idTable[pos].idxPlus1 != 0 {
+				pos = (pos + 1) & idMask
+			}
+			idTable[pos] = idIdxSlot{id: e.ID, idxPlus1: uint32(i + 1)} // #nosec G115 - n fits in uint32
 		}
 	}
 
@@ -168,23 +206,25 @@ func NewForceSolver(state *State, cfg ForceSolverConfig) *ForceSolver {
 	rng := rand.New(rand.NewSource(time.Now().UnixNano())) // #nosec G404
 
 	s := &ForceSolver{
-		State:           state,
-		Config:          cfg,
-		entities:        entities,
-		canRotate:       canRotate,
-		anchorX:         anchorX,
-		anchorY:         anchorY,
-		anchorZ:         anchorZ,
-		forces:          forces,
-		penalties:       penalties,
-		boundsMin:       boundsMin,
-		boundsMax:       boundsMax,
-		lastEvalVersion: lastEvalVersion,
-		workers:         workers,
-		numWorkers:      workersCount,
-		chunkSize:       chunkSize,
-		rng:             rng,
-		stopCh:          make(chan struct{}),
+		State:      state,
+		Config:     cfg,
+		entities:   entities,
+		canRotate:  canRotate,
+		anchorX:    anchorX,
+		anchorY:    anchorY,
+		anchorZ:    anchorZ,
+		forces:     forces,
+		penalties:  penalties,
+		boundsMin:  boundsMin,
+		boundsMax:  boundsMax,
+		asleep:     asleep,
+		idTable:    idTable,
+		idMask:     idMask,
+		workers:    workers,
+		numWorkers: workersCount,
+		chunkSize:  chunkSize,
+		rng:        rng,
+		stopCh:     make(chan struct{}),
 	}
 
 	s.startWorkers()
@@ -195,6 +235,23 @@ func (s *ForceSolver) startWorkers() {
 	s.workerWg.Add(s.numWorkers)
 	for _, wCtx := range s.workers {
 		go s.workerLoop(wCtx)
+	}
+}
+
+func (s *ForceSolver) lookupEntityIdx(id uint64) (int, bool) {
+	if len(s.idTable) == 0 {
+		return 0, false
+	}
+	pos := ((id * phi64) >> 32) & s.idMask
+	for {
+		slot := s.idTable[pos]
+		if slot.idxPlus1 == 0 {
+			return 0, false
+		}
+		if slot.id == id {
+			return int(slot.idxPlus1 - 1), true
+		}
+		pos = (pos + 1) & s.idMask
 	}
 }
 
@@ -213,6 +270,31 @@ func (s *ForceSolver) workerLoop(wCtx *solverWorker) {
 		case <-s.stopCh:
 			return
 		case <-wCtx.workCh:
+			if s.workerPhase == phaseWakeNeighbors {
+				moved := s.movedRecords
+				m := int64(len(moved))
+				wakeChunk := max(int64(1), m/int64(s.numWorkers*chunksPerWorker))
+				for {
+					startIdx := s.taskIndex.Add(wakeChunk) - wakeChunk
+					if startIdx >= m {
+						break
+					}
+					endIdx := min(startIdx+wakeChunk, m)
+					for k := startIdx; k < endIdx; k++ {
+						rec := moved[k]
+						wCtx.qctx.ExcludeID = rec.id
+						neighbors := s.State.EntityGrid.QueryBuf(rec.wakeMin, rec.wakeMax, wCtx.qctx)
+						for _, nb := range neighbors {
+							if idx, ok := s.lookupEntityIdx(nb.GetID()); ok && s.asleep[idx].Load() {
+								s.asleep[idx].Store(false)
+							}
+						}
+					}
+				}
+				s.doneWg.Done()
+				continue
+			}
+
 			for {
 				startIdx := s.taskIndex.Add(chunkSize) - chunkSize
 				if startIdx >= n {
@@ -221,15 +303,15 @@ func (s *ForceSolver) workerLoop(wCtx *solverWorker) {
 				endIdx := min(startIdx+chunkSize, n)
 
 				for j := startIdx; j < endIdx; j++ {
+					if s.asleep[j].Load() {
+						continue
+					}
+
 					e := entities[j]
 					subMin := s.boundsMin[j]
 					subMax := s.boundsMax[j]
 					searchMin := geometry.Point64{X: subMin.X - rad, Y: subMin.Y - rad, Z: subMin.Z - rad}
 					searchMax := geometry.Point64{X: subMax.X + rad, Y: subMax.Y + rad, Z: subMax.Z + rad}
-
-					if s.stepCount > 1 && !s.State.EntityGrid.IsRegionDirty(searchMin, searchMax, s.lastEvalVersion[j]) {
-						continue
-					}
 
 					wCtx.qctx.ExcludeID = e.ID
 					neighbors := s.State.EntityGrid.QueryBuf(searchMin, searchMax, wCtx.qctx)
@@ -261,7 +343,6 @@ func (s *ForceSolver) workerLoop(wCtx *solverWorker) {
 
 					s.forces[j] = total
 					s.penalties[j] = rawPenalty
-					s.lastEvalVersion[j] = s.stepCount - 1
 				}
 			}
 			s.doneWg.Done()
@@ -270,6 +351,20 @@ func (s *ForceSolver) workerLoop(wCtx *solverWorker) {
 }
 
 func (s *ForceSolver) calculateForces() {
+	s.workerPhase = phaseCalcForces
+	s.taskIndex.Store(0)
+	s.doneWg.Add(s.numWorkers)
+	for _, w := range s.workers {
+		w.workCh <- struct{}{}
+	}
+	s.doneWg.Wait()
+}
+
+func (s *ForceSolver) wakeNeighbors() {
+	if len(s.movedRecords) == 0 || s.State.EntityGrid == nil {
+		return
+	}
+	s.workerPhase = phaseWakeNeighbors
 	s.taskIndex.Store(0)
 	s.doneWg.Add(s.numWorkers)
 	for _, w := range s.workers {
@@ -285,6 +380,9 @@ func clampI64(v, lo, hi int64) int64 {
 func (s *ForceSolver) applyForces(alpha float64) (maxDisp int64, totalDisp int64, sysStress int64, violators int) {
 	entities := s.entities
 	jitterMag := s.Config.JitterAmount * alpha
+	rad := s.State.MaxRadius
+	s.movedRecords = s.movedRecords[:0]
+	anyAsleep := false
 
 	for i, e := range entities {
 		penalty := s.penalties[i]
@@ -294,16 +392,18 @@ func (s *ForceSolver) applyForces(alpha float64) (maxDisp int64, totalDisp int64
 		}
 
 		f := s.forces[i]
-
-		oldMin, oldMax := s.boundsMin[i], s.boundsMax[i]
+		origMin, origMax := s.boundsMin[i], s.boundsMax[i]
+		curMin, curMax := origMin, origMax
+		moved := false
 
 		if f.RotScore > 0 && s.canRotate[i] && f.BestRot != e.GetRotation() {
 			e.SetRotation(f.BestRot)
 			newMin, newMax := e.WorldBounds()
-			s.State.EntityGrid.Move(e, oldMin, oldMax, newMin, newMax)
+			s.State.EntityGrid.Move(e, curMin, curMax, newMin, newMax)
 			s.boundsMin[i] = newMin
 			s.boundsMax[i] = newMax
-			oldMin, oldMax = newMin, newMax
+			curMin, curMax = newMin, newMax
+			moved = true
 			totalDisp++
 			if maxDisp < 1 {
 				maxDisp = 1
@@ -317,37 +417,58 @@ func (s *ForceSolver) applyForces(alpha float64) (maxDisp int64, totalDisp int64
 			f.DZ += int64((s.rng.Float64() - 0.5) * 2 * jitterMag)
 		}
 
-		if f.DX == 0 && f.DY == 0 && f.DZ == 0 {
-			continue
+		if f.DX != 0 || f.DY != 0 || f.DZ != 0 {
+			dx := clampI64(int64(math.Round(float64(f.DX)*alpha)), -s.Config.MaxStep, s.Config.MaxStep)
+			dy := clampI64(int64(math.Round(float64(f.DY)*alpha)), -s.Config.MaxStep, s.Config.MaxStep)
+			dz := clampI64(int64(math.Round(float64(f.DZ)*alpha)), -s.Config.MaxStep, s.Config.MaxStep)
+
+			if dx != 0 || dy != 0 || dz != 0 {
+				disp := rules.AbsI64(dx) + rules.AbsI64(dy) + rules.AbsI64(dz)
+				totalDisp += disp
+				if disp > maxDisp {
+					maxDisp = disp
+				}
+
+				s.anchorX[i] += dx
+				s.anchorY[i] += dy
+				s.anchorZ[i] += dz
+				e.State.Anchor.X = s.anchorX[i]
+				e.State.Anchor.Y = s.anchorY[i]
+				e.State.Anchor.Z = s.anchorZ[i]
+				newMin := geometry.Point64{X: curMin.X + dx, Y: curMin.Y + dy, Z: curMin.Z + dz}
+				newMax := geometry.Point64{X: curMax.X + dx, Y: curMax.Y + dy, Z: curMax.Z + dz}
+				s.boundsMin[i] = newMin
+				s.boundsMax[i] = newMax
+				s.State.EntityGrid.Move(e, curMin, curMax, newMin, newMax)
+				curMin, curMax = newMin, newMax
+				moved = true
+			}
 		}
 
-		dx := clampI64(int64(math.Round(float64(f.DX)*alpha)), -s.Config.MaxStep, s.Config.MaxStep)
-		dy := clampI64(int64(math.Round(float64(f.DY)*alpha)), -s.Config.MaxStep, s.Config.MaxStep)
-		dz := clampI64(int64(math.Round(float64(f.DZ)*alpha)), -s.Config.MaxStep, s.Config.MaxStep)
-
-		if dx == 0 && dy == 0 && dz == 0 {
-			continue
+		if penalty == 0 && !moved {
+			// fixed point: zero penalty (no jitter) and no movement, so forces stay zero until a neighbor moves
+			s.asleep[i].Store(true)
+			anyAsleep = true
+		} else {
+			s.asleep[i].Store(false)
+			if moved {
+				s.movedRecords = append(s.movedRecords, movedRecord{
+					id: e.ID,
+					wakeMin: geometry.Point64{
+						X: min(origMin.X, curMin.X) - rad,
+						Y: min(origMin.Y, curMin.Y) - rad,
+						Z: min(origMin.Z, curMin.Z) - rad,
+					},
+					wakeMax: geometry.Point64{
+						X: max(origMax.X, curMax.X) + rad,
+						Y: max(origMax.Y, curMax.Y) + rad,
+						Z: max(origMax.Z, curMax.Z) + rad,
+					},
+				})
+			}
 		}
-
-		disp := rules.AbsI64(dx) + rules.AbsI64(dy) + rules.AbsI64(dz)
-		totalDisp += disp
-		if disp > maxDisp {
-			maxDisp = disp
-		}
-
-		s.anchorX[i] += dx
-		s.anchorY[i] += dy
-		s.anchorZ[i] += dz
-		e.State.Anchor.X = s.anchorX[i]
-		e.State.Anchor.Y = s.anchorY[i]
-		e.State.Anchor.Z = s.anchorZ[i]
-		newMin := geometry.Point64{X: oldMin.X + dx, Y: oldMin.Y + dy, Z: oldMin.Z + dz}
-		newMax := geometry.Point64{X: oldMax.X + dx, Y: oldMax.Y + dy, Z: oldMax.Z + dz}
-		s.boundsMin[i] = newMin
-		s.boundsMax[i] = newMax
-
-		s.State.EntityGrid.Move(e, oldMin, oldMax, newMin, newMax)
 	}
+	s.hasSleeping = anyAsleep
 	return maxDisp, totalDisp, sysStress, violators
 }
 
@@ -398,21 +519,20 @@ func (s *ForceSolver) Solve() SolveResult {
 
 	clear(s.forces)
 	clear(s.penalties)
-	clear(s.lastEvalVersion)
-	s.stepCount = 0
-	if s.State.EntityGrid != nil {
-		s.State.EntityGrid.ClearCellVersions()
+	for i := range s.asleep {
+		s.asleep[i].Store(false)
 	}
+	s.hasSleeping = false
+	s.movedRecords = s.movedRecords[:0]
 
 	for iter := 0; iter < s.Config.MaxIterations; iter++ {
 		iterStart := time.Now()
-		s.stepCount = uint32(iter + 1)
 
 		s.calculateForces()
-		if s.State.EntityGrid != nil {
-			s.State.EntityGrid.SetVersion(s.stepCount)
-		}
 		maxDisp, totalDisp, sysStress, violators := s.applyForces(alpha)
+		if s.hasSleeping && len(s.movedRecords) > 0 {
+			s.wakeNeighbors()
+		}
 
 		finalStress = sysStress
 		finalViolators = violators
@@ -443,11 +563,19 @@ func (s *ForceSolver) Solve() SolveResult {
 
 		if maxDisp == 0 {
 			stagnantStreak++
-			if stagnantStreak >= stagnationStreakThreshold {
+			stagnationLimit := 1
+			if s.Config.JitterAmount*alpha > 0.5 && violators > 0 {
+				stagnationLimit = 2
+			}
+			if stagnantStreak >= stagnationLimit {
 				if reheats < s.Config.MaxReheats {
-					alpha = s.Config.InitialAlpha * reheatAlphaFactor
+					alpha = s.Config.InitialAlpha * math.Pow(s.Config.CoolingRate, float64(reheats+1))
 					stagnantStreak = 0
 					reheats++
+					for i := range s.asleep {
+						s.asleep[i].Store(false)
+					}
+					s.hasSleeping = false
 					continue
 				}
 				s.writeBackAnchors()

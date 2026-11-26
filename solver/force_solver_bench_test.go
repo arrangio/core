@@ -135,9 +135,6 @@ func runBenchmark(b *testing.B, numObjects int, gridSize int64) {
 				state.EntityGrid.Move(e, oldMin, oldMax, newMin, newMax)
 			}
 		}
-		if state.EntityGrid != nil {
-			state.EntityGrid.ClearCellVersions()
-		}
 		b.StartTimer()
 
 		res := s.Solve()
