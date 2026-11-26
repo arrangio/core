@@ -206,25 +206,26 @@ func NewForceSolver(state *State, cfg ForceSolverConfig) *ForceSolver {
 	rng := rand.New(rand.NewSource(time.Now().UnixNano())) // #nosec G404
 
 	s := &ForceSolver{
-		State:      state,
-		Config:     cfg,
-		entities:   entities,
-		canRotate:  canRotate,
-		anchorX:    anchorX,
-		anchorY:    anchorY,
-		anchorZ:    anchorZ,
-		forces:     forces,
-		penalties:  penalties,
-		boundsMin:  boundsMin,
-		boundsMax:  boundsMax,
-		asleep:     asleep,
-		idTable:    idTable,
-		idMask:     idMask,
-		workers:    workers,
-		numWorkers: workersCount,
-		chunkSize:  chunkSize,
-		rng:        rng,
-		stopCh:     make(chan struct{}),
+		State:        state,
+		Config:       cfg,
+		entities:     entities,
+		canRotate:    canRotate,
+		anchorX:      anchorX,
+		anchorY:      anchorY,
+		anchorZ:      anchorZ,
+		forces:       forces,
+		penalties:    penalties,
+		boundsMin:    boundsMin,
+		boundsMax:    boundsMax,
+		asleep:       asleep,
+		idTable:      idTable,
+		idMask:       idMask,
+		movedRecords: make([]movedRecord, 0, n),
+		workers:      workers,
+		numWorkers:   workersCount,
+		chunkSize:    chunkSize,
+		rng:          rng,
+		stopCh:       make(chan struct{}),
 	}
 
 	s.startWorkers()
@@ -362,6 +363,17 @@ func (s *ForceSolver) calculateForces() {
 
 func (s *ForceSolver) wakeNeighbors() {
 	if len(s.movedRecords) == 0 || s.State.EntityGrid == nil {
+		return
+	}
+
+	// if >= 1/4 of entities moved, waking neighbors via QueryBuf costs more
+	// than simply waking all entities for the next calculateForces pass
+	if len(s.movedRecords)*4 >= len(s.entities) {
+		for i := range s.asleep {
+			if s.asleep[i].Load() {
+				s.asleep[i].Store(false)
+			}
+		}
 		return
 	}
 	s.workerPhase = phaseWakeNeighbors
