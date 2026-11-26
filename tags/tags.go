@@ -11,10 +11,7 @@ type Mask struct {
 }
 
 func NewMask() Mask {
-	return Mask{
-		fastBits:   0,
-		dynamicIDs: make([]uint16, 0, 4),
-	}
+	return Mask{}
 }
 
 func (m Mask) HasTags() bool {
