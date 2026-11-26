@@ -181,7 +181,7 @@ func NewForceSolver(state *State, cfg ForceSolverConfig) *ForceSolver {
 			tableCap <<= 1
 		}
 		idTable = make([]idIdxSlot, tableCap)
-		idMask = uint64(tableCap - 1)
+		idMask = uint64(tableCap - 1) // #nosec G115 - tableCap >= 2
 		for i, e := range entities {
 			if e == nil {
 				continue

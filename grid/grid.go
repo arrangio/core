@@ -53,22 +53,22 @@ func NewGrid[T Spatial](shiftBits uint8, minX, minY, minZ, maxX, maxY, maxZ int6
 
 	cellsX := uint64(1)
 	if maxX > minX {
-		cellsX = ((uint64(maxX-minX) - 1) >> shiftBits) + 1
+		cellsX = ((uint64(maxX-minX) - 1) >> shiftBits) + 1 // #nosec G115 - maxX > minX
 	}
 	cellsY := uint64(1)
 	if maxY > minY {
-		cellsY = ((uint64(maxY-minY) - 1) >> shiftBits) + 1
+		cellsY = ((uint64(maxY-minY) - 1) >> shiftBits) + 1 // #nosec G115 - maxY > minY
 	}
 	cellsZ := uint64(1)
 	if maxZ > minZ {
-		cellsZ = ((uint64(maxZ-minZ) - 1) >> shiftBits) + 1
+		cellsZ = ((uint64(maxZ-minZ) - 1) >> shiftBits) + 1 // #nosec G115 - maxZ > minZ
 	}
 
 	if cellsX > maxTotalCells || cellsY > maxTotalCells/cellsX || cellsZ > maxTotalCells/(cellsX*cellsY) {
 		return nil, fmt.Errorf("grid: boundaries too large, exceeds 50M cells limit")
 	}
 
-	totalCells := int64(cellsX * cellsY * cellsZ)
+	totalCells := int64(cellsX * cellsY * cellsZ) // #nosec G115 - bounded by maxTotalCells
 
 	heads := make([]int32, totalCells)
 	for i := range heads {
@@ -86,11 +86,11 @@ func NewGrid[T Spatial](shiftBits uint8, minX, minY, minZ, maxX, maxY, maxZ int6
 		originY:   minY,
 		originZ:   minZ,
 		shiftBits: shiftBits,
-		sizeX:     int64(cellsX),
-		sizeY:     int64(cellsY),
-		sizeZ:     int64(cellsZ),
-		strideY:   int64(cellsX),
-		strideZ:   int64(cellsX * cellsY),
+		sizeX:     int64(cellsX),          // #nosec G115 - bounded by maxTotalCells
+		sizeY:     int64(cellsY),          // #nosec G115 - bounded by maxTotalCells
+		sizeZ:     int64(cellsZ),          // #nosec G115 - bounded by maxTotalCells
+		strideY:   int64(cellsX),          // #nosec G115 - bounded by maxTotalCells
+		strideZ:   int64(cellsX * cellsY), // #nosec G115 - bounded by maxTotalCells
 
 		heads:     heads,
 		nodes:     nodes,
