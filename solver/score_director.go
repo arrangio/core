@@ -59,7 +59,10 @@ func (sd *ScoreDirector) collectAffected(
 	target *entity.Entity,
 	oldMin, oldMax, newMin, newMax geometry.Point64,
 ) []*entity.Entity {
-	sd.affectedBuffer = append(sd.affectedBuffer[:0], target)
+	sd.affectedBuffer = sd.affectedBuffer[:0]
+	if target.Def != nil && !target.Def.IsStatic {
+		sd.affectedBuffer = append(sd.affectedBuffer, target)
+	}
 
 	maxRad := sd.State.MaxRadius
 
@@ -69,6 +72,9 @@ func (sd *ScoreDirector) collectAffected(
 	buf := sd.State.EntityGrid.QueryBuf(oldSearchMin, oldSearchMax, sd.qctx)
 
 	for _, e := range buf {
+		if e.Def != nil && e.Def.IsStatic {
+			continue
+		}
 		if e != target {
 			sd.affectedBuffer = append(sd.affectedBuffer, e)
 		}
@@ -80,7 +86,7 @@ func (sd *ScoreDirector) collectAffected(
 	buf = sd.State.EntityGrid.QueryBuf(newSearchMin, newSearchMax, sd.qctx)
 
 	for _, e := range buf {
-		if e == target {
+		if e == target || (e.Def != nil && e.Def.IsStatic) {
 			continue
 		}
 
