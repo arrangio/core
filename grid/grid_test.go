@@ -5,6 +5,7 @@ import (
 
 	"github.com/arrangio/core/entity"
 	"github.com/arrangio/core/geometry"
+	"github.com/arrangio/core/grid"
 )
 
 func TestGrid(t *testing.T) {
@@ -319,5 +320,91 @@ func TestGrid(t *testing.T) {
 
 	for _, tc := range tests {
 		RunGridTest(t, tc)
+	}
+}
+
+func TestNewGrid_Validation(t *testing.T) {
+	tests := []struct {
+		name              string
+		shiftBits         uint8
+		minX, minY, minZ  int64
+		maxX, maxY, maxZ  int64
+		maxObjectsPerCell int
+		wantErr           bool
+	}{
+		{
+			name:              "valid bounds",
+			shiftBits:         4,
+			minX:              0, minY: 0, minZ: 0,
+			maxX:              64, maxY: 64, maxZ: 64,
+			maxObjectsPerCell: 16,
+			wantErr:           false,
+		},
+		{
+			name:              "inverted one axis",
+			shiftBits:         4,
+			minX:              100, minY: 0, minZ: 0,
+			maxX:              0, maxY: 64, maxZ: 64,
+			maxObjectsPerCell: 16,
+			wantErr:           true,
+		},
+		{
+			name:              "inverted two axes",
+			shiftBits:         4,
+			minX:              100, minY: 100, minZ: 0,
+			maxX:              0, maxY: 0, maxZ: 64,
+			maxObjectsPerCell: 16,
+			wantErr:           true,
+		},
+		{
+			name:              "zero width axis",
+			shiftBits:         4,
+			minX:              10, minY: 0, minZ: 0,
+			maxX:              10, maxY: 64, maxZ: 64,
+			maxObjectsPerCell: 16,
+			wantErr:           false,
+		},
+		{
+			name:              "negative maxObjectsPerCell",
+			shiftBits:         4,
+			minX:              0, minY: 0, minZ: 0,
+			maxX:              64, maxY: 64, maxZ: 64,
+			maxObjectsPerCell: -1,
+			wantErr:           true,
+		},
+		{
+			name:              "shiftBits too large",
+			shiftBits:         62,
+			minX:              0, minY: 0, minZ: 0,
+			maxX:              64, maxY: 64, maxZ: 64,
+			maxObjectsPerCell: 16,
+			wantErr:           true,
+		},
+		{
+			name:              "multiplication overflow wrap",
+			shiftBits:         0,
+			minX:              0, minY: 0, minZ: 0,
+			maxX:              1 << 22, maxY: 1 << 22, maxZ: 1 << 22,
+			maxObjectsPerCell: 16,
+			wantErr:           true,
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			g, err := grid.NewGrid[*entity.Entity](tc.shiftBits, tc.minX, tc.minY, tc.minZ, tc.maxX, tc.maxY, tc.maxZ, tc.maxObjectsPerCell)
+			if tc.wantErr {
+				if err == nil {
+					t.Errorf("expected error, got nil")
+				}
+				return
+			}
+			if err != nil {
+				t.Errorf("unexpected error: %v", err)
+			}
+			if g == nil {
+				t.Errorf("expected non-nil grid")
+			}
+		})
 	}
 }
